@@ -19,7 +19,7 @@ the leap, or I'll stick with my own.
 
 The general idea is:
 
-- Catch the onclick event for every a element on the page
+- Catch the onclick event for every ``a`` element on the page
 - For some links, a special check will tell to proceed with the standard
   behaviour, i.e. load the target the standard way; this includes:
 
@@ -85,8 +85,8 @@ and then running ``bin/buildout``
 Contribute
 ----------
 
-- Issue Tracker: https://github.com/visaplan/visaplan.plone.ajaxnavigation/issues
-- Source Code: https://github.com/visaplan/visaplan.plone.ajaxnavigation
+- Issue Tracker: https://github.com/visaplan/plone.ajaxnavigation/issues
+- Source Code: https://github.com/visaplan/plone.ajaxnavigation
 
 
 Support
@@ -99,6 +99,6 @@ please use the issue tracker mentioned above.
 License
 -------
 
-The project is licensed under the GPLv2.
+The project is licensed under the GPLv3.
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et
