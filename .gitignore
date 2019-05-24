@@ -108,3 +108,11 @@ bin/
 include/
 lib64
 pip-selfcheck.json
+
+# visaplan environment
+.editorconfig
+.svn/
+init
+init.vim
+scripts/
+update-module
