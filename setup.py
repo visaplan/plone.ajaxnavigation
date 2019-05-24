@@ -98,7 +98,7 @@ setup_kwargs = dict(
         "Intended Audience :: Developers",
         "Natural Language :: German",
         "Operating System :: OS Independent",
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
     # keywords='Python Plone',
     author='Tobias Herp',
