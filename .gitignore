@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# VirtualEnv
+bin/
+include/
+lib64
+pip-selfcheck.json
