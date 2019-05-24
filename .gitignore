@@ -112,6 +112,7 @@ pip-selfcheck.json
 # visaplan environment
 .editorconfig
 .svn/
+auto.msg
 init
 init.vim
 scripts/
