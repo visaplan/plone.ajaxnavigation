@@ -1,0 +1,19 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:plone="http://namespaces.plone.org/plone"
+           xmlns:browser="http://namespaces.zope.org/browser">
+
+    <include file="profiles.zcml" />
+    <utility
+        factory=".setuphandlers.HiddenProfiles"
+        name="visaplan.plone.ajaxnavigation-hiddenprofiles" />
+
+    <!-- [ Statische Ressourcen (++resource++) ... [ -->
+    <include package="plone.resource" file="meta.zcml"/>
+
+    <browser:resourceDirectory
+	name="visaplan.plone.ajaxnavigation"
+	directory="resource"
+	/>
+    <!-- ] ... Statische Ressourcen (++resource++) ] -->
+
+</configure>
