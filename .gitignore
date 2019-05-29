@@ -109,6 +109,9 @@ include/
 lib64
 pip-selfcheck.json
 
+# Backups
+*~
+
 # visaplan environment
 .editorconfig
 .svn/
