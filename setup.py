@@ -104,7 +104,7 @@ setup_kwargs = dict(
     author='Tobias Herp',
     author_email='tobias.herp@visaplan.com',
     url='https://pypi.org/project/visaplan.plone.ajaxnavigation',
-    license='GPL version 2',
+    license='GPL version 3',
     packages=packages,
     namespace_packages=[
         'visaplan',
