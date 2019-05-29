@@ -16,4 +16,6 @@
 	/>
     <!-- ] ... Statische Ressourcen (++resource++) ] -->
 
+    <include package=".views" />
+
 </configure>
