@@ -109,8 +109,9 @@ include/
 lib64
 pip-selfcheck.json
 
-# Backups
+# Vim editor
 *~
+.*.sw[poq]
 
 # visaplan environment
 .editorconfig
