@@ -3,4 +3,7 @@
  <javascript
     id="++resource++visaplan.plone.ajaxnavigation/ajaxnavigation.js"
     remove="True" />
+ <javascript
+    id="++resource++visaplan.plone.ajaxnavigation/init-default.js"
+    remove="True" />
 </object>

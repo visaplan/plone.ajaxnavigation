@@ -99,6 +99,6 @@ please use the issue tracker mentioned above.
 License
 -------
 
-The project is licensed under the GPLv3.
+The project is licensed under the GPLv2 (or later).
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et

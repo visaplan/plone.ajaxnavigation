@@ -3,58 +3,241 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 var AjaxNav = (function () {
-    var me = {},
+    var AjaxNav = {},
         log = function (txt) {
             if (console && console.log) {
                 console.log(txt);
             }
         };
-    me.log = log;
-	var url = window.location.href;
-	var pos1 = url.indexOf('://');
-	var tmp = url.slice(pos1+3); // alles ab dem Hostnamen
-	var pos2 = tmp.indexOf('/');
-	var hostname: tmp.slice(3, tmp.indexOf('/'));
-	me.rooturl =  url.slice(0, pos1 + 3 + pos2);
-	alert('root-URL ist '+me.rooturl);
-	var clickfunc = function (e) {
-		log('AjaxNav.click :-)');
-		log(e)
-		alert(e);
-		log(this);
-		if (! confirm('OK für AJAX-Laden; Abbruch für undelegate:')) {
-			$(this).undelegate('click', clickfunc);
+    AjaxNav.log = log;
+	if (typeof URL === 'undefined') {
+		var URL = Window.URL;
+	}
+	var url1 = new URL(window.location.href);
+	var rooturl = AjaxNav.rooturl = url1.origin;
+	var myhost = AjaxNav.myhost = url1.hostname;
+	alert('root-URL ist '+AjaxNav.rooturl);
+
+	var id_match_logger = function (s, label) {
+		if (typeof label !== 'undefined') {
+			log(label + ' view id: "'+s+'"');
 		}
 	}
-	me.click = clickfunc
-	return me;
+	var id_match = function (s, ids, suffixes, label) {
+		var i;
+		if (typeof ids === 'undefined') {
+			ids = [];
+		}
+		for (i = 0; i < ids.length; i++) {
+			if (s == ids[0]) {
+				id_match_logger(s, label);
+				return true;
+			}
+		}
+		if (typeof suffixes === 'undefined') {
+			suffixes = [];
+		}
+		for (i = 0; i < suffixes.length; i++) {
+			if (s.endsWith(suffixes[0])) {
+				id_match_logger(s, label);
+				return true;
+			}
+		}
+		return false;
+	}
+	AjaxNav.id_match = id_match;
+
+	var splitpath = function (s) {
+		/*
+		 * split a path and return a list [prefix, div, view]:
+		 * div -- '@@' or '/'
+		 * prefix -- everything before <div>
+		 * view -- a suspected view name (after <div>)
+		 */
+		var res = [],
+		    posa = fullpath.indexOf('@@'),
+		    poslasl = fullpath.lastIndexOf('/');
+		if (poslasl > -1) {  // position of last slash
+			if (posa > poslasl) {
+				return [s.substring(0, posa),
+				        '@@',
+				        s.substring(posa+2)]
+			} else {
+				return [s.substring(0, poslasl),
+				        '/',
+				        s.substring(poslasl+1)]
+			}
+		}
+		if (posa > -1) {
+			return [s.substring(0, posa),
+			        '@@',
+			        s.substring(posa+2)]
+		} else {
+			return ['',
+			        '',
+			        s]
+		}
+	}
+	AjaxNav.splitpath = splitpath;
+
+	var urls2try = function (fullpath) {
+		/* The URLs to try: for .../full/path:
+		 * - .../full/path/perhaps_a_view@ajax-nav
+		 * - .../full/path@ajax-nav
+		 *
+		 * for .../any/path@@any-view:
+		 * - .../any/path@@ajax-view
+		 */
+		var res = [],
+		    suffix = '@@ajax-nav',
+		    parsed = splitpath(fullpath),
+		    prefix = parsed[0],
+		    divider = parsed[1],
+		    viewname = parsed[2];
+		if (id_match(viewname, AjaxNav.blacklist_ids, AjaxNav.blacklist_suffixes, 'blacklisted')) {
+			return null;
+		} else {
+			if (viewname) {
+				if (divider == '@@') {
+					log('followed @@, must be a view: "'+viewname+'"');
+					return [prefix + suffix];
+				} else if (id_match(viewname, AjaxNav.whitelist_ids, AjaxNav.whitelist_suffixes, 'whitelisted')) {
+					return [prefix + suffix];
+				} else {
+					return [fullpath + suffix,
+						    prefix + suffix];
+				}
+			} else {
+				return [fullpath + suffix];
+			}
+		}
+	}
+	AjaxNav.urls2try = urls2try;
+
+	var clickfunc = function (e) {
+		log('AjaxNav.click :-)');
+		log(e);
+		log('e:');
+		alert(e);
+		log('this:');
+		log(this);
+		var clickedon = $(this),
+		    href = clickedon.attr('href'),
+		    cls = clickedon.attr('class'),
+		    raw_url = new URL(href),
+		    data = clickedon.data(),
+		    query = {_given_url: href};
+
+		log('clickedon:');
+		log(clickedon);
+		log('clickedon.data():');
+		log(clickedon.data());
+		log('clickedon.attr("class"):');
+		log(clickedon.attr("class"));
+
+		if (! href) {
+			log('AjaxNav: no href attribute ("' + href + '")');
+			$(this).undelegate('click', AjaxNav.click);
+			return true;  // continue with non-AJAX processing
+		}
+		if (raw_url.hostname && raw_url.hostname !== myhost) {
+			log('AjaxNav: Hostname mismatch ("'+raw_url.hostname+'")');
+			$(this).undelegate('click', AjaxNav.click);
+			return true;  // continue with non-AJAX processing
+		}
+
+		var paths = urls2try(href);
+		if (! paths) {
+			return true;
+		}
+		var i, a,
+		    base = window.location.href,
+		    sp = raw_url.searchParams,
+		    spa = sp.getOwnPropertyNames();
+
+		// Query-String aus href-Attribut:
+		for (i=0; i < spa.length; i++) {
+			a = spa[i];
+			query[a] = sp[a];
+		}
+		spa = data.getOwnPropertyNames();
+		for (i=0; i < spa.length; i++) {
+			a = spa[i];
+			query['data-'+a] = sp[a];
+		}
+		if (cls) {
+			query['_class'] = cls;
+		}
+		query._href = new URL(href, base).toString();
+
+		var inner_ajaxhandler = function (e, i) {
+			var url = new URL(paths[i], base);
+			$.ajax({
+				datatype: 'json',
+				url: url,
+				// Merged querystring, data(), attr(class) ...
+				data: query,
+				success: function (data, textStatus, jqXHR) {
+					var keys = data.getOwnPropertyNames(),
+					    ii, aa;
+					if (typeof data.title !== 'undefined') {
+						document.title = data.title;
+					}
+					if (typeof data.url !== 'undefined') {
+						alert('TODO: push '+data.url+ ' to history');
+					}
+					for (ii=0; ii < keys.length; ii++) {
+						aa = keys[ii];
+						if (aa === 'title' || aa === 'url') {
+							continue;
+						}
+						alert('TODO: get selector for key "'+key
+							  + '" and fill the resp. element');
+					}
+					return false;
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					i ++;
+					if (i < paths.length) {
+						inner_ajaxhandler(e, i);
+					} else {
+						log('AjaxNav failed for URL '+url);
+						return true;
+					}
+				}
+			});
+		}
+		inner_ajaxhandler(e, 0);
+	}
+	AjaxNav.click = clickfunc;
+	return AjaxNav;
 })();
+
 AjaxNav.init = function (key) {
 	if (key === undefined) {
 		key = 'default';
 	}
 	$.ajax({
 		dataType: 'json',
-		url: rooturl+'/ajaxnav-options-'+key,
+		url: rooturl+'/@@ajaxnav-options-'+key,
 		success: function (data, textStatus, jqXHR) {
 			AjaxNav.log('AjaxNav.init('+key+') received data:');
 			AjaxNav.log(data);
-			AjaxNav.options = data;
 
 			var thelist = data.whitelist,
-				selector;
+			    selector;
 			if (thelist === undefined) {
 				thelist = ['body'];
 			}
@@ -69,6 +252,23 @@ AjaxNav.init = function (key) {
 					$(selector).undelegate('a', 'click', AjaxNav.click);
 				}
 			}
+			// view ids which will always be loaded the non-AJAX way
+			if (typeof data.blacklist_ids === 'undefined') {
+				data.blacklist_ids = ['edit'
+				                      'base_edit'];
+			}
+			if (typeof data.blacklist_suffixes === 'undefined') {
+				data.blacklist_suffixes = ['_edit'];
+			}
+			if (typeof data.view_ids === 'undefined') {
+				data.view_ids = ['view',
+				                 'edit',
+				                 'base_edit'];
+			}
+			if (typeof data.view_suffixes === 'undefined') {
+				data.view_suffixes = ['_view'];
+			}
+			AjaxNav.options = data;
 			AjaxNav.log('AjaxNav.init('+key+') completed.');
 		},
 		error: function (jqXHR, textStatus, errorThrown) {

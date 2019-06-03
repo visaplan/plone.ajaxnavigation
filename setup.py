@@ -98,13 +98,13 @@ setup_kwargs = dict(
         "Intended Audience :: Developers",
         "Natural Language :: German",
         "Operating System :: OS Independent",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
     ],
     # keywords='Python Plone',
     author='Tobias Herp',
     author_email='tobias.herp@visaplan.com',
     url='https://pypi.org/project/visaplan.plone.ajaxnavigation',
-    license='GPL version 3',
+    license='GPL version 2+',
     packages=packages,
     namespace_packages=[
         'visaplan',
@@ -116,8 +116,21 @@ setup_kwargs = dict(
     install_requires=[
         'setuptools',
         # -*- Extra requirements: -*-
-        # ... further requirements removed
+        'simplejson',
+        'plone.api',
+        # KGS of Plone 4.3.8-9:
+        'Products.GenericSetup>=1.8.2',
     ],
+    extras_require={
+        'test': [
+            'plone.app.testing',
+            # Plone KGS does not use this version, because it would break
+            # Remove if your package shall be part of coredev.
+            # plone_coredev tests as of 2016-04-01.
+            'plone.testing>=5.0.0',
+            'plone.app.robotframework[debug]',
+        ],
+    },
     entry_points="""
     [z3c.autoinclude.plugin]
     target = plone
