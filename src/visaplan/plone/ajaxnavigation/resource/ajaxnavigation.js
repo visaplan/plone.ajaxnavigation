@@ -27,7 +27,7 @@ var AjaxNav = (function () {
 	}
 	var rooturl = AjaxNav.rooturl = window.location.protocol + '//' +
 	                                window.location.host;
-	var myhost = AjaxNav.myhost = window.location.hostname;
+	var myhostname = AjaxNav.myhostname = window.location.hostname;
 
 	var id_match_logger = function (s, label) {
 		if (typeof label !== 'undefined') {
@@ -138,7 +138,7 @@ var AjaxNav = (function () {
 		} else {
 			host_found = s.slice(pos+3, pos2);
 		}
-		return host_found !== AjaxNav.myhost;
+		return host_found !== AjaxNav.myhostname;
 	}
 	AjaxNav.hostname_mismatch = hostname_mismatch;
 
