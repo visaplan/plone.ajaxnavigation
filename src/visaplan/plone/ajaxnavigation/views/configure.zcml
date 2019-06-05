@@ -8,14 +8,14 @@
 
   <browser:page
      name="ajax-nav"
-     for="Products.CMFCore.interfaces.IFolderish"
+     for="Products.CMFCore.interfaces.IContentish"
      class=".ajax_nav.AjaxNav"
      permission="zope2.View"
      />
 
   <browser:page
      name="embed"
-     for="Products.CMFCore.interfaces.IFolderish"
+     for="Products.CMFCore.interfaces.IContentish"
      class=".embed.Embed"
      template="embed.pt"
      permission="zope2.View"
