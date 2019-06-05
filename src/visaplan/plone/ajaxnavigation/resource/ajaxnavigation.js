@@ -34,26 +34,48 @@ var AjaxNav = (function () {
 			log(label + ' view id: "'+s+'"');
 		}
 	}
-	var id_match = function (s, ids, suffixes, label) {
-		var i;
-		if (typeof ids === 'undefined') {
-			ids = [];
+	var id_match = function (s, prefix, label) {
+		var i, key, list, len;
+		
+		key = prefix+'_ids';
+		if (typeof AjaxNav[key] === 'undefined') {
+			list = AjaxNav[key] = [];
+		} else {
+			list = AjaxNav[key];
 		}
-		for (i = 0; i < ids.length; i++) {
-			if (s == ids[0]) {
+		for (i = 0, len = list.length; i < len; i++) {
+			if (s == list[i]) {
 				id_match_logger(s, label);
 				return true;
 			}
 		}
-		if (typeof suffixes === 'undefined') {
-			suffixes = [];
+
+		key = prefix+'_prefixes';
+		if (typeof AjaxNav[key] === 'undefined') {
+			list = AjaxNav[key] = [];
+		} else {
+			list = AjaxNav[key];
 		}
-		for (i = 0; i < suffixes.length; i++) {
-			if (s.endsWith(suffixes[0])) {
+		for (i = 0, len = list.length; i < len; i++) {
+			if (s.startsWith(list[i])) {
 				id_match_logger(s, label);
 				return true;
 			}
 		}
+
+		key = prefix+'_suffixes';
+		if (typeof AjaxNav[key] === 'undefined') {
+			list = AjaxNav[key] = [];
+		} else {
+			list = AjaxNav[key];
+		}
+		for (i = 0, len = list.length; i < len; i++) {
+			if (s.endsWith(list[i])) {
+				id_match_logger(s, label);
+				return true;
+			}
+		}
+
 		return false;
 	}
 	AjaxNav.id_match = id_match;
@@ -105,14 +127,14 @@ var AjaxNav = (function () {
 		    prefix = parsed[0],
 		    divider = parsed[1],
 		    viewname = parsed[2];
-		if (id_match(viewname, AjaxNav.blacklist_view_ids, AjaxNav.blacklist_view_suffixes, 'blacklisted')) {
+		if (id_match(viewname, 'blacklist_view', 'blacklisted')) {
 			return null;
 		} else {
 			if (viewname) {
 				if (divider == '@@') {
 					log('followed @@, must be a view: "'+viewname+'"');
 					return [prefix + suffix];
-				} else if (id_match(viewname, AjaxNav.whitelist_ids, AjaxNav.whitelist_suffixes, 'whitelisted')) {
+				} else if (id_match(viewname, 'whitelist', 'whitelisted')) {
 					return [prefix + suffix];
 				} else {
 					return [fullpath + suffix,
@@ -144,11 +166,11 @@ var AjaxNav = (function () {
 
 	// from https://www.joezimjs.com/javascript/3-ways-to-parse-a-query-string-in-a-url/
 	var parseQueryString = function (queryString) {
-		var params = {}, queries, temp, i, l;
+		var params = {}, queries, temp, i, len;
 		// Split into key/value pairs
 		queries = queryString.split("&");
 		// Convert the array of strings into an object
-		for (i = 0, l = queries.length; i < l; i++) {
+		for (i = 0, len = queries.length; i < len; i++) {
 			temp = queries[i].split('=');
 			params[temp[0]] = temp[1];
 		}
@@ -276,7 +298,11 @@ AjaxNav.init = function (key) {
 			// view ids which will always be loaded the non-AJAX way
 			if (typeof data.blacklist_view_ids === 'undefined') {
 				data.blacklist_view_ids = ['edit',
-				                           'base_edit'];
+				                           'base_edit',
+				                           'manage'];
+			}
+			if (typeof data.blacklist_view_prefixes === 'undefined') {
+				data.blacklist_view_prefixes = ['manage_'];
 			}
 			if (typeof data.blacklist_view_suffixes === 'undefined') {
 				data.blacklist_view_suffixes = ['_edit'];
