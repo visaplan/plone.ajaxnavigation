@@ -13,5 +13,26 @@ class Embed(BrowserView):
         self.request = request
 
     def __call__(self):
-        self.msg = _(u'A small message')
+	context = self.context
+	lst = self.content_values = []
+	try:
+	    val = context.text
+	except AttributeError:
+	    pass
+	else:
+	    lst.append({
+		'cls': 'text',
+		'content': val.strip() or None,
+		}
+
+	try:
+	    val = context.description
+	except AttributeError:
+	    pass
+	else:
+	    lst.append({
+		'cls': 'description',
+		'content': val.strip() or None,
+		}
+
         return self.template()

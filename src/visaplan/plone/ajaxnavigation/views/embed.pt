@@ -1,18 +1,15 @@
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:metal="http://xml.zope.org/namespaces/metal"
+<div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      i18n:domain="visaplan.plone.ajaxnavigation"
-      metal:use-macro="context/main_template/macros/master">
-<body>
-    <metal:block fill-slot="content-core">
-      <div class="heading">
-        <li i18n:translate="">
-          Sample View
-        </li>
-      <span tal:content="view/msg">this gets replaced</span>
-      </div>
-    </metal:block>
-
-<body>
-</html>
+      i18n:domain="visaplan.plone.ajaxnavigation">
+<h1 tal:content="context/title">
+title of calling object
+</h1>
+<tal:loop repeat="content_dict view/content_values">
+  <div tal:attributes="class python:content_dict['cls']"
+       class="text"
+       tal:content="structure python:content_dict['content']">
+HTML text for the description, text etc. value
+</div>
+</tal:loop>
+</div>
