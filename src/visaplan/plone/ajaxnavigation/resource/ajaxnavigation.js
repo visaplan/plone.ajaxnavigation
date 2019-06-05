@@ -143,6 +143,19 @@ var AjaxNav = (function () {
 	}
 	AjaxNav.hostname_mismatch = hostname_mismatch;
 
+	// from https://www.joezimjs.com/javascript/3-ways-to-parse-a-query-string-in-a-url/
+	var parseQueryString = function( queryString ) {
+		var params = {}, queries, temp, i, l;
+		// Split into key/value pairs
+		queries = queryString.split("&");
+		// Convert the array of strings into an object
+		for ( i = 0, l = queries.length; i < l; i++ ) {
+			temp = queries[i].split('=');
+			params[temp[0]] = temp[1];
+		}
+		return params;
+	};
+
 	var clickfunc = function (e) {
 		log('AjaxNav.click :-)');
 		log(e);
@@ -181,14 +194,9 @@ var AjaxNav = (function () {
 		}
 		var i, a,
 		    base = window.location.href,
-		    sp = raw_url.searchParams,
-		    spa = sp.getOwnPropertyNames();
+			query = parseQueryString(href);
+		query['_given_url'] = href;
 
-		// Query-String aus href-Attribut:
-		for (i=0; i < spa.length; i++) {
-			a = spa[i];
-			query[a] = sp[a];
-		}
 		spa = data.getOwnPropertyNames();
 		for (i=0; i < spa.length; i++) {
 			a = spa[i];
