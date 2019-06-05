@@ -254,7 +254,7 @@ AjaxNav.init = function (key) {
 	}
 	$.ajax({
 		dataType: 'json',
-		url: rooturl+'/@@ajaxnav-options-'+key,
+		url: AjaxNav.rooturl+'/@@ajaxnav-options-'+key,
 		success: function (data, textStatus, jqXHR) {
 			AjaxNav.log('AjaxNav.init('+key+') received data:');
 			AjaxNav.log(data);
