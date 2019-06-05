@@ -12,8 +12,7 @@ class Embed(BrowserView):
         self.context = context
         self.request = request
 
-    def __call__(self):
-	context = self.context
+    def _texts(self, context):
 	lst = self.content_values = []
 
 	try:
@@ -36,4 +35,31 @@ class Embed(BrowserView):
 		'content': val.strip() or None,
 		}
 
+    def __call__(self):
+	context = self.context
+	self._texts(context)
+
         return self.template()
+
+
+class EmbedFolderish(Embed):
+    template = ViewPageTemplateFile('embed_folderish.pt')
+
+    def __call__(self):
+	context = self.context
+	# get the accessible child elements:
+	self._children(context)
+	# There might be texts as well:
+	self._texts(context)
+        return self.template()
+
+    def _children(self, context):
+	root = context.absolute_url() + '/'
+	children = self.children = []
+	# no contentFilter for now:
+	for o in context.listFolderContents():
+	    o_id = o.id
+	    children.append({
+		'href': root + o_id,
+		'title': o.title or o_id,
+		})

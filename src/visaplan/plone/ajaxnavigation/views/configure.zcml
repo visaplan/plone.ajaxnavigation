@@ -22,6 +22,14 @@
      />
 
   <browser:page
+     name="embed"
+     for="Products.CMFCore.interfaces.IFolderish"
+     class=".embed.EmbedFolderish"
+     template="embed_folderish.pt"
+     permission="zope2.View"
+     />
+
+  <browser:page
      name="ajaxnav-options-default"
      for="Products.CMFCore.interfaces.ISiteRoot"
      class=".ajaxnav_options.AjaxnavOptions"
