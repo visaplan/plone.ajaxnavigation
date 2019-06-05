@@ -23,7 +23,7 @@ class Embed(BrowserView):
 	    lst.append({
 		'cls': 'description',
 		'content': val.strip() or None,
-		}
+		})
 
 	try:
 	    val = context.text
@@ -33,7 +33,7 @@ class Embed(BrowserView):
 	    lst.append({
 		'cls': 'text',
 		'content': val.strip() or None,
-		}
+		})
 
     def __call__(self):
 	context = self.context
