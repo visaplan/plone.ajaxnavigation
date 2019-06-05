@@ -25,7 +25,7 @@ var AjaxNav = (function () {
 	if (typeof URL === 'undefined') {
 		var URL = Window.URL;
 	}
-	var url1 = new URL(window.location.href);
+	var url1 = URL(window.location.href);
 	var rooturl = AjaxNav.rooturl = url1.origin;
 	var myhost = AjaxNav.myhost = url1.hostname;
 	alert('root-URL ist '+AjaxNav.rooturl);
@@ -136,7 +136,7 @@ var AjaxNav = (function () {
 		var clickedon = $(this),
 		    href = clickedon.attr('href'),
 		    cls = clickedon.attr('class'),
-		    raw_url = new URL(href),
+		    raw_url = URL(href),
 		    data = clickedon.data(),
 		    query = {_given_url: href};
 
@@ -180,10 +180,10 @@ var AjaxNav = (function () {
 		if (cls) {
 			query['_class'] = cls;
 		}
-		query._href = new URL(href, base).toString();
+		query._href = URL(href, base).toString();
 
 		var inner_ajaxhandler = function (e, i) {
-			var url = new URL(paths[i], base);
+			var url = URL(paths[i], base);
 			$.ajax({
 				datatype: 'json',
 				url: url,
