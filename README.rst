@@ -9,8 +9,11 @@ visaplan.plone.ajaxnavigation
 Add AJAX navigation to a Plone site.
 
 This is probably not the most advanced or state-of-the-art way to add AJAX
-navigation; for Plone 5, I was told about ``plone.patternslib``, based on
-``pat-inject``.
+navigation; for Plone 5, I was told about `plone.patternslib`_, based on
+`patterslib`_.
+
+For `Volto`_ sites, the whole jQuery-based handling might be obsolete because
+of the use of `React.js`.
 
 At the time of this writing, those were no options for me since I was still on
 Plone 4.3.  Thus, I needed a working solution.
@@ -100,5 +103,10 @@ License
 -------
 
 The project is licensed under the GPLv2 (or later).
+
+.. _`Volto`: https://volto.kitconcept.com/
+.. _`React.js`: https://reactjs.org/
+.. _`patternslib`: https://patternslib.com/
+.. _`plone.patternslib`: https://pypi.org/project/plone.patternslib/
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et
