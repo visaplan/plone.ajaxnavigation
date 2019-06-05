@@ -25,9 +25,9 @@ var AjaxNav = (function () {
 	if (typeof URL === 'undefined') {
 		var URL = Window.URL;
 	}
-	var url1 = URL(window.location.href);
-	var rooturl = AjaxNav.rooturl = url1.origin;
-	var myhost = AjaxNav.myhost = url1.hostname;
+	var rooturl = AjaxNav.rooturl = window.location.protocol + '//' +
+	                                window.location.host;
+	var myhost = AjaxNav.myhost = window.location.hostname;
 	alert('root-URL ist '+AjaxNav.rooturl);
 
 	var id_match_logger = function (s, label) {
@@ -117,7 +117,7 @@ var AjaxNav = (function () {
 					return [prefix + suffix];
 				} else {
 					return [fullpath + suffix,
-						    prefix + suffix];
+					        prefix + suffix];
 				}
 			} else {
 				return [fullpath + suffix];
@@ -125,6 +125,23 @@ var AjaxNav = (function () {
 		}
 	}
 	AjaxNav.urls2try = urls2try;
+
+	var hostname_mismatch = function (s) {
+		var pos = s.indexOf('://'),
+		    pos2,
+		    host_found;
+		if (pos === -1) {
+			return false;
+		}
+		pos2 = s.indexOf('/', pos);
+		if (pos2 === -1) {
+			host_found = s.slice(pos+3);
+		} else {
+			host_found = s.slice(pos+3, pos2);
+		}
+		return host_found !== AjaxNav.myhost;
+	}
+	AjaxNav.hostname_mismatch = hostname_mismatch;
 
 	var clickfunc = function (e) {
 		log('AjaxNav.click :-)');
@@ -152,8 +169,8 @@ var AjaxNav = (function () {
 			$(this).off('click', AjaxNav.click);
 			return true;  // continue with non-AJAX processing
 		}
-		if (raw_url.hostname && raw_url.hostname !== myhost) {
-			log('AjaxNav: Hostname mismatch ("'+raw_url.hostname+'")');
+		if (hostname_mismatch(raw_url)) {
+			log('AjaxNav: Hostname mismatch ("'+raw_url+'")');
 			$(this).off('click', AjaxNav.click);
 			return true;  // continue with non-AJAX processing
 		}
