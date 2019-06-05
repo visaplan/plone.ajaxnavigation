@@ -56,11 +56,8 @@ Features
 Examples
 --------
 
-This add-on can be seen in action at the following sites:
-
-- Is there a page on the internet where everybody can see the features?
-- https://www.unitracc.de
-- https://www.unitracc.com
+This add-on is currently under development and not yet used on public internet
+sites.
 
 
 Documentation
