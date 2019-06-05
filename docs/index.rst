@@ -239,6 +239,9 @@ JQuery is usually integrated using `plone.app.jquery`_.
 With Plone 5, the handling of Javascript resources changes, so some changes
 are expected to be necessary.  Help with this is appreciated.
 
+For `Volto`_ sites, the whole jQuery-based handling might be obsolete because
+of the use of `React.js`_.
+
 
 Javascript
 ----------
@@ -274,5 +277,7 @@ any.
 .. _unbind: https://api.jquery.com/unbind/
 .. _live: https://api.jquery.com/live/
 .. _`plone.app.jquery`: https://pypi.org
+.. _`Volto`: https://volto.kitconcept.com/
+.. _`React.js`: https://reactjs.org/
 .. _`URL()`: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL
 .. _`currently supported`: https://caniuse.com/#search=URL
