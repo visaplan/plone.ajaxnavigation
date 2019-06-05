@@ -9,7 +9,7 @@ visaplan.plone.ajaxnavigation
 Add AJAX navigation to a Plone site.
 
 This is probably not the most advanced or state-of-the-art way to add AJAX
-navigation; for Plone 5, there is ``plone.patternslib``, based on
+navigation; for Plone 5, I was told about ``plone.patternslib``, based on
 ``pat-inject``.
 
 At the time of this writing, those were no options for me since I was still on
@@ -19,7 +19,7 @@ the leap, or I'll stick with my own.
 
 The general idea is:
 
-- Catch the onclick event for every ``a`` element on the page
+- Catch the onclick event for every ``a`` element on the page.
 - For some links, a special check will tell to proceed with the standard
   behaviour, i.e. load the target the standard way; this includes:
 

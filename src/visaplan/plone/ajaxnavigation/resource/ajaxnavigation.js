@@ -106,7 +106,7 @@ var AjaxNav = (function () {
 		    prefix = parsed[0],
 		    divider = parsed[1],
 		    viewname = parsed[2];
-		if (id_match(viewname, AjaxNav.blacklist_ids, AjaxNav.blacklist_suffixes, 'blacklisted')) {
+		if (id_match(viewname, AjaxNav.blacklist_view_ids, AjaxNav.blacklist_view_suffixes, 'blacklisted')) {
 			return null;
 		} else {
 			if (viewname) {
@@ -149,12 +149,12 @@ var AjaxNav = (function () {
 
 		if (! href) {
 			log('AjaxNav: no href attribute ("' + href + '")');
-			$(this).undelegate('click', AjaxNav.click);
+			$(this).off('click', AjaxNav.click);
 			return true;  // continue with non-AJAX processing
 		}
 		if (raw_url.hostname && raw_url.hostname !== myhost) {
 			log('AjaxNav: Hostname mismatch ("'+raw_url.hostname+'")');
-			$(this).undelegate('click', AjaxNav.click);
+			$(this).off('click', AjaxNav.click);
 			return true;  // continue with non-AJAX processing
 		}
 
@@ -243,22 +243,22 @@ AjaxNav.init = function (key) {
 			}
 			for (var i=0; i < thelist.length; i++) {
 				selector = thelist[i]
-				$(selector).delegate('a', 'click', AjaxNav.click);
+				$(selector).on('click', 'a', AjaxNav.click);
 			}
 			thelist = data.blacklist;
 			if (thelist !== undefined) {
 				for (var i=0; i < thelist.length; i++) {
 					selector = thelist[i]
-					$(selector).undelegate('a', 'click', AjaxNav.click);
+					$(selector).off('click', 'a', AjaxNav.click);
 				}
 			}
 			// view ids which will always be loaded the non-AJAX way
-			if (typeof data.blacklist_ids === 'undefined') {
-				data.blacklist_ids = ['edit'
+			if (typeof data.blacklist_view_ids === 'undefined') {
+				data.blacklist_view_ids = ['edit'
 				                      'base_edit'];
 			}
-			if (typeof data.blacklist_suffixes === 'undefined') {
-				data.blacklist_suffixes = ['_edit'];
+			if (typeof data.blacklist_view_suffixes === 'undefined') {
+				data.blacklist_view_suffixes = ['_edit'];
 			}
 			if (typeof data.view_ids === 'undefined') {
 				data.view_ids = ['view',
