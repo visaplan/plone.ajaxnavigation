@@ -23,7 +23,7 @@
 
   <browser:page
      name="ajaxnav-options-default"
-     for="Products.CMFCore.interfaces.IFolderish"
+     for="Products.CMFCore.interfaces.ISiteRoot"
      class=".ajaxnav_options.AjaxnavOptions"
      permission="zope2.View"
      />
