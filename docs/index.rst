@@ -223,7 +223,7 @@ if all else fails, the final slash-devided path chunk is first considered
 the object name, and if this fails, the (replaced) view name.
 
 
-Depencencies
+Dependencies
 ============
 
 Plone
@@ -234,7 +234,7 @@ currently still on Plone 4.3.
 
 It is quite likely that it will work with earlier versions as well
 (provided you use a supported JQuery version).
-JQuery is usually integreated using `plone.app.jquery`_.
+JQuery is usually integrated using `plone.app.jquery`_.
 
 With Plone 5, the handling of Javascript resources changes, so some changes
 are expected to be necessary.  Help with this is appreciated.
