@@ -10,7 +10,7 @@ Add AJAX navigation to a Plone site.
 
 This is probably not the most advanced or state-of-the-art way to add AJAX
 navigation; for Plone 5, I was told about `plone.patternslib`_, based on
-`patterslib`_.
+`patternslib`_.
 
 For `Volto`_ sites, the whole jQuery-based handling might be obsolete because
 of the use of `React.js`.
