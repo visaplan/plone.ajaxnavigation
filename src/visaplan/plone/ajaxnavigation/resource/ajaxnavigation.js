@@ -28,7 +28,6 @@ var AjaxNav = (function () {
 	var rooturl = AjaxNav.rooturl = window.location.protocol + '//' +
 	                                window.location.host;
 	var myhost = AjaxNav.myhost = window.location.hostname;
-	alert('root-URL ist '+AjaxNav.rooturl);
 
 	var id_match_logger = function (s, label) {
 		if (typeof label !== 'undefined') {
@@ -158,9 +157,8 @@ var AjaxNav = (function () {
 
 	var clickfunc = function (e) {
 		log('AjaxNav.click :-)');
-		log(e);
 		log('e:');
-		alert(e);
+		log(e);
 		log('this:');
 		log(this);
 		var clickedon = $(this),
