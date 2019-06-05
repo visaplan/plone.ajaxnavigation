@@ -63,7 +63,7 @@ This add-on can be seen in action at the following sites:
 Documentation
 -------------
 
-Sorry, we don't have real user documentation yet.
+Full documentation for end users can be found in the "docs" folder.
 
 
 Installation
