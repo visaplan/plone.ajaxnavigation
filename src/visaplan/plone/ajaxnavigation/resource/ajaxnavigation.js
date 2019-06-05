@@ -254,8 +254,8 @@ AjaxNav.init = function (key) {
 			}
 			// view ids which will always be loaded the non-AJAX way
 			if (typeof data.blacklist_view_ids === 'undefined') {
-				data.blacklist_view_ids = ['edit'
-				                      'base_edit'];
+				data.blacklist_view_ids = ['edit',
+				                           'base_edit'];
 			}
 			if (typeof data.blacklist_view_suffixes === 'undefined') {
 				data.blacklist_view_suffixes = ['_edit'];
