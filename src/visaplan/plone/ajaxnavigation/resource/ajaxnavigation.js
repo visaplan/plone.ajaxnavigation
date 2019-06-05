@@ -166,9 +166,7 @@ var AjaxNav = (function () {
 		var clickedon = $(this),
 		    href = clickedon.attr('href'),
 		    cls = clickedon.attr('class'),
-		    raw_url = URL(href),
-		    data = clickedon.data(),
-		    query = {_given_url: href};
+		    data = clickedon.data();
 
 		log('clickedon:');
 		log(clickedon);
@@ -182,8 +180,8 @@ var AjaxNav = (function () {
 			$(this).off('click', AjaxNav.click);
 			return true;  // continue with non-AJAX processing
 		}
-		if (hostname_mismatch(raw_url)) {
-			log('AjaxNav: Hostname mismatch ("'+raw_url+'")');
+		if (hostname_mismatch(href)) {
+			log('AjaxNav: Hostname mismatch ("'+href+'")');
 			$(this).off('click', AjaxNav.click);
 			return true;  // continue with non-AJAX processing
 		}
