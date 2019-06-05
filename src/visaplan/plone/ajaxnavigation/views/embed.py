@@ -15,15 +15,6 @@ class Embed(BrowserView):
     def __call__(self):
 	context = self.context
 	lst = self.content_values = []
-	try:
-	    val = context.text
-	except AttributeError:
-	    pass
-	else:
-	    lst.append({
-		'cls': 'text',
-		'content': val.strip() or None,
-		}
 
 	try:
 	    val = context.description
@@ -32,6 +23,16 @@ class Embed(BrowserView):
 	else:
 	    lst.append({
 		'cls': 'description',
+		'content': val.strip() or None,
+		}
+
+	try:
+	    val = context.text
+	except AttributeError:
+	    pass
+	else:
+	    lst.append({
+		'cls': 'text',
 		'content': val.strip() or None,
 		}
 
