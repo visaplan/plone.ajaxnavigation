@@ -13,7 +13,7 @@ navigation; for Plone 5, I was told about `plone.patternslib`_, based on
 `patternslib`_.
 
 For `Volto`_ sites, the whole jQuery-based handling might be obsolete because
-of the use of `React.js`.
+of the use of `React.js`_.
 
 At the time of this writing, those were no options for me since I was still on
 Plone 4.3.  Thus, I needed a working solution.
