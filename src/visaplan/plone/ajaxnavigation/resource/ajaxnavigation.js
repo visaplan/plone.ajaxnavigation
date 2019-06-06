@@ -88,8 +88,8 @@ var AjaxNav = (function () {
 		 * view -- a suspected view name (after <div>)
 		 */
 		var res = [],
-		    posa = fullpath.indexOf('@@'),
-		    poslasl = fullpath.lastIndexOf('/');
+		    posa = s.indexOf('@@'),
+		    poslasl = s.lastIndexOf('/');
 		if (poslasl > -1) {  // position of last slash
 			if (posa > poslasl) {
 				return [s.substring(0, posa),
@@ -154,7 +154,7 @@ var AjaxNav = (function () {
 		if (pos === -1) {
 			return false;
 		}
-		pos2 = s.indexOf('/', pos);
+		pos2 = s.indexOf('/', pos+3);
 		if (pos2 === -1) {
 			host_found = s.slice(pos+3);
 		} else {
