@@ -35,13 +35,13 @@ var AjaxNav = (function () {
 		}
 	}
 	var id_match = function (s, prefix, label) {
-		var i, key, list, len;
+		var i, key, list, len, options=AjaxNav.options;
 		
 		key = prefix+'_ids';
-		if (typeof AjaxNav[key] === 'undefined') {
-			list = AjaxNav[key] = [];
+		if (typeof options[key] === 'undefined') {
+			list = options[key] = [];
 		} else {
-			list = AjaxNav[key];
+			list = options[key];
 		}
 		for (i = 0, len = list.length; i < len; i++) {
 			if (s == list[i]) {
@@ -51,10 +51,10 @@ var AjaxNav = (function () {
 		}
 
 		key = prefix+'_prefixes';
-		if (typeof AjaxNav[key] === 'undefined') {
-			list = AjaxNav[key] = [];
+		if (typeof options[key] === 'undefined') {
+			list = options[key] = [];
 		} else {
-			list = AjaxNav[key];
+			list = options[key];
 		}
 		for (i = 0, len = list.length; i < len; i++) {
 			if (s.startsWith(list[i])) {
@@ -64,10 +64,10 @@ var AjaxNav = (function () {
 		}
 
 		key = prefix+'_suffixes';
-		if (typeof AjaxNav[key] === 'undefined') {
-			list = AjaxNav[key] = [];
+		if (typeof options[key] === 'undefined') {
+			list = options[key] = [];
 		} else {
-			list = AjaxNav[key];
+			list = options[key];
 		}
 		for (i = 0, len = list.length; i < len; i++) {
 			if (s.endsWith(list[i])) {
@@ -134,7 +134,7 @@ var AjaxNav = (function () {
 				if (divider == '@@') {
 					log('followed @@, must be a view: "'+viewname+'"');
 					return [prefix + suffix];
-				} else if (id_match(viewname, 'whitelist', 'whitelisted')) {
+				} else if (id_match(viewname, 'view', 'whitelisted')) {
 					return [prefix + suffix];
 				} else {
 					return [fullpath + suffix,
