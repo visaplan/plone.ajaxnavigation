@@ -2,6 +2,7 @@
 <metadata>
   <version>1001</version>
   <dependencies>
+    <!-- also add to ../../testing.py: -->
     <dependency>profile-visaplan.js.urlsplit:default</dependency>
   </dependencies>
 </metadata>

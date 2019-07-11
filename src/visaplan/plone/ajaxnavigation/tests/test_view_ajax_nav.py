@@ -9,6 +9,9 @@ from zope.component.interfaces import ComponentLookupError
 
 import unittest
 
+# very basic JSON used here, e.g. no Decimals:
+from json import loads as json_loads
+
 
 class ViewsIntegrationTest(unittest.TestCase):
 
@@ -25,11 +28,9 @@ class ViewsIntegrationTest(unittest.TestCase):
             (self.portal['other-folder'], self.portal.REQUEST),
             name='ajax-nav'
         )
-        self.assertTrue(view(), 'ajax-nav is not found')
-        self.assertTrue(
-            'Sample View' in view(),
-            'Sample View is not found in ajax-nav'
-        )
+        result = view()
+        self.assertTrue(result, 'ajax-nav yields a result')
+        parsed = json_loads(result)
 
     def test_ajax_nav_in_my_collection(self):
         with self.assertRaises(ComponentLookupError):

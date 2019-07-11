@@ -93,6 +93,24 @@ class IAjaxNavigationInternalSettings(model.Schema):
         'you may configure an AJAX version which will provide the '
         '"meat" only'))
 
+clientside_map = {
+        key: 'visaplan.plone.ajaxnavigation.'+key
+        for key in (
+                'view_ids',
+                'view_prefixes',
+                'view_suffixes',
+                'blacklist_view_ids',
+                'blacklist_view_prefixes',
+                'blacklist_view_suffixes',
+                'selectors',
+                )}
+
+internal_map = {
+        key: 'visaplan.plone.ajaxnavigation.'+key
+        for key in (
+                'layout4ajax',
+                )}
+
 
 class IVisaplanPloneAjaxnavigationLayer(IDefaultBrowserLayer):
     """Marker interface that defines a browser layer."""
