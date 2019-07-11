@@ -12,7 +12,7 @@ from visaplan.plone.ajaxnavigation import _
 class IAjaxNavigationClientSettings(model.Schema):
     """ Schema fields for view "@@ajaxnav-options-default"
     """
-    # no value_type options currently, because of
+    # no key_type nor value_type options currently, because of
     # ValueError: 'value_type' must be field instance.
     whitelist = schema.List(
         title=_(u"Whitelist"),
@@ -78,7 +78,6 @@ class IAjaxNavigationClientSettings(model.Schema):
         title=_(u"Selectors for data keys"),
         default={'content': ["#region-content,#content"],
                  },
-        key_type=schema.BytesLine,
         description=_(u'For each "normal" key from an AJAX response, '
         'configure a CSS selector which tells where to put the value. '
         'You can give more than one value, separated by comma.'))
@@ -90,7 +89,6 @@ class IAjaxNavigationInternalSettings(model.Schema):
     layout4ajax = schema.Dict(
         title=_(u"Layouts for AJAX"),
         default={},
-        key_type=schema.BytesLine,
         description=_(u'For each "normal" layout of a link target, '
         'you may configure an AJAX version which will provide the '
         '"meat" only'))
