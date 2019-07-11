@@ -3,10 +3,10 @@
 # Tobias Herp <tobias.herp@visaplan.com>, 2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: visaplan.plone.ajaxnavigation\n"
-"POT-Creation-Date: 2019-05-16 09:01+0000\n"
-"PO-Revision-Date: 2019-05-16 09:16+0000\n"
-"Last-Translator: Tobias Herp <tobias.herp@visaplan.com>n"
+"Project-Id-Version: visaplan.plone.ajaxnavigation 1.0.dev2\n"
+"POT-Creation-Date: 2019-07-11 16:18+0200\n"
+"PO-Revision-Date: 2019-07-11 18:27+0200\n"
+"Last-Translator: Tobias Herp <tobias.herp@visaplan.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -16,3 +16,91 @@ msgstr ""
 "Language-Name: German\n"
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: visaplan.plone.ajaxnavigation\n"
+
+#: ../profiles/default/controlpanel.xml
+msgid "AjaxNavigation settings (Client)"
+msgstr ""
+
+#: ../profiles/default/controlpanel.xml
+msgid "AjaxNavigation settings (internal)"
+msgstr ""
+
+#: ../interfaces.py:25
+msgid "Blacklist"
+msgstr ""
+
+#: ../interfaces.py:59
+msgid "Blacklist_view_ids"
+msgstr ""
+
+#: ../interfaces.py:68
+msgid "Blacklist_view_prefixes"
+msgstr ""
+
+#: ../interfaces.py:73
+msgid "Blacklist_view_suffixes"
+msgstr ""
+
+#: ../interfaces.py:21
+msgid "CSS selectors which activate delegation for their <a> descendants"
+msgstr ""
+
+#: ../interfaces.py:27
+msgid "CSS selectors which deactivate delegation for their <a> descendants"
+msgstr ""
+
+#: ../interfaces.py:81
+msgid "For each \"normal\" key from an AJAX response, configure a CSS selector which tells where to put the value. You can give more than one value, separated by comma."
+msgstr ""
+
+#: ../interfaces.py:92
+msgid "For each \"normal\" layout of a link target, you may configure an AJAX version which will provide the \"meat\" only"
+msgstr ""
+
+#: ../interfaces.py:55
+msgid "If the last path segment of a URL ends with one of the values given here, it is considered a view name"
+msgstr ""
+
+#: ../interfaces.py:48
+msgid "If the last path segment of a URL starts with one of the values given here, it is considered a view name"
+msgstr ""
+
+#: ../interfaces.py:33
+msgid "If this is set to True, and if there is a non-empty Blacklist, the Blacklist un-delegation will be applied during the whitelist processing"
+msgstr ""
+
+#: ../interfaces.py:90
+msgid "Layouts for AJAX"
+msgstr ""
+
+#: ../interfaces.py:31
+msgid "Nested blacklist"
+msgstr ""
+
+#: ../interfaces.py:78
+msgid "Selectors for data keys"
+msgstr ""
+
+#: ../interfaces.py:45
+msgid "View prefixes"
+msgstr ""
+
+#: ../interfaces.py:52
+msgid "View suffixes"
+msgstr ""
+
+#: ../interfaces.py:38
+msgid "View_ids"
+msgstr ""
+
+#: ../interfaces.py:42
+msgid "When computing the URLs to try, the values given here are considered view ids"
+msgstr ""
+
+#: ../interfaces.py:63
+msgid "When computing the URLs to try, the values given here are considered view ids for which an AJAX load won't be tried."
+msgstr ""
+
+#: ../interfaces.py:18
+msgid "Whitelist"
+msgstr ""
