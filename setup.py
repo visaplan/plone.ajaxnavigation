@@ -122,14 +122,15 @@ def github_urls(package, **kwargs):
         })
     return res
 project_urls = github_urls(package_name,
-                           pop_user=0)  # or pick_user=1, or github=0
+                           pop_user=1)  # or pick_user=1, or github=0
 # ------------------------------------------- ] ... for setup_kwargs ]
 
 setup_kwargs = dict(
     name=package_name,
     version=VERSION,
-    description="PACKAGE for UNITRACC",
+    description="Plone add-on to add AJAX navigation",
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     # Get more from https://pypi.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Environment :: Web Environment",
@@ -145,7 +146,6 @@ setup_kwargs = dict(
     # keywords='Python Plone',
     author='Tobias Herp',
     author_email='tobias.herp@visaplan.com',
-    url='https://pypi.org/project/visaplan.plone.ajaxnavigation',
     license='GPL version 2+',
     project_urls=project_urls,
     packages=packages,
