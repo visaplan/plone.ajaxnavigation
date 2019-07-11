@@ -90,6 +90,13 @@ ENV/
 env.bak/
 venv.bak/
 
+# Virtual Environment
+bin/
+Scripts/
+include/
+lib64
+pip-selfcheck.json
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -103,6 +110,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# SCM
+.svn/
+
 # VirtualEnv
 bin/
 include/
@@ -114,10 +124,24 @@ pip-selfcheck.json
 .*.sw[poq]
 
 # visaplan environment
-.editorconfig
-.svn/
 auto.msg
-init
-init.vim
 scripts/
 update-module
+init
+init.vim
+
+# plonecli-generated
+log.html
+output.xml
+package.json
+pip-selfcheck.json
+report.html
+.vscode/
+# excludes
+!.coveragerc
+!.editorconfig
+!.gitattributes
+!.gitignore
+!.gitkeep
+!.travis.yml
+!src/visaplan

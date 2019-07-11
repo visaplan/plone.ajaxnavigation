@@ -25,6 +25,14 @@
        - Zielversion in ./profiles/default/metadata.xml aktualisieren!
        - siehe <http://maurits.vanrees.org/weblog/archive/2009/12/catalog>
     -->
+  <genericsetup:upgradeStep
+      source="*"
+      destination="1001"
+      title="Reload GS profiles"
+      description=""
+      profile="visaplan.plone.ajaxnavigation:default"
+      handler=".setuphandlers.reload_gs_profile"
+      />
   <!-- ] ... Migrationsschritte (Upgrade steps) ] -->
   
 </configure>

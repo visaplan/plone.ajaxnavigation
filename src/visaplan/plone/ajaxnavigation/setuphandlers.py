@@ -50,4 +50,9 @@ def uninstall(context):
 
 
 # ------------------------ [ Migrationsschritte, ./profiles.zcml ... [
+def reload_gs_profile(context):
+    loadMigrationProfile(
+        context,
+        'profile-visaplan.plone.ajaxnavigation:default',
+        )
 # ------------------------ ] ... Migrationsschritte, ./profiles.zcml ]

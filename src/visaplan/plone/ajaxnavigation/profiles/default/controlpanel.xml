@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<object
+    name="portal_controlpanel"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    i18n:domain="visaplan.plone.ajaxnavigation">
+<!--
+* we currently don't have own icons yet
+  -->
+
+    <configlet
+        title="AjaxNavigation settings (Client)"
+        action_id="visaplan.plone.ajaxnavigation.ajaxnav-settings-client"
+        appId="visaplan.plone.ajaxnavigation"
+        category="Products"
+        condition_expr=""
+        url_expr="string:${portal_url}/@@ajaxnav-client-controlpanel"
+        visible="True"
+        i18n:attributes="title">
+            <permission>Manage portal</permission>
+    </configlet>
+
+    <configlet
+        title="AjaxNavigation settings (internal)"
+        action_id="visaplan.plone.ajaxnavigation.ajaxnav-settings-internal"
+        appId="visaplan.plone.ajaxnavigation"
+        category="Products"
+        condition_expr=""
+        url_expr="string:${portal_url}/@@ajaxnav-internal-controlpanel"
+        visible="True"
+        i18n:attributes="title">
+            <permission>Manage portal</permission>
+    </configlet>
+
+</object>

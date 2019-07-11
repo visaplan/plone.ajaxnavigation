@@ -81,6 +81,48 @@ for subp in exclude_subpackages:
 packages = find_packages(
             'src',
             exclude=exclude_packages)
+
+def github_urls(package, **kwargs):
+    pop = kwargs.pop
+    pkg_list = package.split('.')
+    res = {}
+    readthedocs = pop('readthedocs', False)
+    if readthedocs:
+        if readthedocs in (1, True):
+            readthedocs = ''.join(pkg_list)
+        res['Documentation'] = \
+            'https://%(readthedocs)s.readthedocs.io' % locals()
+        assert 'docs' not in kwargs
+    else:
+        docs = pop('docs', None)
+        if docs is None:
+            res['Documentation'] = 'https://pypi.org/project/%(package)s' \
+                                   % locals()
+        elif docs:
+            res['Documentation'] = docs
+    if not pop('github', 1):
+        assert not kwargs
+        return res
+    pop_user = pop('pop_user', False)
+    if pop_user:
+        assert 'pick_user' not in kwargs
+        assert 'user' not in kwargs
+        user = pkg_list.pop(0)
+        package = '.'.join(pkg_list)
+    else:
+        pick_user = pop('pick_user', 'user' not in kwargs)
+        if pick_user:
+            user = pkg_list[0]
+            if 'user' in kwargs:
+                assert pop('user') == user
+    base = 'https://github.com/%(user)s/%(package)s' % locals()
+    res.update({
+        'Source': base,
+        'Tracker': base + '/issues',
+        })
+    return res
+project_urls = github_urls(package_name,
+                           pop_user=0)  # or pick_user=1, or github=0
 # ------------------------------------------- ] ... for setup_kwargs ]
 
 setup_kwargs = dict(
@@ -105,6 +147,7 @@ setup_kwargs = dict(
     author_email='tobias.herp@visaplan.com',
     url='https://pypi.org/project/visaplan.plone.ajaxnavigation',
     license='GPL version 2+',
+    project_urls=project_urls,
     packages=packages,
     namespace_packages=[
         'visaplan',
@@ -117,6 +160,7 @@ setup_kwargs = dict(
         'setuptools',
         # -*- Extra requirements: -*-
         'simplejson',
+        'visaplan.js.urlsplit',
         'plone.api',
         # KGS of Plone 4.3.8-9:
         'Products.GenericSetup>=1.8.2',
@@ -124,11 +168,11 @@ setup_kwargs = dict(
     extras_require={
         'test': [
             'plone.app.testing',
-            # Plone KGS does not use this version, because it would break
-            # Remove if your package shall be part of coredev.
-            # plone_coredev tests as of 2016-04-01.
-            'plone.testing>=5.0.0',
-            'plone.app.robotframework[debug]',
+            # plone.app.robotframework 1.2.0 requires plone.testing 4.0.11; 
+            # plone.app.robotframework 1.3+ drops Plone 4.3 compatibility:
+            'plone.testing',
+            # currently disabled because of import problems: 
+            # 'plone.app.robotframework[debug]',
         ],
     },
     entry_points="""

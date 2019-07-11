@@ -46,7 +46,7 @@ The general idea is:
 
   It will also set the page url accordingly, allowing for the browser history.
 
-- The AJAX view was tried (up to two URLs) but failed, the default click
+- If the AJAX view was tried (up to two URLs) but failed, the default click
   handling will be performed.
 
 
@@ -114,44 +114,63 @@ Configuration keys
 
 These are the keys understood by the ``AjaxNav.init`` function.
 
-======================= ====== =================== ===================
-key                     type   default             description
-======================= ====== =================== ===================
+======================= ======  ============================== =================================
+Key                     Type    Default                        Description
+======================= ======  ============================== =================================
 
-whitelist               list   [``body``]          CSS selectors of elements
-                                                   which contain ``a`` elements
-                                                   for the event delegation to be
-                                                   applied
+whitelist               list    [``body``]                     CSS selectors of elements
+                                                               which contain ``a`` elements
+                                                               for the event delegation to be
+                                                               applied
 
-blacklist               list   *(empty)*           CSS selectors for elements
-                                                   from which the event delegation
-                                                   be removed
+blacklist               list    *(empty)*                      CSS selectors for elements
+                                                               from which the event delegation
+                                                               be removed
 
-view_ids                list   [``view``,          For target url parsing:
-                               ``edit``,           recognized as view names even
-                               ``base_edit``]      when not prefixed by ``@@``
+nested_blacklist        boolean *false*                        Regard the blacklist selectors
+                                                               "below" the whitelist selectors
+                                                               and undelegate immediately
+                                                               (experimental)
 
-view_suffixes           list   [``_view``]         For target url parsing:
-                                                   e.g. ``_view`` does very likely
-                                                   end a view name
-                                                   rather than an object.
+view_ids                list    [``view``,                     For target url parsing:
+                                ``edit``,                      recognized as view names even
+                                ``base_edit``]                 when not prefixed by ``@@``
 
-blacklist_view_ids      list   [``edit``,          View ids to suppress AJAX loading
-                               ``base_edit``]
+view_prefixes           list    [``manage_``]                  For target url parsing:
+                                                               e.g. ``manage_`` does very likely
+                                                               start a view name
+                                                               rather than an object.
 
-blacklist_view_suffixes list   [``_edit``]         View ids to suppress AJAX loading
+view_suffixes           list    [``_view``]                    For target url parsing:
+                                                               e.g. ``_view`` does very likely
+                                                               end a view name
+                                                               rather than an object.
 
-reply_keys              object {``contents``:      Maps `Data keys`_ to CSS
-                                ``#content``}      selectors.  This value
-                                                   doesn't contain any
-                                                   specifications for
-                                                   ``@``-prefixed keys
-                                                   (``@url``, ``@title``)
-                                                   since those don't apply to
-                                                   the page text but have
-                                                   special hard-coded meanings.
+blacklist_view_ids      list    [``edit``,                     View ids to suppress AJAX loading
+                                ``base_edit``]
 
-======================= ====== =================== ===================
+blacklist_view_prefixes list    [``manage_``]
+
+blacklist_view_suffixes list    [``_edit``]
+
+selectors               object  {``contents``:                 Maps `Data keys`_ to CSS
+                                 ``#region-content,#content``} selectors.  This value doesn't
+                                                               contain any specifications for
+                                                               ``@``-prefixed keys
+                                                               (``@url``, ``@title``, ``@ok``)
+                                                               since those don't apply to
+                                                               the page text but have
+                                                               special hard-coded meanings.
+
+                                                               The values are strings; however,
+                                                               since jQuery allows multiple
+                                                               selectors in the string, separated by
+                                                               comma, we do so as well and process
+                                                               them in order (e.g., fill
+                                                               ``#region-content``, if present, and
+                                                               otherwise ``#region``).
+
+======================= ======  ============================== =================================
 
 
 Data keys
@@ -176,9 +195,16 @@ contents HTML text    The "meat".
                       AJAX-loaded page as it would be needed to be given
                       when approaching the page from outside.
 
+@ok      boolean      Specify *False* to suppress the ``@url`` and ``@title``
+                      processing even after successfully inserting HTML text.
+
+                      Might be used e.g. for restricted objects the current
+                      user is not allowed to view; in such cases you might want
+                      to show a login form instead.
+
 ======== ============ ================================================
 
-Other keys can be used if they are configured in the ``reply_keys``
+Other keys can be used if they are configured in the ``selectors``
 configuration value; e.g., you might configure the ``breadcrumbs`` value to
 fill the ``#breadcrumbs`` element.
 

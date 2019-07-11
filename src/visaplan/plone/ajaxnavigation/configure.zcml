@@ -1,21 +1,28 @@
-<configure xmlns="http://namespaces.zope.org/zope"
-           xmlns:plone="http://namespaces.plone.org/plone"
-           xmlns:browser="http://namespaces.zope.org/browser">
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    i18n_domain="visaplan.plone.animations"
+    xmlns:plone="http://namespaces.plone.org/plone">
 
-    <include file="profiles.zcml" />
-    <utility
-        factory=".setuphandlers.HiddenProfiles"
-        name="visaplan.plone.ajaxnavigation-hiddenprofiles" />
+  <i18n:registerTranslations directory="locales" />
 
-    <!-- [ Statische Ressourcen (++resource++) ... [ -->
-    <include package="plone.resource" file="meta.zcml"/>
+  <include file="profiles.zcml" />
+  <utility
+      factory=".setuphandlers.HiddenProfiles"
+      name="visaplan.plone.ajaxnavigation-hiddenprofiles" />
 
-    <browser:resourceDirectory
-	name="visaplan.plone.ajaxnavigation"
-	directory="resource"
-	/>
-    <!-- ] ... Statische Ressourcen (++resource++) ] -->
+  <!-- [ Statische Ressourcen (++resource++) ... [ -->
+  <include package="plone.resource" file="meta.zcml"/>
 
-    <include package=".views" />
+  <browser:resourceDirectory
+      name="visaplan.plone.ajaxnavigation"
+      directory="resource"
+      />
+  <!-- ] ... Statische Ressourcen (++resource++) ] -->
+
+  <include package=".views" />
+
+  <!-- -*- extra stuff goes here -*- -->
 
 </configure>
