@@ -129,6 +129,8 @@ scripts/
 update-module
 init
 init.vim
+# other little helpers
+*.vim
 
 # plonecli-generated
 log.html
