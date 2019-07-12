@@ -90,4 +90,15 @@
 			<element>_edit</element>
 		</value>
 	</record>
+	<record name="visaplan.plone.ajaxnavigation.selectors">
+		<field type="plone.registry.field.Dict">
+			<title>Selectors for data keys</title>
+			<description>For each "normal" key from an AJAX response, configure a CSS selector which tells where to put the value. You can give more than one value, separated by comma.</description>
+			<key_type type="plone.registry.field.ASCIILine" />
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element key="content">#region-content,#content</element>
+		</value>
+	</record>
 </registry>
