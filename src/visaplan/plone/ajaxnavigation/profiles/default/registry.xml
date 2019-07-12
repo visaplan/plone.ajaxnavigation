@@ -1,4 +1,5 @@
 <registry>
+	<!-- [ for @@ajaxnav-options-default ... [ -->
 	<record name="visaplan.plone.ajaxnavigation.whitelist">
 		<field type="plone.registry.field.List">
 			<title>Whitelist</title>
@@ -101,4 +102,27 @@
 			<element key="content">#region-content,#content</element>
 		</value>
 	</record>
+	<!-- ] ... for @@ajaxnav-options-default ] -->
+	<!-- [ internal use ... [ -->
+	<record name="visaplan.plone.ajaxnavigation.layout4ajax">
+		<field type="plone.registry.field.Dict">
+			<title>Layouts for AJAX</title>
+			<description>Having detected the layout of the current target object, we may map an AJAX version to each "full-page" layout.</description>
+			<key_type type="plone.registry.field.ASCIILine" />
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.view4ajax">
+		<field type="plone.registry.field.Dict">
+			<title>Views for AJAX</title>
+			<description>For each "portal_type", we may map an AJAX version corresponding to the standard full-page view.</description>
+			<key_type type="plone.registry.field.ASCIILine" />
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+		</value>
+	</record>
+	<!-- ] ... internal use ] -->
 </registry>
