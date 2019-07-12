@@ -1,6 +1,93 @@
 <registry>
-  <records interface="visaplan.plone.ajaxnavigation.interfaces.IAjaxNavigationClientSettings"
-           prefix="visaplan.plone.ajaxnavigation"/>
-  <records interface="visaplan.plone.ajaxnavigation.interfaces.IAjaxNavigationInternalSettings"
-           prefix="visaplan.plone.ajaxnavigation"/>
+	<record name="visaplan.plone.ajaxnavigation.whitelist">
+		<field type="plone.registry.field.List">
+			<title>Whitelist</title>
+    			<description>CSS selectors which activate delegation for their &lt;a&gt; descendants</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>body</element>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.blacklist">
+		<field type="plone.registry.field.List">
+			<title>Blacklist</title>
+			<description>CSS selectors which deactivate delegation for their &lt;a&gt; descendants</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.nested_blacklist">
+		<field type="plone.registry.field.Bool">
+			<title>Nested blacklist</title>
+			<description>If this is set to True, and if there is a non-empty Blacklist, the Blacklist un-delegation will be applied during the whitelist processing.</description>
+			<value_type type="plone.registry.field.Bool" />
+		</field>
+		<value>False</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.view_ids">
+		<field type="plone.registry.field.List">
+			<title>View_ids</title>
+			<description>When computing the URLs to try, the values given here are considered view ids.</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>view</element>
+			<element>edit</element>
+			<element>base_edit</element>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.view_prefixes">
+		<field type="plone.registry.field.List">
+			<title>View prefixes</title>
+			<description>If the last path segment of a URL starts with one of the values given here, it is considered a view name.</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>manage_</element>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.view_suffixes">
+		<field type="plone.registry.field.List">
+			<title>View suffixes</title>
+			<description>If the last path segment of a URL ends with one of the values given here, it is considered a view name.</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>_view</element>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.blacklist_view_ids">
+		<field type="plone.registry.field.List">
+			<title>Blacklist_view_ids</title>
+			<description>Blacklist_view_ids</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>edit</element>
+			<element>base_edit</element>
+			<element>manage</element>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.blacklist_view_prefixes">
+		<field type="plone.registry.field.List">
+			<title>Blacklist_view_prefixes</title>
+			<description>Blacklist_view_prefixes</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>manage_</element>
+		</value>
+	</record>
+	<record name="visaplan.plone.ajaxnavigation.blacklist_view_suffixes">
+		<field type="plone.registry.field.List">
+			<title>Blacklist_view_suffixes</title>
+			<description>Blacklist_view_suffixes</description>
+			<value_type type="plone.registry.field.ASCIILine" />
+		</field>
+		<value>
+			<element>_edit</element>
+		</value>
+	</record>
 </registry>

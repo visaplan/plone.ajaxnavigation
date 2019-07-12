@@ -31,7 +31,7 @@ class ViewsIntegrationTest(unittest.TestCase):
     def test_registry_client_view_ids(self):
         """ client-side settings contain 'view_ids'
         """
-        proxy = self.registry  #.forInterface(IAjaxNavigationClientSettings, check=False)
+        proxy = self.registry
         val = proxy['visaplan.plone.ajaxnavigation.view_id']
         self.assertTrue(
             isinstance(val, list),
@@ -40,7 +40,7 @@ class ViewsIntegrationTest(unittest.TestCase):
     def test_registry_internal_selectors(self):
         """ "internal" settings contain 'selectors'
         """
-        proxy = self.registry  #.forInterface(IAjaxNavigationInternalSettings, check=False)
+        proxy = self.registry
         val = proxy['visaplan.plone.ajaxnavigation.selectors']
         self.assertTrue(
             isinstance(val, dict),
