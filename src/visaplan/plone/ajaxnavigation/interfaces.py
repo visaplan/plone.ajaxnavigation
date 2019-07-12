@@ -9,7 +9,7 @@ from plone.registry import field
 from visaplan.plone.ajaxnavigation import _
 
 
-class IAjaxNavigationClientSettings(model.Schema):
+class IAjaxNavigationClientSettings(Interface):
     """ Schema fields for view "@@ajaxnav-options-default"
     """
     whitelist = field.List(
