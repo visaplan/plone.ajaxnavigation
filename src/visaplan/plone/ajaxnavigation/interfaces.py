@@ -4,7 +4,7 @@
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from zope.interface import Interface
 from plone.supermodel import model
-from zope import schema
+from plone.registry import field
 
 from visaplan.plone.ajaxnavigation import _
 
@@ -12,86 +12,107 @@ from visaplan.plone.ajaxnavigation import _
 class IAjaxNavigationClientSettings(model.Schema):
     """ Schema fields for view "@@ajaxnav-options-default"
     """
-    # no key_type nor value_type options currently, because of
-    # ValueError: 'value_type' must be field instance.
-    whitelist = schema.List(
+    whitelist = field.List(
         title=_(u"Whitelist"),
+        value_type=field.BytesLine,
         default=['body',
                  ],
         description=_(u"CSS selectors which activate delegation"
-        " for their <a> descendants"))
+        " for their <a> descendants"
+        ))
 
-    blacklist = schema.List(
+    blacklist = field.List(
         title=_(u"Blacklist"),
+        value_type=field.BytesLine,
         default=[],
         description=_(u"CSS selectors which deactivate delegation"
-        " for their <a> descendants"))
+        " for their <a> descendants"
+        ))
 
-    nested_blacklist = schema.Bool(
+    nested_blacklist = field.Bool(
         title=_(u"Nested blacklist"),
+        value_type=field.BytesLine,
         default=False,
         description=_(u"If this is set to True, and if there is a non-empty"
         " Blacklist, the Blacklist un-delegation will be applied during the"
-        " whitelist processing"))
+        " whitelist processing."
+        ))
 
-    view_ids = schema.List(
+    view_ids = field.List(
         title=_(u"View_ids"),
+        value_type=field.BytesLine,
         default=['view',
                  'edit',
                  'base_edit'],
-        description=_(u"When computing the URLs to try, the values given here are considered view ids"))
+        description=_(u"When computing the URLs to try,"
+        " the values given here are considered view ids"
+        ))
 
-    view_prefixes = schema.List(
+    view_prefixes = field.List(
         title=_(u"View prefixes"),
+        value_type=field.BytesLine,
         default=['manage_',
                  ],
         description=_(u"If the last path segment of a URL starts with one of"
-        " the values given here, it is considered a view name"))
+        " the values given here, it is considered a view name."
+        ))
 
-    view_suffixes = schema.List(
+    view_suffixes = field.List(
         title=_(u"View suffixes"),
+        value_type=field.BytesLine,
         default=['_view',
                  ],
         description=_(u"If the last path segment of a URL ends with one of the"
-        " values given here, it is considered a view name"))
+        " values given here, it is considered a view name."
+        ))
 
-    blacklist_view_ids = schema.List(
+    blacklist_view_ids = field.List(
         title=_(u"Blacklist_view_ids"),
+        value_type=field.BytesLine,
         default=['manage',
                  'edit',
                  'base_edit'],
         description=_(u"When computing the URLs to try, the values given here "
         "are considered view ids "
-        "for which an AJAX load won't be tried."))
+        "for which an AJAX load won't be tried."
+        ))
 
-    blacklist_view_prefixes = schema.List(
+    blacklist_view_prefixes = field.List(
         title=_(u"Blacklist_view_prefixes"),
+        value_type=field.BytesLine,
         default=['manage_',
                  ])
 
-    blacklist_view_suffixes = schema.List(
+    blacklist_view_suffixes = field.List(
         title=_(u"Blacklist_view_suffixes"),
+        value_type=field.BytesLine,
         default=['_edit',
                  ])
 
-    selectors = schema.Dict(
+    selectors = field.Dict(
         title=_(u"Selectors for data keys"),
         default={'content': ["#region-content,#content"],
                  },
+        key_type=field.BytesLine,
+        value_type=field.BytesLine,
         description=_(u'For each "normal" key from an AJAX response, '
         'configure a CSS selector which tells where to put the value. '
-        'You can give more than one value, separated by comma.'))
+        'You can give more than one value, separated by comma.'
+        ))
 
 
 class IAjaxNavigationInternalSettings(model.Schema):
     """ Schema fields for internal processing
     """
-    layout4ajax = schema.Dict(
+    layout4ajax = field.Dict(
         title=_(u"Layouts for AJAX"),
         default={},
+        key_type=field.BytesLine,
+        value_type=field.BytesLine,
         description=_(u'For each "normal" layout of a link target, '
         'you may configure an AJAX version which will provide the '
-        '"meat" only'))
+        '"meat" only.'
+        ))
 
 clientside_map = {
         key: 'visaplan.plone.ajaxnavigation.'+key
