@@ -23,6 +23,7 @@ internal_map = {
         key: 'visaplan.plone.ajaxnavigation.'+key
         for key in (
                 'layout4ajax',
+                'view4ajax',
                 )}
 
 
