@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visaplan.plone.ajaxnavigation 1.0.dev2\n"
 "POT-Creation-Date: 2019-07-11 16:18+0200\n"
-"PO-Revision-Date: 2019-07-11 18:27+0200\n"
+"PO-Revision-Date: 2019-07-12 17:53+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@visaplan.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -58,15 +58,15 @@ msgid "For each \"normal\" layout of a link target, you may configure an AJAX ve
 msgstr ""
 
 #: ../interfaces.py:55
-msgid "If the last path segment of a URL ends with one of the values given here, it is considered a view name"
+msgid "If the last path segment of a URL ends with one of the values given here, it is considered a view name."
 msgstr ""
 
 #: ../interfaces.py:48
-msgid "If the last path segment of a URL starts with one of the values given here, it is considered a view name"
+msgid "If the last path segment of a URL starts with one of the values given here, it is considered a view name."
 msgstr ""
 
 #: ../interfaces.py:33
-msgid "If this is set to True, and if there is a non-empty Blacklist, the Blacklist un-delegation will be applied during the whitelist processing"
+msgid "If this is set to True, and if there is a non-empty Blacklist, the Blacklist un-delegation will be applied during the whitelist processing."
 msgstr ""
 
 #: ../interfaces.py:90
@@ -94,7 +94,7 @@ msgid "View_ids"
 msgstr ""
 
 #: ../interfaces.py:42
-msgid "When computing the URLs to try, the values given here are considered view ids"
+msgid "When computing the URLs to try, the values given here are considered view ids."
 msgstr ""
 
 #: ../interfaces.py:63
