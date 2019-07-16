@@ -3,7 +3,7 @@
 	<record name="visaplan.plone.ajaxnavigation.whitelist">
 		<field type="plone.registry.field.List">
 			<title>Whitelist</title>
-    			<description>CSS selectors which activate delegation for their &lt;a&gt; descendants</description>
+			<description>CSS selectors which activate delegation for their &lt;a&gt; descendants</description>
 			<value_type type="plone.registry.field.ASCIILine" />
 		</field>
 		<value>
