@@ -1,6 +1,10 @@
 <registry>
-  <records interface="visaplan.plone.ajaxnavigation.interfaces.IAjaxNavigationClientSettings"
-           prefix="visaplan.plone.ajaxnavigation"/>
-  <records interface="visaplan.plone.ajaxnavigation.interfaces.IAjaxNavigationInternalSettings"
-           prefix="visaplan.plone.ajaxnavigation"/>
+	<!-- [ for @@ajaxnav-options-default ... [ -->
+	<records interface="visaplan.plone.ajaxnavigation.interfaces.IAjaxNavigationClientSettings"
+	         prefix="visaplan.plone.ajaxnavigation"/>
+	<!-- ] ... for @@ajaxnav-options-default ] -->
+	<!-- [ internal use ... [ -->
+	<records interface="visaplan.plone.ajaxnavigation.interfaces.IAjaxNavigationInternalSettings"
+	         prefix="visaplan.plone.ajaxnavigation"/>
+	<!-- ] ... internal use ] -->
 </registry>
