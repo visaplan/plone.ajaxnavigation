@@ -109,9 +109,19 @@ class IAjaxNavigationInternalSettings(model.Schema):
         default={},
         key_type=field.BytesLine,
         value_type=field.BytesLine,
-        description=_(u'For each "normal" layout of a link target, '
-        'you may configure an AJAX version which will provide the '
-        '"meat" only.'
+        description=_(u'Having detected the layout of the current target '
+        'object, we may map an AJAX version '
+        'to each "full-page" layout.'
+        ))
+
+    view4ajax = field.Dict(
+        title=_(u"Views for AJAX"),
+        default={},
+        key_type=field.BytesLine,
+        value_type=field.BytesLine,
+        description=_(u'For each "portal_type", '
+        'we may map an AJAX version '
+        'corresponding to the standard full-page view.'
         ))
 
 clientside_map = {
@@ -130,6 +140,7 @@ internal_map = {
         key: 'visaplan.plone.ajaxnavigation.'+key
         for key in (
                 'layout4ajax',
+                'view4ajax',
                 )}
 
 
