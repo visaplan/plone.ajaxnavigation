@@ -8,24 +8,12 @@
   -->
 
     <configlet
-        title="AjaxNavigation settings (Client)"
-        action_id="visaplan.plone.ajaxnavigation.ajaxnav-settings-client"
+        title="AJAX navigation settings"
+        action_id="ajaxnav"
         appId="visaplan.plone.ajaxnavigation"
         category="Products"
         condition_expr=""
-        url_expr="string:${portal_url}/@@ajaxnav-client-controlpanel"
-        visible="True"
-        i18n:attributes="title">
-            <permission>Manage portal</permission>
-    </configlet>
-
-    <configlet
-        title="AjaxNavigation settings (internal)"
-        action_id="visaplan.plone.ajaxnavigation.ajaxnav-settings-internal"
-        appId="visaplan.plone.ajaxnavigation"
-        category="Products"
-        condition_expr=""
-        url_expr="string:${portal_url}/@@ajaxnav-internal-controlpanel"
+        url_expr="string:${portal_url}/@@ajaxnav-settings"
         visible="True"
         i18n:attributes="title">
             <permission>Manage portal</permission>

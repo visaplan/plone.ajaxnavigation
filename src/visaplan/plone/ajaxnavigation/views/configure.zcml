@@ -43,21 +43,11 @@
      permission="zope2.View"
      />
 
-  <!-- [ control panels ... [ -->
-  <!-- provides the data for ajaxnav-options-default (above): -->
   <browser:page
-      name="ajaxnav-client-controlpanel"
+      name="ajaxnav-settings"
       for="Products.CMFPlone.interfaces.IPloneSiteRoot"
       permission="cmf.ManagePortal"
-      class=".controlpanel.AjaxNavigationClientControlPanelView"
+      class="visaplan.plone.ajaxnavigation.controlpanel.AjaxNavigationSettingsControlPanel"
       />
-
-  <browser:page
-      name="ajaxnav-internal-controlpanel"
-      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-      permission="cmf.ManagePortal"
-      class=".controlpanel.AjaxNavigationInternalControlPanelView"
-      />
-  <!-- ] ... control panels ] -->
 
 </configure>
