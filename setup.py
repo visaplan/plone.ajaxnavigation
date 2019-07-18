@@ -164,6 +164,10 @@ setup_kwargs = dict(
         'plone.api',
         # KGS of Plone 4.3.8-9:
         'Products.GenericSetup>=1.8.2',
+        # tests failed:
+        'plone.app.dexterity',
+        'visaplan.plone.tools',  # v1.1.5.dev1 or later requires v.kitchen:
+        'visaplan.kitchen',
     ],
     extras_require={
         'test': [
