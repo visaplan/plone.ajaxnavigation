@@ -36,7 +36,7 @@ class VisaplanPloneAjaxnavigationLayer(PloneSandboxLayer):
 VISAPLAN_PLONE_AJAXNAVIGATION_FIXTURE = VisaplanPloneAjaxnavigationLayer()
 
 
-VISAPLAN_PLONE_AJAXNAVIGATION_INTEGRATION_TESTING = IntegrationTesting(
+INTEGRATION_TESTING = IntegrationTesting(
     bases=(VISAPLAN_PLONE_AJAXNAVIGATION_FIXTURE,),
     name='VisaplanPloneAjaxnavigationLayer:IntegrationTesting',
 )
