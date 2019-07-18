@@ -67,17 +67,17 @@ class RegistryTestCase(unittest.TestCase):
     def test_whitelist_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'whitelist'))
        self.assertEqual(
-           self.settings.whitelist, ['body']))
+           self.settings.whitelist, ['body'])
 
     def test_blacklist_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'blacklist'))
        self.assertEqual(
-           self.settings.blacklist, []))
+           self.settings.blacklist, [])
 
     def test_nested_blacklist_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'nested_blacklist'))
        self.assertFalse(
-           self.settings.nested_blacklist))
+           self.settings.nested_blacklist)
 
     def test_view_ids_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'view_ids'))
@@ -86,21 +86,21 @@ class RegistryTestCase(unittest.TestCase):
            ['view',
             'edit',
             'base_edit',
-            ]))
+            ])
 
     def test_view_prefixes_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'view_prefixes'))
        self.assertEqual(
            self.settings.view_prefixes,
            ['manage_',
-            ]))
+            ])
 
     def test_view_suffixes_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'view_suffixes'))
        self.assertEqual(
            self.settings.view_suffixes,
            ['_view',
-            ]))
+            ])
 
     def test_blacklist_view_ids_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'blacklist_view_ids'))
@@ -109,28 +109,28 @@ class RegistryTestCase(unittest.TestCase):
            ['manage',
             'edit',
             'base_edit',
-            ]))
+            ])
 
     def test_blacklist_view_prefixes_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'blacklist_view_prefixes'))
        self.assertEqual(
            self.settings.blacklist_view_prefixes,
            ['manage_',
-            ]))
+            ])
 
     def test_blacklist_view_suffixes_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'blacklist_view_suffixes'))
        self.assertEqual(
            self.settings.blacklist_view_suffixes,
            ['_edit',
-            ]))
+            ])
 
     def test_selectors_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'selectors'))
        self.assertEqual(
            self.settings.selectors,
            {'content': ["#region-content,#content"],
-            }))
+            })
     # -------------------- ] ... settings for client-side processing ]
 
     # ----------------------- [ settings for internal processing ... [
