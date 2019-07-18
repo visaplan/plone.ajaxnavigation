@@ -166,8 +166,7 @@ setup_kwargs = dict(
         'Products.GenericSetup>=1.8.2',
         # tests failed:
         'plone.app.dexterity',
-        'visaplan.plone.tools',  # v1.1.5.dev1 or later requires v.kitchen:
-        'visaplan.kitchen',
+        'visaplan.plone.tools >= 1.1.5',  # fixed visaplan.kitchen dependency
     ],
     extras_require={
         'test': [
