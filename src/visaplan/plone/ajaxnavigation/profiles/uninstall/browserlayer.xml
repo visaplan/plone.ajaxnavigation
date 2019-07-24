@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<layers>
+ <layer
+     name="AjaxNavigation"
+     interface="visaplan.plone.ajaxnavigation.interfaces.IVisaplanPloneAjaxnavigationLayer"
+     remove="True"
+     />
+</layers>
