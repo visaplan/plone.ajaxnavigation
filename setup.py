@@ -176,6 +176,7 @@ setup_kwargs = dict(
             'plone.testing',
             # currently disabled because of import problems: 
             # 'plone.app.robotframework[debug]',
+            'plone.app.robotframework',
         ],
     },
     entry_points="""

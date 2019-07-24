@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from visaplan.plone.ajaxnavigation.testing import VISAPLAN_PLONE_AJAXNAVIGATION_FUNCTIONAL_TESTING
+from visaplan.plone.ajaxnavigation.testing import FUNCTIONAL_TESTING
 from visaplan.plone.ajaxnavigation.testing import INTEGRATION_TESTING
 from plone import api
 from plone.app.testing import setRoles
@@ -41,7 +41,7 @@ class ViewsIntegrationTest(unittest.TestCase):
 
 class ViewsFunctionalTest(unittest.TestCase):
 
-    layer = VISAPLAN_PLONE_AJAXNAVIGATION_FUNCTIONAL_TESTING
+    layer = FUNCTIONAL_TESTING
 
     def setUp(self):
         self.portal = self.layer['portal']
