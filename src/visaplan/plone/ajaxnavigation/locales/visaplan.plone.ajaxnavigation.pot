@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2019-07-17 16:11+0000\n"
+"POT-Creation-Date: 2019-07-25 17:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,31 +25,55 @@ msgstr ""
 msgid "AJAX navigation settings"
 msgstr ""
 
-#: ../interfaces.py:43
+#: ../interfaces.py:146
+msgid "AJAX response key"
+msgstr ""
+
+#: ../interfaces.py:168
+msgid "AJAX view"
+msgstr ""
+
+#: ../interfaces.py:47
 msgid "Blacklist"
 msgstr ""
 
-#: ../interfaces.py:99
-msgid "Blacklist_view_ids"
-msgstr ""
-
-#: ../interfaces.py:113
-msgid "Blacklist_view_prefixes"
+#: ../interfaces.py:104
+msgid "Blacklist view IDs"
 msgstr ""
 
 #: ../interfaces.py:119
-msgid "Blacklist_view_suffixes"
+msgid "Blacklist view prefixes"
 msgstr ""
 
-#: ../interfaces.py:146
+#: ../interfaces.py:131
+msgid "Blacklist view suffixes"
+msgstr ""
+
+#: ../interfaces.py:37
+msgid "CSS selector"
+msgstr ""
+
+#: ../interfaces.py:147
+msgid "CSS selector[,...]"
+msgstr ""
+
+#: ../interfaces.py:21
+msgid "Clientside processing"
+msgstr ""
+
+#: ../interfaces.py:158
+msgid "Internal processing"
+msgstr ""
+
+#: ../interfaces.py:165
 msgid "Layouts for AJAX"
 msgstr ""
 
-#: ../interfaces.py:53
+#: ../interfaces.py:57
 msgid "Nested blacklist"
 msgstr ""
 
-#: ../interfaces.py:125
+#: ../interfaces.py:143
 msgid "Selectors for data keys"
 msgstr ""
 
@@ -57,72 +81,102 @@ msgstr ""
 msgid "Settings for the visaplan.plone.ajaxnavigation package"
 msgstr ""
 
-#: ../interfaces.py:77
+#: ../interfaces.py:67
+msgid "View IDs"
+msgstr ""
+
+#: ../interfaces.py:82
 msgid "View prefixes"
 msgstr ""
 
-#: ../interfaces.py:88
+#: ../interfaces.py:93
 msgid "View suffixes"
 msgstr ""
 
-#: ../interfaces.py:64
-msgid "View_ids"
-msgstr ""
-
-#: ../interfaces.py:158
+#: ../interfaces.py:177
 msgid "Views for AJAX"
 msgstr ""
 
-#: ../interfaces.py:32
+#: ../interfaces.py:36
 msgid "Whitelist"
 msgstr ""
 
-#. Default: "CSS selectors which deactivate delegation for their <a> descendants"
-#: ../interfaces.py:46
+#: ../interfaces.py:167
+msgid "full-page layout"
+msgstr ""
+
+#. Default: "CSS selectors which deactivate delegation for their a-element descendants"
+#: ../interfaces.py:50
 msgid "help_blacklist"
 msgstr ""
 
-#. Default: "When computing the URLs to try, the values given here are considered view ids for which an AJAX load won't be tried."
-#: ../interfaces.py:105
+#. Default: "When computing the URLs to try, the values given here (when following the last slash in the path, of course) are considered view ids for which an AJAX load won't be tried."
+#: ../interfaces.py:110
 msgid "help_blacklist_view_ids"
 msgstr ""
 
-#. Default: "Having detected the layout of the current target object, we may map an AJAX version to each \"full-page\" layout."
-#: ../interfaces.py:150
+#. Default: "If the last path segment of a URL starts with one of the values given here, it is considered a view name for which an AJAX load won't be tried."
+#: ../interfaces.py:123
+msgid "help_blacklist_view_prefixes"
+msgstr ""
+
+#. Default: "If the last path segment of a URL ends with one of the values given here, it is considered a view name for which an AJAX load won't be tried."
+#: ../interfaces.py:135
+msgid "help_blacklist_view_suffixes"
+msgstr ""
+
+#. Default: "Having detected the layout of the current target object, we may map an AJAX version to each “full-pageˮ layout."
+#: ../interfaces.py:169
 msgid "help_layout4ajax"
 msgstr ""
 
 #. Default: "If this is set to True, and if there is a non-empty Blacklist, the Blacklist un-delegation will be applied during the whitelist processing."
-#: ../interfaces.py:56
+#: ../interfaces.py:59
 msgid "help_nested_blacklist"
 msgstr ""
 
-#. Default: "For each \"normal\" key from an AJAX response, configure a CSS selector which tells where to put the value. You can give more than one value, separated by comma."
-#: ../interfaces.py:130
+#. Default: "For each “normalˮ key from an AJAX response, configure a CSS selector which tells where to put the value. You can give more than one value, separated by comma, which will be tried in order."
+#: ../interfaces.py:148
 msgid "help_selectors"
 msgstr ""
 
-#. Default: "For each \"portal_type\", we may map an AJAX version corresponding to the standard full-page view."
-#: ../interfaces.py:162
+#. Default: "For each “portal_typeˮ, we may map an AJAX version corresponding to the standard full-page view."
+#: ../interfaces.py:181
 msgid "help_view4ajax"
 msgstr ""
 
-#. Default: "When computing the URLs to try, the values given here are considered view ids"
-#: ../interfaces.py:70
+#. Default: "When computing the URLs to try, the values given here  (when following the last slash in the path, of course) are considered view ids."
+#: ../interfaces.py:73
 msgid "help_view_ids"
 msgstr ""
 
 #. Default: "If the last path segment of a URL starts with one of the values given here, it is considered a view name."
-#: ../interfaces.py:81
+#: ../interfaces.py:86
 msgid "help_view_prefixes"
 msgstr ""
 
 #. Default: "If the last path segment of a URL ends with one of the values given here, it is considered a view name."
-#: ../interfaces.py:92
+#: ../interfaces.py:97
 msgid "help_view_suffixes"
 msgstr ""
 
-#. Default: "CSS selectors which activate delegation for their <a> descendants"
-#: ../interfaces.py:36
+#. Default: "CSS selectors which activate delegation for their a-element descendants"
+#: ../interfaces.py:40
 msgid "help_whitelist"
+msgstr ""
+
+#: ../interfaces.py:179
+msgid "portal_type"
+msgstr ""
+
+#: ../interfaces.py:68
+msgid "view id"
+msgstr ""
+
+#: ../interfaces.py:83
+msgid "view prefix"
+msgstr ""
+
+#: ../interfaces.py:94
+msgid "view suffix"
 msgstr ""

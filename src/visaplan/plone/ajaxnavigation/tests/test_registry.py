@@ -10,7 +10,7 @@ from zope.component.interfaces import ComponentLookupError
 import unittest
 
 from visaplan.plone.ajaxnavigation.interfaces import (
-        IAjaxNavigationClientSettings, IAjaxNavigationInternalSettings,
+        IAjaxNavigationSettings,
         )
 
 from zope.component import getUtility
