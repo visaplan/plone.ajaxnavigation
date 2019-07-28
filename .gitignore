@@ -148,3 +148,9 @@ report.html
 !.gitkeep
 !.travis.yml
 !src/visaplan
+
+# Sloppily laying around in the root
+*.tar.gz
+# Sadly, this didn't work; I'd like to ignore *.xml files in the root only:
+# !src/*.xml
+# *.xml
