@@ -37,6 +37,15 @@
      />
 
   <browser:page
+     name="embed"
+     for="Products.ATContentTypes.interfaces.interfaces.ITextContent"
+     condition
+     class=".embed_at.EmbedTextual"
+     template="embed_at_textual.pt"
+     permission="zope2.View"
+     />
+
+  <browser:page
      name="ajaxnav-options-default"
      for="Products.CMFCore.interfaces.ISiteRoot"
      class=".ajaxnav_options.AjaxnavOptions"

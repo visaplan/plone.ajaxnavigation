@@ -55,14 +55,6 @@ class RegistryTestCase(unittest.TestCase):
         self.registry = getUtility(IRegistry)
         self.settings = self.registry.forInterface(IAjaxNavigationSettings)
 
-    def test_enabled_portal_types_record_in_registry(self):
-        # Das sollte fehlschlagen
-        self.assertTrue(hasattr(self.settings, 'enabled_portal_types'))
-        self.assertEqual(
-            self.settings.enabled_portal_types,
-            ('Document', 'Event', 'News Item'),
-        )
-
     # -------------------- [ settings for client-side processing ... [
     def test_whitelist_record_in_registry(self):
        self.assertTrue(hasattr(self.settings, 'whitelist'))
@@ -129,7 +121,7 @@ class RegistryTestCase(unittest.TestCase):
        self.assertTrue(hasattr(self.settings, 'selectors'))
        self.assertEqual(
            self.settings.selectors,
-           {'content': ["#region-content,#content"],
+           {'content': "#region-content,#content",
             })
     # -------------------- ] ... settings for client-side processing ]
 
