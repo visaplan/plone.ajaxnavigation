@@ -39,7 +39,7 @@
   <browser:page
      name="embed"
      for="Products.ATContentTypes.interfaces.interfaces.ITextContent"
-     condition
+     condition="installed Products.Archetypes"
      class=".embed_at.EmbedTextual"
      template="embed_at_textual.pt"
      permission="zope2.View"
