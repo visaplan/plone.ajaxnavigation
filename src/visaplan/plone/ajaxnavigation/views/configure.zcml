@@ -60,4 +60,11 @@
       class="visaplan.plone.ajaxnavigation.controlpanel.AjaxNavigationSettingsControlPanel"
       />
 
+  <browser:page
+      name="ajax-siteinfo"
+      for="*"
+      permission="zope.Public"
+      class="visaplan.plone.ajaxnavigation.views.siteroot.SiteInfoView"
+      />
+
 </configure>

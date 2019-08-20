@@ -69,7 +69,8 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
 
         # without a given URL, there probably won't be anything to do for us:
         given_url = form.pop('_given_url', None)
-        if not given_url:
+        if (not given_url
+                and 0 and 'das sabotiert den Aufruf aus der Adreßzeile'):
             return False
 
         state = context.restrictedTraverse('@@plone_context_state')
@@ -84,9 +85,6 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         if ok:
             the_view = self.choose_view(context)
             view_name = None
-            res.update({
-                '@noajax': True,
-                })
         elif pm.isAnonymousUser():
             view_name = self.please_login_viewname()
         else:
