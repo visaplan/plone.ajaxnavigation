@@ -1,17 +1,21 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
-      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      i18n:domain="visaplan.plone.ajaxnavigation">
-<h1 tal:content="context/title">
+     xmlns:tal="http://xml.zope.org/namespaces/tal"
+     xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+     i18n:domain="visaplan.plone.ajaxnavigation"
+tal:define="
+data  python:view.data();
+title python:data['title'];
+">
+<h1 tal:content="title">
 title of calling object
 </h1>
-<tal:loop repeat="content_dict view/content_values">
-  <div tal:attributes="class python:content_dict['cls']"
-       class="text"
-       tal:content="structure python:content_dict['content']">
-HTML text for the description, text etc. value
-</div>
+<h2 i18n:translate="">Attributes</h2>
+<dl>
+<tal:loop repeat="tup python:data.items()">
+<dt tal:content="python:tup[0]">text</dt>
+<dd tal:content="python:tup[1]">value</dd>
 </tal:loop>
+<h2 i18n:translate="">Child objects</h2>
 <ul><li tal:repat="child view/children"
     ><a href="./child"
        tal:attributes="href python:child['href']"

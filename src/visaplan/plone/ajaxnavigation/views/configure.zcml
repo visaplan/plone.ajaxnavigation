@@ -2,6 +2,7 @@
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:zcml="http://namespaces.plone.org/zcml"
     i18n_domain="visaplan.plone.ajaxnavigation">
 
   -*- extra stuff goes here -*-
@@ -9,21 +10,21 @@
   <browser:page
      name="ajax-nav"
      for="Products.CMFCore.interfaces.IContentish"
-     class=".ajax_nav.AjaxNav"
+     class=".AjaxnavBaseBrowserView"
      permission="zope2.View"
      />
 
   <browser:page
      name="ajax-nav"
      for="Products.CMFCore.interfaces.IFolderish"
-     class=".ajax_nav.AjaxNav4Folder"
+     class=".folder.AjaxnavBrowserView"
      permission="zope2.View"
      />
 
   <browser:page
      name="embed"
      for="Products.CMFCore.interfaces.IContentish"
-     class=".embed.Embed"
+     class=".EmbedBaseBrowserView"
      template="embed.pt"
      permission="zope2.View"
      />
@@ -31,7 +32,7 @@
   <browser:page
      name="embed"
      for="Products.CMFCore.interfaces.IFolderish"
-     class=".embed.EmbedFolderish"
+     class=".folder.EmbedBrowserView"
      template="embed_folderish.pt"
      permission="zope2.View"
      />
@@ -39,9 +40,9 @@
   <browser:page
      name="embed"
      for="Products.ATContentTypes.interfaces.interfaces.ITextContent"
-     condition="installed Products.Archetypes"
-     class=".embed_at.EmbedTextual"
-     template="embed_at_textual.pt"
+     zcml:condition="installed Products.Archetypes"
+     class=".EmbedBaseBrowserView"
+     template="embed.pt"
      permission="zope2.View"
      />
 
