@@ -551,8 +551,8 @@ AjaxNav.init = function (key) {
 				// (for path components after a final "/" but w/o "@@")
 				if (typeof data.view_ids === 'undefined') {
 					data.view_ids = ['view',
-									 'edit',
-									 'base_edit'];
+					                 'edit',
+					                 'base_edit'];
 				}
 				if (typeof data.view_prefixes === 'undefined') {
 					data.view_prefixes = ['manage_'];
@@ -566,8 +566,8 @@ AjaxNav.init = function (key) {
 				// (view ids which will always be loaded the non-AJAX way)
 				if (typeof data.blacklist_view_ids === 'undefined') {
 					data.blacklist_view_ids = ['edit',
-											   'base_edit',
-											   'manage'];
+					                           'base_edit',
+					                           'manage'];
 				}
 				if (typeof data.blacklist_view_prefixes === 'undefined') {
 					data.blacklist_view_prefixes = ['manage_'];
