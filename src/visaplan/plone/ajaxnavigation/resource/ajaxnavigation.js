@@ -141,12 +141,12 @@ var AjaxNav = (function () {
 
 	var full_url = function (given) {
 		var parsed = urlSplit(given),
-			offset = 0,
-			drop = 0,
-			path,
-			pathlist,
-			shortened,
-			suffix,
+		    offset = 0,
+		    drop = 0,
+		    path,
+		    pathlist,
+		    shortened,
+		    suffix,
 		    parsedloc;  // parsed current location
 
 		if (parsed.protocol) {
@@ -287,7 +287,7 @@ var AjaxNav = (function () {
 		for (i = 0, len=selectors.length; i < len; i++) {
 			selector = selectors[i].trim();
 			if (selector) {
-				$(selector).each(function (content) {
+				$(selector).each(function (idx) {
 					$(this).html(content);
 					done=true;
 					return false;
@@ -320,6 +320,7 @@ var AjaxNav = (function () {
 			} else {
 				window.history.pushState(stateObj, title, url);
 			}
+			title = '(AJAX) ' + title;  // DEBUG / Development
 			document.title = title;
 		} else if (url) {
 			window.history.pushState(stateObj, '', url);
@@ -328,6 +329,93 @@ var AjaxNav = (function () {
 		}
 	};
 	AjaxNav.history_and_title = history_and_title;
+
+	/*
+	 * The "working horse" of the clickfunc function
+	 *
+	 * This function will be called up to two times per click
+	 * (ideally only once, of course); it will try the url with the given
+	 * index and, in case of success, use the resulting JSON data to fill
+	 * the appropriate URL elements and adjust the title and history
+	 * (using the history_and_title function).
+	 *
+	 * If none of these requests succeeded, true will be returned
+	 * to allow for the standard processing.
+	 */
+	var use_url = function (url, query) {
+		var reply_ok = null,
+		    newtitle = null,
+		    newurl = null,
+		    data_keys = [];
+		$.ajax(url, {
+			async: false,
+			dataType: 'json',
+			data: query, 
+			error: function (jqXHR, textStatus, errorThrown) {
+				log('AjaxNav failed ('+textStatus+') for URL '+url);
+				reply_ok = false;
+			},
+			success: function (data, textStatus, jqXHR) {
+				var key,
+				    selector = null,
+				    selectors=AjaxNav.options.selectors,
+				    ii,
+				    invalid_count = 0,
+				    invalid_max = 3;
+				log(textStatus+'; data ('+(typeof data)+'):');
+				log(data)
+				for (key in data) {
+					if (key.startsWith('@')) {
+						if (key == '@url') {
+							newurl = data[key];
+						} else if (key == '@title') {
+							newtitle = data[key];
+						} else if (key == '@ok') {
+							reply_ok = data[key];
+						} else if (key == '@noajax') {
+							log('use_url('+url+'): ' + key + ' found');
+							reply_ok = false;
+						} else {
+							alert('Invalid special data key: "' +
+								  key + '"; value: "' +
+								  data[key] +'"');
+						}
+					} else {  // normal key --> HTML data
+						selector = selectors[key];
+						if (typeof selector === 'undefined') {
+							invalid_count += 1;
+							// log call deleted
+							if (invalid_count <= invalid_max) {
+								alert('Selector for key "'+key+'" unknown!');
+							} else if (invalid_count > 100) {
+								break;
+							}
+						} else if (AjaxNav.fill_first(selector, data[key])) {
+							// yes, we found some place for our data:
+							data_keys.push(key);
+						}
+					}
+				}
+				if (reply_ok === null) {
+					if (data_keys) {
+						reply_ok = true;
+					} else {
+						reply_ok = false;
+					}
+				}
+				if (reply_ok) {
+					AjaxNav.history_and_title(newurl, newtitle, data);
+				}
+
+				if (DEBUG_DOTTED) {
+					$('h1').css('border', '3px dotted lime');
+				} else {
+					$('h1').css('border', '3px dashed red');
+				}
+				DEBUG_DOTTED = ! DEBUG_DOTTED;
+			}});
+		return reply_ok;
+	}  // ... use_url(url, query)
 
 	/* The click handling function
 	 *
@@ -342,9 +430,9 @@ var AjaxNav = (function () {
 	 * Then it will try up to two @ajax-nav urls (see --> urls2try, splitview)
 	 * in order to get the payload of the requested target page in JSON format.
 	 */
-	var clickfunc = function (e) {
-		log('AjaxNav.clickfunc(e); e:');
-		log(e);
+	var clickfunc = function (event) {
+		log('AjaxNav.clickfunc(event); event:');
+		log(event);
 		log('this:');
 		log(this);
 		// collect information about the target:
@@ -386,6 +474,8 @@ var AjaxNav = (function () {
 		if (! urls_list) {
 			return true;
 		}
+
+		// -------------------------- [ compile query object ... [
 		var i, a,
 			query = parsed_qs(href);
 		query['_given_url'] = href;
@@ -397,96 +487,20 @@ var AjaxNav = (function () {
 			query['_class'] = cls;
 		}
 		query._href = full_url(href);
+		// -------------------------- ] ... compile query object ]
 
-		/*
-		 * The "working horse" of the clickfunc function
-		 *
-		 * This function will be called up to two times per click
-		 * (ideally only once, of course); it will try the url with the given
-		 * index and, in case of success, use the resulting JSON data to fill
-		 * the appropriate URL elements and adjust the title and history
-		 * (using the history_and_title function).
-		 *
-		 * If none of these requests succeeded, true will be returned
-		 * to allow for the standard processing.
-		 */
-		var inner_ajaxhandler = function (e, i) {
-			var url = urls_list[i];
-			$.ajax({
-				// dataType: 'json',
-				url: url,
-				complete: function (jqXHR, textStatus) {
-					log(jqXHR);
-					log(textStatus);
-					if (DEBUG_DOTTED) {
-						$('h1').css('style', 'border: 3px dotted lime');
-					} else {
-						$('h1').css('style', 'border: 3px dashed red');
-					}
-					DEBUG_DOTTED = ! DEBUG_DOTTED;
-				},
-				// Merged querystring, data(), attr(class) ...
-				data: query
-			}).done(function (data, textStatus, jqXHR) {
-				alert('.done: '+textStatus);
-				var key, newtitle=null, newurl=null,
-					reply_ok=null,
-					data_keys=[],
-					selectors=AjaxNav.options.selectors,
-					ii,
-					selector=null;
-				for (key in data) {
-					if (key.startsWith('@')) {
-						if (key == '@url') {
-							newurl = data[key];
-						} else if (key == '@title') {
-							newtitle = data[key];
-						} else if (key == '@ok') {
-							reply_ok = data[key];
-						} else if (key == '@noajax') {
-							return true;
-						} else {
-							alert('Invalid data key: "' +
-							      key + '"; value: "' +
-							      data[key] +'"');
-						}
-					} else {  // normal key --> HTML data
-						selector = selectors[key];
-						if (typeof selector === 'undefined') {
-							alert('Selector for key "'+key+'" unknown!');
-						} else if (AjaxNav.fill_first(selector, content)) {
-							data_keys.push(key);
-						}
-					}
-				}
-				if (reply_ok === null) {
-					if (data_keys) {
-						reply_ok = true;
-					} else {
-						reply_ok = false;
-					}
-				}
-				if (reply_ok) {
-					AjaxNav.history_and_title(newurl, newtitle, data);
-				}
+		// --------------------------- [ try one or two urls ... [
+		for (i=0, len = urls_list.length; i < len; i++) {
+			if (use_url(urls_list[i], query)) {
+				event.preventDefault();
 				return false;
-			}).fail(function (jqXHR, textStatus, errorThrown) {
-				alert('.fail: '+textStatus);
-				while (true) {
-					log('AjaxNav failed for URL '+urls_list[i]);
-					if (i < urls_list.length) {
-						i++;
-						inner_ajaxhandler(e, i);
-					} else {
-						log('AjaxNav failed for URL '+url);
-						return true;
-					}
-				}
-			});
-		};
-		inner_ajaxhandler(e, 0);
-		alert('inner_ajaxhandler: '+urls_list[0]);
-	};
+			} else {
+				log("Can't use URL " + urls_list[i]);
+			}
+		}
+		// --------------------------- ] ... try one or two urls ]
+		return true;
+	};  // clickfunc(event)
 	AjaxNav.click = clickfunc;
 	log('AjaxNav loaded.')
 	return AjaxNav;
@@ -497,6 +511,90 @@ AjaxNav.init = function (key) {
 	if (typeof key === 'undefined') {
 		key = 'default';
 	}
+
+	var ajaxnav_init = function (data, textStatus, jqXHR) {
+		AjaxNav.log('AjaxNav.init('+key+') received data:');
+		AjaxNav.log(data);
+
+		// ------------------------ [ initial (un)delegation ... [
+		var whitelist = data.whitelist,
+			blacklist = data.blacklist,
+			i, len, ii, blacklist_length=null, nested,
+			selector;
+
+		if (whitelist === undefined) {
+			whitelist = ['body'];
+		}
+
+		if (blacklist === undefined) {
+			nested = false;
+			blacklist = [];
+		} else {
+			nested = data.nested_blacklist;
+			blacklist_length = blacklist.length;
+			if (nested === undefined) {
+				nested = data.nested_blacklist = false;
+			}
+		}
+
+		for (var i=0, len=whitelist.length; i < len; i++) {
+			selector = whitelist[i];
+			$(selector).on('click', 'a', AjaxNav.click);
+			if (nested) {
+				for (var ii=0; ii < blacklist_length; ii++) {
+					$(selector).off('click', blacklist[ii], AjaxNav.click);
+				}
+			}
+		}
+		if (blacklist_length && ! nested) {
+			for (var i=0; i < blacklist_length; i++) {
+				selector = blacklist[i]
+				$(selector).off('click', 'a', AjaxNav.click);
+			}
+		}
+		// ------------------------ ] ... initial (un)delegation ]
+
+		// ------------------------- [ view name recognition ... [
+		// (for path components after a final "/" but w/o "@@")
+		if (typeof data.view_ids === 'undefined') {
+			data.view_ids = ['view',
+							 'edit',
+							 'base_edit'];
+		}
+		if (typeof data.view_prefixes === 'undefined') {
+			data.view_prefixes = ['manage_'];
+		}
+		if (typeof data.view_suffixes === 'undefined') {
+			data.view_suffixes = ['_view'];
+		}
+		// ------------------------- ] ... view name recognition ]
+
+		// ------------------------------------- [ blacklist ... [
+		// (view ids which will always be loaded the non-AJAX way)
+		if (typeof data.blacklist_view_ids === 'undefined') {
+			data.blacklist_view_ids = ['edit',
+									   'base_edit',
+									   'manage'];
+		}
+		if (typeof data.blacklist_view_prefixes === 'undefined') {
+			data.blacklist_view_prefixes = ['manage_'];
+		}
+		if (typeof data.blacklist_view_suffixes === 'undefined') {
+			data.blacklist_view_suffixes = ['_edit'];
+		}
+		// ------------------------------------- ] ... blacklist ]
+
+		// ---------------------------- [ keys --> selectors ... [
+		if (typeof data.selectors === 'undefined') {
+			data.selectors = {
+				content: '#region-content,#content'
+			};
+		}
+		// ---------------------------- ] ... keys --> selectors ]
+		AjaxNav.options = data;
+		AjaxNav.log('AjaxNav.init('+key+') completed.');
+	}  // ... ajaxnav_init
+
 	$.ajax({
 		dataType: 'json',
 		url: location.href+'/@@ajax-siteinfo',
@@ -505,88 +603,9 @@ AjaxNav.init = function (key) {
 			$.ajax({
 				// dataType: 'json',
 				url: AjaxNav.origin+'/@@ajaxnav-options-'+key
-			}).done(function (data, textStatus, jqXHR) {
-				AjaxNav.log('AjaxNav.init('+key+') received data:');
-				AjaxNav.log(data);
-
-				// ------------------------ [ initial (un)delegation ... [
-				var whitelist = data.whitelist,
-					blacklist = data.blacklist,
-					i, len, ii, blacklist_length=null, nested,
-					selector;
-
-				if (whitelist === undefined) {
-					whitelist = ['body'];
-				}
-
-				if (blacklist === undefined) {
-					nested = false;
-					blacklist = [];
-				} else {
-					nested = data.nested_blacklist;
-					blacklist_length = blacklist.length;
-					if (nested === undefined) {
-						nested = data.nested_blacklist = false;
-					}
-				}
-
-				for (var i=0, len=whitelist.length; i < len; i++) {
-					selector = whitelist[i];
-					$(selector).on('click', 'a', AjaxNav.click);
-					if (nested) {
-						for (var ii=0; ii < blacklist_length; ii++) {
-							$(selector).off('click', blacklist[ii], AjaxNav.click);
-						}
-					}
-				}
-				if (blacklist_length && ! nested) {
-					for (var i=0; i < blacklist_length; i++) {
-						selector = blacklist[i]
-						$(selector).off('click', 'a', AjaxNav.click);
-					}
-				}
-				// ------------------------ ] ... initial (un)delegation ]
-
-				// ------------------------- [ view name recognition ... [
-				// (for path components after a final "/" but w/o "@@")
-				if (typeof data.view_ids === 'undefined') {
-					data.view_ids = ['view',
-					                 'edit',
-					                 'base_edit'];
-				}
-				if (typeof data.view_prefixes === 'undefined') {
-					data.view_prefixes = ['manage_'];
-				}
-				if (typeof data.view_suffixes === 'undefined') {
-					data.view_suffixes = ['_view'];
-				}
-				// ------------------------- ] ... view name recognition ]
-
-				// ------------------------------------- [ blacklist ... [
-				// (view ids which will always be loaded the non-AJAX way)
-				if (typeof data.blacklist_view_ids === 'undefined') {
-					data.blacklist_view_ids = ['edit',
-					                           'base_edit',
-					                           'manage'];
-				}
-				if (typeof data.blacklist_view_prefixes === 'undefined') {
-					data.blacklist_view_prefixes = ['manage_'];
-				}
-				if (typeof data.blacklist_view_suffixes === 'undefined') {
-					data.blacklist_view_suffixes = ['_edit'];
-				}
-				// ------------------------------------- ] ... blacklist ]
-
-				// ---------------------------- [ keys --> selectors ... [
-				if (typeof data.selectors === 'undefined') {
-					data.selectors = {
-						content: '#region-content,#content'
-					};
-				}
-				// ---------------------------- ] ... keys --> selectors ]
-				AjaxNav.options = data;
-				AjaxNav.log('AjaxNav.init('+key+') completed.');
-			}).fail(function (jqXHR, textStatus, errorThrown) {
+			})
+			.done(ajaxnav_init)
+			.fail(function (jqXHR, textStatus, errorThrown) {
 				AjaxNav.log('E:AjaxNav.init('+key+') --> Error '+textStatus+':');
 				AjaxNav.log(jqXHR);
 				if (errorThrown !== undefined) {
@@ -594,6 +613,7 @@ AjaxNav.init = function (key) {
 				}
 				alert('AjaxNav.init: Error '+textStatus+' for key "'+key+'"');
 			});
-		});
+		}
+	});
 };
 // -*- coding: utf-8 -*- vim: ts=4 sw=4 sts=4 noet ai noic tw=79 cc=+1
