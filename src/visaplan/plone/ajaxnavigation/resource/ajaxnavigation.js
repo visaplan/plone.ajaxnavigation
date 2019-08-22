@@ -40,7 +40,6 @@ urlSplit.prototype.toString = function urlSplitToString () {
 }
 var AjaxNav = (function () {
 	var AjaxNav = {},
-	    DEBUG_DOTTED = true,
 	    log = function (txt) {
 		if (typeof console !== 'undefined' &&
 			    typeof console.log === 'function') {
@@ -320,7 +319,6 @@ var AjaxNav = (function () {
 			} else {
 				window.history.pushState(stateObj, title, url);
 			}
-			title = '(AJAX) ' + title;  // DEBUG / Development
 			document.title = title;
 		} else if (url) {
 			window.history.pushState(stateObj, '', url);
@@ -406,13 +404,6 @@ var AjaxNav = (function () {
 				if (reply_ok) {
 					AjaxNav.history_and_title(newurl, newtitle, data);
 				}
-
-				if (DEBUG_DOTTED) {
-					$('h1').css('border', '3px dotted lime');
-				} else {
-					$('h1').css('border', '3px dashed red');
-				}
-				DEBUG_DOTTED = ! DEBUG_DOTTED;
 			}});
 		return reply_ok;
 	}  // ... use_url(url, query)
