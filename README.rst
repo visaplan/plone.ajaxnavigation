@@ -51,8 +51,10 @@ The general idea is:
   allowing for the browser history.
 
 - If the tried URLs fail to return a usable JSON answer,
-  or if the target URL is inappropriate for other reasons (e.g. page-local, or
-  leaving the current site), 
+  or if the target URL is inappropriate for other reasons
+  (e.g. page-local, or leaving the current site),
+  the target page is loaded the normal, non-AJAX way
+  (i.e., loading the whole page).
 
 
 Features
@@ -61,7 +63,7 @@ Features
 - Tries up to two URLs for each ``a`` element (only one, it the target URL ends
   with "``/``", or if the final path element can be considered a view method
   name rather than an object id)
-- Can be configured using the registry
+- Can be configured using the Plone registry.
 
 
 To do
@@ -69,7 +71,7 @@ To do
 
 - Provide ``@@embed`` views for all standard objects.
 - Provide ``@@please_login`` and ``@@insufficient_rights`` views.
-- Use `web worker`_.
+- Use a `web worker`_.
 - Find reliable CSS destination selectors for the ``content``.
 - Make this package RequireJS_-aware.
 
@@ -90,7 +92,7 @@ Full documentation for end users can be found in the "docs" folder.
 Installation
 ------------
 
-Install visaplan.plone.ajaxnavigation by adding it to your buildout::
+Install visaplan.plone.ajaxnavigation_ by adding it to your buildout::
 
     [buildout]
 
@@ -100,7 +102,14 @@ Install visaplan.plone.ajaxnavigation by adding it to your buildout::
         visaplan.plone.ajaxnavigation
 
 
-and then running ``bin/buildout``
+and then running ``bin/buildout``.
+
+Or, more likely:
+
+Add it to the dependencies of your package, e.g. in your ``setup.py`` file.
+
+You'll need to provide ``@@embed`` views for your content types;
+ideally, you can use your already-existing ``BrowserView`` classes.
 
 
 Contribute
@@ -129,5 +138,6 @@ The project is licensed under the GPLv2 (or later).
 .. _`issue tracker`: https://github.com/visaplan/plone.ajaxnavigation/issues
 .. _`web worker`: https://html.spec.whatwg.org/multipage/workers.html#workers
 .. _RequireJS: https://requirejs.org/
+.. _visaplan.plone.ajaxnavigation: https://pypi.org/project/visaplan.plone.ajaxnavigation
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et
