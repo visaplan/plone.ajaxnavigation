@@ -27,7 +27,7 @@
     -->
   <genericsetup:upgradeStep
       source="*"
-      destination="1001"
+      destination="1002"
       title="Reload GS profiles"
       description=""
       profile="visaplan.plone.ajaxnavigation:default"

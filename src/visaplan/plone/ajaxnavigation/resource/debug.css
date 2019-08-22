@@ -1,0 +1,24 @@
+/*
+ * nach ID: dotted;
+ * nach Klasse: dashed;
+ * nur "content": lime;
+ * *mit* content: red;
+ * sonstiges:
+   * Breadcrumbs: blue;
+ */
+
+#region-content {
+    border: 3px dotted red;
+}
+
+#content {
+    border: 3px dotted lime;
+}
+
+.content {
+    border: 3px dashed lime;
+}
+
+#crumbs {
+    border: 3px dotted blue;
+}
