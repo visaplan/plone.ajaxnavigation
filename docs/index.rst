@@ -42,12 +42,13 @@ The general idea is:
   it will look for certain elements on the page and try to update them:
 
   - contents (and e.g. breadcrumbs, if configured)
-  - title
 
-  It will also set the page url accordingly, allowing for the browser history.
+  It will also set the page url and title accordingly
+  (from the ``@url`` and ``@title`` keys of the JSON reply, respectively),
+  allowing for the browser history.
 
-- If the AJAX view was tried (up to two URLs) but failed, the default click
-  handling will be performed.
+- If the AJAX view was tried (up to two ``.../@@ajax-nav`` URLs) but failed,
+  the default click handling will be performed.
 
 
 Configuration
@@ -94,16 +95,21 @@ AjaxNav will send the following information to ``@@ajax-nav`` views:
 - The raw ``class`` attribute (if any), as ``_class``
 - The HTML5 ``data-*`` attributes (if any), with ``data-`` prefixes.
 
+The default implementation of the ``@@ajax-nav`` view is ``Zope.public``;
+it checks whether the object is viewable to the current user and uses
+one of the following views to fill the ``content`` key of the JSON reply:
+
+- ``@@embed``
+- ``@@please_login``
+- ``@@insufficient_rights``
+
+
 embed
 +++++
 
 Returns the "contents" of the requested object as needed to embed it,
 including the ``h[1-6]`` HTML headline element if desired,
-but usually excluding e.g. breadcrumbs.
-
-This is a mere convention; you might use calls to ``context@@embed`` to
-construct the ``contents`` value of your ``@@ajax-nav`` reply.
-
+but perhaps excluding e.g. breadcrumbs.
 
 
 AJAX data
@@ -205,8 +211,10 @@ contents HTML text    The "meat".
 ======== ============ ================================================
 
 Other keys can be used if they are configured in the ``selectors``
-configuration value; e.g., you might configure the ``breadcrumbs`` value to
-fill the ``#breadcrumbs`` element.
+configuration value;
+e.g., if your ``@@embed`` views don't provide breadcrumbs,
+you might configure the ``breadcrumbs`` value
+to fill the ``#breadcrumbs`` element.
 
 Please use "proper words" for now, avoiding punctuation, whitespace and the
 like.  You never know whether those gain some meaning of a sort in the future.
@@ -248,6 +256,9 @@ the ``view_*`` keys from the `Configuration keys`_ are used;
 if all else fails, the final slash-devided path chunk is first considered
 the object name, and if this fails, the (replaced) view name.
 
+The original `href` URL of the clicked `a` element is forwarded to the
+``@@ajax-nav`` view  in the `_given_url` request variable.
+
 
 Dependencies
 ============
@@ -263,7 +274,8 @@ It is quite likely that it will work with earlier versions as well
 JQuery is usually integrated using `plone.app.jquery`_.
 
 With Plone 5, the handling of Javascript resources changes, so some changes
-are expected to be necessary.  Help with this is appreciated.
+are expected to be necessary; e.g., to establish RequireJS_ support.
+Help with this is appreciated.
 
 For `Volto`_ sites, the whole jQuery-based handling might be obsolete because
 of the use of `React.js`_.
@@ -283,17 +295,28 @@ non-AJAX navigation is expected to work happily.
 JQuery
 ~~~~~~
 
-The jQuery functions on_ and off_ are used to delegate resp. undelegate the ``click`` event.
+The jQuery functions on_ and off_ are used
+to delegate resp. undelegate the ``click`` event.
 These have been added to jQuery in version 1.7 and are meant to replace
-bind_ / unbind_, delegate_ / undelegate_ as well as the live_ method.
+bind_ / unbind_, delegate_ / undelegate_ as well as the live_ / die_ methods.
 Plone 4.3.* specifies 1.7.2*, so this looks like a safe choice.
 
-The live_ method is deprecated since jQuery 1.7 but still exists in version
-1.8.  With ``live`` event handling in place, it is possible that the delegated
-events simply won't fire.
+The live_ / die_ methods are deprecated since jQuery 1.7
+but still exist in version 1.8.
+With ``live`` event handling in place,
+it is possible that the delegated events simply won't fire.
 
 You'll want to get rid of ``.live(...)`` method calls anyway if you still have
 any.
+
+
+Web Workers
+~~~~~~~~~~~
+
+We intend to use HTML5 "`web workers`_" to optimize performance.
+These should be safe to use at the time of this writing;
+see `Can I use web workers?`_.
+
 
 .. _on: https://api.jquery.com/on/
 .. _off: https://api.jquery.com/off/
@@ -302,8 +325,12 @@ any.
 .. _bind: https://api.jquery.com/bind/
 .. _unbind: https://api.jquery.com/unbind/
 .. _live: https://api.jquery.com/live/
+.. _die: https://api.jquery.com/die/
 .. _`plone.app.jquery`: https://pypi.org
 .. _`Volto`: https://volto.kitconcept.com/
 .. _`React.js`: https://reactjs.org/
 .. _`URL()`: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL
 .. _`currently supported`: https://caniuse.com/#search=URL
+.. _`web workers`: https://html.spec.whatwg.org/multipage/workers.html#workers
+.. _`Can I use web workers?` : https://caniuse.com/#search=web%20workers
+.. _RequireJS: https://requirejs.org/

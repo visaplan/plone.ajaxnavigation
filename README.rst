@@ -36,21 +36,42 @@ The general idea is:
   For such link targets, this function will simply return *true*,
   and the page is loaded in the standard way.
 
-- If that check function says, "let's load the target via AJAX",
+- If that check function concludes, "let's load the target via AJAX",
   it will look for certain elements on the page and try to update them:
 
-  - content
+  - ``content``
+
+    and, optionally:
+
   - breadcrumbs
-  - title
+  - other page elements
 
-  It will also set the page url accordingly, allowing for the browser history.
+  It will also set the page url and title accordingly
+  (from the ``@url`` and ``@title`` keys of the JSON reply, respectively),
+  allowing for the browser history.
 
+- If the tried URLs fail to return a usable JSON answer,
+  or if the target URL is inappropriate for other reasons (e.g. page-local, or
+  leaving the current site), 
 
 
 Features
 --------
 
-- Can be bullet points
+- Tries up to two URLs for each ``a`` element (only one, it the target URL ends
+  with "``/``", or if the final path element can be considered a view method
+  name rather than an object id)
+- Can be configured using the registry
+
+
+To do
+-----
+
+- Provide ``@@embed`` views for all standard objects.
+- Provide ``@@please_login`` and ``@@insufficient_rights`` views.
+- Use `web worker`_.
+- Find reliable CSS destination selectors for the ``content``.
+- Make this package RequireJS_-aware.
 
 
 Examples
@@ -106,5 +127,7 @@ The project is licensed under the GPLv2 (or later).
 .. _`patternslib`: https://patternslib.com/
 .. _`plone.patternslib`: https://pypi.org/project/plone.patternslib/
 .. _`issue tracker`: https://github.com/visaplan/plone.ajaxnavigation/issues
+.. _`web worker`: https://html.spec.whatwg.org/multipage/workers.html#workers
+.. _RequireJS: https://requirejs.org/
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et
