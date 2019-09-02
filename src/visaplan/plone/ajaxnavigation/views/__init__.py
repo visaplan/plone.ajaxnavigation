@@ -2,7 +2,8 @@
 
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
-from zope.component import getMultiAdapter
+from zope.component import queryMultiAdapter
+from zope.component.interfaces import ComponentLookupError
 from Acquisition import aq_inner
 from AccessControl.Permissions import view as view_permission
 from plone.uuid.interfaces import IUUID
@@ -10,9 +11,10 @@ from logging import getLogger
 
 from visaplan.plone.ajaxnavigation.decorators import returns_json
 from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
+from visaplan.plone.ajaxnavigation.utils import view_choice_tuple
+from visaplan.plone.ajaxnavigation.utils import embed_view_name
+from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
 
-from pdb import set_trace
-from visaplan.tools.debug import pp
 
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
 
@@ -29,26 +31,77 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
     these override the __call__ method to return a JSON "object"
     """
 
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        # XXX: This might not be early enough,
+        #      e.g. for views including batch navigation:
+        self._data, self._other = pop_ajaxnav_vars(request.form)
+
     # ------------- [ choose the view for the 'context' JSON key ... [
     def views_to_try(self, context):
+        """
+        Override this method to inject special views.
+
+        The yielded values can be simply strings representing view names
+        (like 'embed'), or 2-tuples (page_id, view_name), where page_id
+        may be None; see ..utils.view_choice_tuple().
+        """
+        cls = self.__class__
+        layout = context.getLayout()
+        if layout:
+            view = embed_view_name(layout)
+            if view:
+                yield view
         yield 'embed'
 
     def choose_view(self, context):
+        """
+        This method is called *after* performing the View permission check;
+        see as well the please_login_viewname and insufficient_rights_viewname
+        methods which are used alternatively.
+
+        There shouldn't be normally the need to override this method;
+        instead, override --> views_to_try.
+        """
         tried = []
-        for view_name in self.views_to_try(context):
-            if view_name in tried:
+        cls = self.__class__
+        request = self.request
+        for val in self.views_to_try(context):
+            tup = view_choice_tuple(val)
+            if tup in tried:
                 continue
-            the_view = getMultiAdapter((context, self.request), name=view_name)
-            if the_view:
-                return the_view
-            tried.append(view_name)
+            tried.append(tup)
+            page_id, view_name = tup
+            if page_id is None:
+                o = context
+            else:
+                o = context.restrictedTraverse(page_id)
+                if not o:
+                    continue
+            try:
+                the_view = queryMultiAdapter((context, self.request),
+                                             name=view_name)
+            except ComponentLookupError as e:
+                logger.error('%(e)r looking for %(view_name)r (%(context)r)',
+                             locals())
+            else:
+                if the_view:
+                    return the_view
+                # necessary to use e.g. mainpage_embed from skin layer;
+                # @@mainpage_embed *didn't* work:
+                the_view = context.restrictedTraverse(view_name)
+                if the_view:
+                    return the_view
+                logger.error('%(context)r: view %(view_name)r not found!',
+                             locals())
         cls = self.__class__
         if tried:
             logger.error('%(context)r, %(cls)r: no appropriate view found; '
-                         'tried %(tried)s', local())
+                         'tried %(tried)s', locals())
         else:
             logger.error('%(context)r, %(cls)r: no view names!',
-                         local())
+                         locals())
         return None
     # ------------- ] ... choose the view for the 'context' JSON key ]
 
@@ -58,14 +111,12 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         """
         Return JSON data for AJAX navigation.
 
-        Return "nothing" if no @@embed view is available.
+        Return "nothing" if no appropriate (normally: @@embed) view is available.
         Return False if no URL is given.
         """
         context = aq_inner(self.context)
         request = self.request
         form = request.form
-        pp(context=context, form=form)
-        # set_trace()
 
         # without a given URL, there probably won't be anything to do for us:
         given_url = form.pop('_given_url', None)
@@ -91,8 +142,12 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
             view_name = self.insufficient_rights_viewname()
 
         if the_view is None and view_name is not None:
-            pp([('res:', res), ('ok:', ok), ('view_name:', view_name)])
-            the_view = getMultiAdapter((context, self.request), name=view_name)
+          try:
+            the_view = queryMultiAdapter((context, request),
+                                         name=view_name)
+          except ComponentLookupError as e:
+            logger.error('%(e)r looking for %(view_name)r (%(context)r)',
+                         locals())
 
         if the_view is None:
             logger.error('%(context)r: view %(view_name)r not found!',
@@ -216,7 +271,6 @@ class EmbedBaseBrowserView(BrowserView):
         """
         context = aq_inner(self.context)
         logger.info('schemadata(%(context)r)', locals())
-        # pp(context, kwargs)
 
         resolved_kw = self.schemadata_kwargs(**kwargs)
 

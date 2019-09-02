@@ -110,30 +110,44 @@ var AjaxNav = (function () {
 	 * div -- '@@' or '/'
 	 * prefix -- everything before <div>
 	 * view -- a suspected view name (after <div>)
+	 *
+	 * A query string (starting with a question mark) is cropped from
+	 * the view name and returned in the 4th part ([3]) of the list.
 	 */
 	var splitview = function (s) {
 		var res = [],
 		    posa = s.indexOf('@@'),
-		    poslasl = s.lastIndexOf('/');
+		    poslasl = s.lastIndexOf('/'),
+		    qs = '',
+		    posqm = s.indexOf('?');
+		if (posqm === -1) {
+			posqm = s.length;
+		} else {
+			qs = s.substring(posqm);
+		}
 		if (poslasl > -1) {  // position of last slash
 			if (posa > poslasl) {
 				return [s.substring(0, posa),
 				        '@@',
-				        s.substring(posa+2)]
+				        s.substring(posa+2, posqm),
+				        qs]
 			} else {
 				return [s.substring(0, poslasl),
 				        '/',
-				        s.substring(poslasl+1)]
+				        s.substring(poslasl+1, posqm),
+				        qs]
 			}
 		}
 		if (posa > -1) {
 			return [s.substring(0, posa),
 			        '@@',
-			        s.substring(posa+2)]
+			        s.substring(posa+2, posqm),
+			        qs]
 		} else {
 			return ['',
 			        '',
-			        s]
+			        s.substring(0, posqm),
+			        qs]
 		}
 	};
 	AjaxNav.splitview = splitview;
@@ -230,22 +244,23 @@ var AjaxNav = (function () {
 		    parsed = splitview(fullpath),
 		    prefix = parsed[0],
 		    divider = parsed[1],
-		    viewname = parsed[2];
+		    viewname = parsed[2],
+		    qs = parsed[3];
 		if (id_match(viewname, 'blacklist_view', 'blacklisted')) {
 			return null;
 		} else {
 			if (viewname) {
 				if (divider == '@@') {
 					log('followed @@, must be a view: "'+viewname+'"');
-					return [_join_path(full_url(prefix), suffix)];
+					return [_join_path(full_url(prefix), suffix+qs)];
 				} else if (id_match(viewname, 'view', 'whitelisted')) {
-					return [_join_path(full_url(prefix), suffix)];
+					return [_join_path(full_url(prefix), suffix+qs)];
 				} else {
-					return [_join_path(full_url(fullpath), suffix),
-					        _join_path(full_url(prefix), suffix)];
+					return [_join_path(full_url(fullpath), suffix+qs),
+					        _join_path(full_url(prefix), suffix+qs)];
 				}
 			} else {
-				return [_join_path(full_url(fullpath), suffix)];
+				return [_join_path(full_url(fullpath), suffix+qs)];
 			}
 		}
 	};
@@ -347,6 +362,7 @@ var AjaxNav = (function () {
 		    data_keys = [];
 		$.ajax(url, {
 			async: false,
+			cache: false,  // development
 			dataType: 'json',
 			data: query, 
 			error: function (jqXHR, textStatus, errorThrown) {
@@ -375,8 +391,8 @@ var AjaxNav = (function () {
 							reply_ok = false;
 						} else {
 							alert('Invalid special data key: "' +
-								  key + '"; value: "' +
-								  data[key] +'"');
+							      key + '"; value: "' +
+							      data[key] +'"');
 						}
 					} else {  // normal key --> HTML data
 						selector = selectors[key];
@@ -467,9 +483,9 @@ var AjaxNav = (function () {
 		}
 
 		// -------------------------- [ compile query object ... [
-		var i, a,
+		var i, a, len,
 			query = parsed_qs(href);
-		query['_given_url'] = href;
+		// !!! query['_given_url'] = href;
 
 		for (a in data) {
 			query['data-'+a] = data[a];
@@ -477,7 +493,7 @@ var AjaxNav = (function () {
 		if (cls) {
 			query['_class'] = cls;
 		}
-		query._href = full_url(href);
+		// !!! query._href = full_url(href);
 		// -------------------------- ] ... compile query object ]
 
 		// --------------------------- [ try one or two urls ... [
@@ -549,8 +565,8 @@ AjaxNav.init = function (key) {
 		// (for path components after a final "/" but w/o "@@")
 		if (typeof data.view_ids === 'undefined') {
 			data.view_ids = ['view',
-							 'edit',
-							 'base_edit'];
+			                 'edit',
+			                 'base_edit'];
 		}
 		if (typeof data.view_prefixes === 'undefined') {
 			data.view_prefixes = ['manage_'];
@@ -564,8 +580,8 @@ AjaxNav.init = function (key) {
 		// (view ids which will always be loaded the non-AJAX way)
 		if (typeof data.blacklist_view_ids === 'undefined') {
 			data.blacklist_view_ids = ['edit',
-									   'base_edit',
-									   'manage'];
+			                           'base_edit',
+			                           'manage'];
 		}
 		if (typeof data.blacklist_view_prefixes === 'undefined') {
 			data.blacklist_view_prefixes = ['manage_'];
@@ -593,6 +609,7 @@ AjaxNav.init = function (key) {
 			AjaxNav.origin = data.site_url;
 			$.ajax({
 				// dataType: 'json',
+				cache: false,  // development
 				url: AjaxNav.origin+'/@@ajaxnav-options-'+key
 			})
 			.done(ajaxnav_init)
