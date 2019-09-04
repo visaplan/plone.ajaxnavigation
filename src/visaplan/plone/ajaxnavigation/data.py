@@ -32,6 +32,9 @@ clientside_map = {
                 'blacklist_view_prefixes',
                 'blacklist_view_suffixes',
                 'selectors',
+                'scrollto_default_selector',
+                'scrollto_default_deltay',
+                'scrollto_auto_key',
                 )}
 
 internal_map = {

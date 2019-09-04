@@ -22,7 +22,8 @@ the leap, or I'll stick with my own.
 
 The general idea is:
 
-- Catch the onclick event for every ``a`` element on the page.
+- Catch the ``click`` event for every ``a`` element on the page.
+
 - For some links, a special check will tell to proceed with the standard
   behaviour, i.e. load the target the standard way; this includes:
 

@@ -373,6 +373,10 @@ var AjaxNav = (function () {
 				var key,
 				    selector = null,
 				    selectors=AjaxNav.options.selectors,
+				    // null or a CSS selector:
+				    scrollto = AjaxNav.options.scrollto_default_selector,
+				    deltay = AjaxNav.options.scrollto_default_deltay,
+				    auto_key = AjaxNav.options.scrollto_auto_key,
 				    ii,
 				    invalid_count = 0,
 				    invalid_max = 3;
@@ -389,6 +393,8 @@ var AjaxNav = (function () {
 						} else if (key == '@noajax') {
 							log('use_url('+url+'): ' + key + ' found');
 							reply_ok = false;
+						} else if (key == '@scrollto') {
+							scrollto = data[key];
 						} else {
 							alert('Invalid special data key: "' +
 							      key + '"; value: "' +
@@ -419,6 +425,22 @@ var AjaxNav = (function () {
 				}
 				if (reply_ok) {
 					AjaxNav.history_and_title(newurl, newtitle, data);
+					if (scrollto === '@auto') {
+						if (auto_key) {
+							scrollto = selectors[auto_key];
+							if (! scrollto) {
+								AjaxNav.log('@scrollto[@auto]: no selector ' +
+								            'for "'+auto_key+'"!');
+							}
+						} else {
+							scrollto = null;
+						}
+					}
+					if (scrollto) {
+						$(scrollto).scrollTop(deltay);
+					} else {
+						window.scrollTo(0, deltay);
+					}
 				}
 			}});
 		return reply_ok;
@@ -484,7 +506,7 @@ var AjaxNav = (function () {
 
 		// -------------------------- [ compile query object ... [
 		var i, a, len,
-			query = parsed_qs(href);
+		    query = parsed_qs(href);
 		// !!! query['_given_url'] = href;
 
 		for (a in data) {
@@ -525,9 +547,9 @@ AjaxNav.init = function (key) {
 
 		// ------------------------ [ initial (un)delegation ... [
 		var whitelist = data.whitelist,
-			blacklist = data.blacklist,
-			i, len, ii, blacklist_length=null, nested,
-			selector;
+		    blacklist = data.blacklist,
+		    i, len, ii, blacklist_length=null, nested,
+		    selector;
 
 		if (whitelist === undefined) {
 			whitelist = ['body'];
@@ -598,6 +620,21 @@ AjaxNav.init = function (key) {
 			};
 		}
 		// ---------------------------- ] ... keys --> selectors ]
+
+		// --------------------------- [ @@scrollto defaults ... [
+		if (typeof data.scrollto_default_selector === 'undefined') {
+			data.scrollto_default_selector = null;
+		}
+		if (typeof data.scrollto_default_deltay === 'undefined') {
+			data.scrollto_default_deltay = 0;
+		}
+		if (typeof data.scrollto_auto_key === 'undefined') {
+			data.scrollto_auto_key = 'content';
+		}
+		if (! data.scrollto_auto_key) {
+			data.scrollto_auto_key = null;
+		}
+		// --------------------------- ] ... @@scrollto defaults ]
 		AjaxNav.options = data;
 		AjaxNav.log('AjaxNav.init('+key+') completed.');
 	}  // ... ajaxnav_init

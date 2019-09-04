@@ -184,3 +184,33 @@ class IAjaxNavigationSettings(model.Schema):
                 u'we may map an AJAX version '
                 u'corresponding to the standard full-page view.'
                 ))
+
+    scrollto_default_selector = schema.BytesLine(
+        title=_(u"Default selector for the @scrollto feature"),
+        default=None,
+        description=_(
+            u'help_scrollto_default_selector',
+            default=u'When loading new content '
+                u'by clicking on a hyperlink somewhere down the page, '
+                u'the contents could be loaded unnoticed. '
+                u'To prevent this, we scroll up; '
+                u'globally, or to the element found by the CSS selector given here. '
+                u'You might use the special value "@auto".'
+                ))
+
+    scrollto_default_deltay = schema.Int(
+        title=_(u"Default vertical offset for the @scrollto feature"),
+        default=0)
+
+    scrollto_auto_key = schema.BytesLine(
+        title=_(u"Default key for the @scrollto @auto value"),
+        default='content',
+        description=_(
+            u'help_scrollto_default_selector',
+            default=u'For a @scrollto value of "@auto", '
+                u'use the selector given for the key given here; '
+                u'default: "content". '
+                u'E.g., if the value is "content", '
+                u'and the selector for the "content" key is "#content", '
+                u'the "#content" selector is used to call the jQuery "scrollTop" method. '
+                ))

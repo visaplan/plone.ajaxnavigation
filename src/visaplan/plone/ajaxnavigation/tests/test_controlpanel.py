@@ -123,6 +123,31 @@ class RegistryTestCase(unittest.TestCase):
            self.settings.selectors,
            {'content': "#region-content,#content",
             })
+
+    # --------------------------------- [ @scrollto feature ... [
+    def test_scrollto_default_selector_record_in_registry(self):
+		self.assertTrue(hasattr(self.settings, 'scrollto_default_selector'))
+        # By default, we don't scroll to the top of an element
+        # but of the entire document, using window.scrollTo
+		self.assertEqual(
+			self.settings.scrollto_default_selector,
+			None)
+
+    def test_scrollto_default_deltay_record_in_registry(self):
+		self.assertTrue(hasattr(self.settings, 'scrollto_default_deltay'))
+		self.assertEqual(
+			self.settings.scrollto_default_deltay,
+			0)
+
+    def test_scrollto_auto_key_record_in_registry(self):
+		self.assertTrue(hasattr(self.settings, 'scrollto_auto_key'))
+        # if the @scrollto value is '@auto' (default from scrollto_default_selector, see above),
+        # we use the selector mapped (by the "selectors" setting, above)
+        # to the key given here
+		self.assertEqual(
+			self.settings.scrollto_auto_key,
+			'content')
+    # --------------------------------- ] ... @scrollto feature ]
     # -------------------- ] ... settings for client-side processing ]
 
     # ----------------------- [ settings for internal processing ... [
