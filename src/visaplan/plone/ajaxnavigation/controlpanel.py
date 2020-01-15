@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from __future__ import absolute_import
 from plone.app.registry.browser import controlpanel
 from visaplan.plone.ajaxnavigation import _
 from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings

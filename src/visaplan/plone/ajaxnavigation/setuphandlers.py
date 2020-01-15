@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Organisatorisches:
+from __future__ import absolute_import
 __author__ = """Tobias Herp <tobias.herp@visaplan.com>"""
 __docformat__ = 'plaintext'
 from Products.CMFPlone.interfaces import INonInstallable

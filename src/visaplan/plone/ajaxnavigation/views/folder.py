@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from Products.Five.browser import BrowserView
 from zope.component import getMultiAdapter
 from Acquisition import aq_inner
@@ -64,7 +65,7 @@ class EmbedBrowserView(SchemaAwareBrowserView):
         include_objects   = kwargs.pop('include_objects',   False)
         if kwargs:
             raise TypeError('Surplus keyword arguments: %s'
-                    % (kwargs.keys(),
+                    % (list(kwargs.keys()),
                        ))
         if context is None:
             context = self.context

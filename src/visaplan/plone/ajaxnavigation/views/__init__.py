@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
 from zope.component import queryMultiAdapter
@@ -17,6 +18,7 @@ from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
 
 
 from pdb import set_trace
+import six
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
 
 __all__ = [  # public interface:
@@ -258,7 +260,7 @@ class SchemaAwareBrowserView(BrowserView):
                 raise TypeError('If fields are given, omit_fields must be empty!'
                                 ' (fields=%(fields)r, omit_fields=%(omit_fields)r)'
                                 % locals())
-            if isinstance(fields, basestring):
+            if isinstance(fields, six.string_types):
                 fields = set([fields])
             elif isinstance(fields, set):
                 pass
@@ -269,7 +271,7 @@ class SchemaAwareBrowserView(BrowserView):
             omit_fields = kwargs.pop('omit_fields', None) or set()
             if omit_fields is None:
                 pass
-            elif isinstance(omit_fields, basestring):
+            elif isinstance(omit_fields, six.string_types):
                 omit_fields = set([omit_fields])
             elif isinstance(omit_fields, set):
                 pass
@@ -306,7 +308,7 @@ class SchemaAwareBrowserView(BrowserView):
         accept_unused = kwargs.pop('accept_unused', False)
         if kwargs and not accept_unused:
             raise TypeError('Unused kwarg(s)! (%s)'
-                            % ', '.join(kwargs.keys()))
+                            % ', '.join(list(kwargs.keys())))
 
         fields =      resolved_kw.pop('fields')
         omit_fields = resolved_kw.pop('omit_fields')
@@ -319,7 +321,7 @@ class SchemaAwareBrowserView(BrowserView):
                 % locals())
 
         schema = context.Schema()
-        keys = schema.keys()
+        keys = list(schema.keys())
         res = {}
         for key in keys:
             if use_blacklist and key in omit_fields:
@@ -392,7 +394,7 @@ class SchemaAwareBrowserView(BrowserView):
             return check_simple
 
     def known_permission_strings(self):
-        return frozenset(PERMISSION_ALIASES.values())
+        return frozenset(list(PERMISSION_ALIASES.values()))
     # ---------- ] ... "checking permission checker" ]
     # ---------------------------------- ] ... class SchemaAwareBrowserView ]
 

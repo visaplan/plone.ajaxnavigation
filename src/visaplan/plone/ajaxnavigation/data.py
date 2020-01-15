@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from Products.CMFCore.permissions import (
         ManagePortal,
         ModifyPortalContent,
@@ -44,8 +45,8 @@ internal_map = {
                 'view4ajax',
                 )}
 
-all_keys = clientside_map.keys() + \
-        internal_map.keys()
+all_keys = list(clientside_map.keys()) + \
+        list(internal_map.keys())
 
 PERMISSION_ALIASES = AliasDict({
         'view':          view_permission,

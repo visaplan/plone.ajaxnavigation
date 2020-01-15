@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
 from zExceptions import Redirect

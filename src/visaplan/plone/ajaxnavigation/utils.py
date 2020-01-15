@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+import six
 def embed_view_name(viewname):
     """
     For a given view name <viewname>, construct a name of an "embed view"
@@ -59,7 +61,7 @@ def view_choice_tuple(val):
     >>> view_choice_tuple('embed')
     (None, 'embed')
     """
-    if isinstance(val, basestring):
+    if isinstance(val, six.string_types):
         return (None, val)
     elif val[2:] or not val[1:]:
         raise ValueError('Please specify either a string '
@@ -124,7 +126,7 @@ def pop_ajaxnav_vars(dic, **kwargs):
     other = {}
     nocache = kwargs.pop('nocache', True)
     if kwargs:
-        bogus = kwargs.keys()
+        bogus = list(kwargs.keys())
         raise TypeError('Undefined kwargs found! (%(bogus)s)'
                         % locals())
     for key in dic.keys():

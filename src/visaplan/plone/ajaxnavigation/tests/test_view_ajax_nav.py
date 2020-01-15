@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from visaplan.plone.ajaxnavigation.testing import FUNCTIONAL_TESTING
 from visaplan.plone.ajaxnavigation.testing import INTEGRATION_TESTING
 from plone import api

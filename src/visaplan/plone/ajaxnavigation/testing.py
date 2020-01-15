@@ -5,6 +5,7 @@ For Plone 5 we need to install plone.app.contenttypes.
 
 Tile for collective.cover is only tested in Plone 4.3.
 """
+from __future__ import absolute_import
 import warnings
 with warnings.catch_warnings():
     warnings.simplefilter('ignore', ImportWarning)
