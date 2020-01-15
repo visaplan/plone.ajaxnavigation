@@ -141,7 +141,7 @@ class IAjaxNavigationSettings(model.Schema):
 
     selectors = schema.Dict(
         title=_(u"Selectors for data keys"),
-        default={'content': "#region-content,#content",
+        default={'content': "#content",
                  },
         key_type=schema.BytesLine(title=_(u'AJAX response key')),
         value_type=schema.BytesLine(title=_(u'CSS selector[,...]')),
@@ -206,7 +206,7 @@ class IAjaxNavigationSettings(model.Schema):
         title=_(u"Default key for the @scrollto @auto value"),
         default='content',
         description=_(
-            u'help_scrollto_default_selector',
+            u'help_scrollto_auto_key',
             default=u'For a @scrollto value of "@auto", '
                 u'use the selector given for the key given here; '
                 u'default: "content". '

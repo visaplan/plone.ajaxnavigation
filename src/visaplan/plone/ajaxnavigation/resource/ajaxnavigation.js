@@ -616,7 +616,7 @@ AjaxNav.init = function (key) {
 		// ---------------------------- [ keys --> selectors ... [
 		if (typeof data.selectors === 'undefined') {
 			data.selectors = {
-				content: '#region-content,#content'
+				content: '#content'
 			};
 		}
 		// ---------------------------- ] ... keys --> selectors ]

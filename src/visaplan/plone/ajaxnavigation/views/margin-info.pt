@@ -1,0 +1,6 @@
+<div class="content-region-3 col-md-3" id="portal-column-two"
+     tal:omit-tag="">
+<tal:workload replace="structure provider:plone.rightcolumn"><!--
+The contents provided by plone.rightcolumn is usually injected using AJAX
+in a div#portal-column-two (which is not created by this template)
+--></tal:workload></div>

@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: visaplan.plone.ajaxnavigation 1.0.dev2\n"
-"POT-Creation-Date: 2019-07-25 17:32+0000\n"
+"POT-Creation-Date: 2019-09-04 16:03+0000\n"
 "PO-Revision-Date: 2019-07-12 17:53+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@visaplan.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,6 +37,10 @@ msgid "AJAX view"
 msgstr ""
 "AJAX-Sicht"
 
+#: ../views/embed_folderish.pt:12
+msgid "Attributes"
+msgstr ""
+
 #: ../interfaces.py:47
 msgid "Blacklist"
 msgstr ""
@@ -67,10 +71,26 @@ msgid "CSS selector[,...]"
 msgstr ""
 "CSS-Selektor[,...]"
 
+#: ../views/embed_folderish.pt:18
+msgid "Child objects"
+msgstr ""
+
 #: ../interfaces.py:21
 msgid "Clientside processing"
 msgstr ""
 "Javascript-Verarbeitung"
+
+#: ../interfaces.py:206
+msgid "Default key for the @scrollto @auto value"
+msgstr ""
+
+#: ../interfaces.py:189
+msgid "Default selector for the @scrollto feature"
+msgstr ""
+
+#: ../interfaces.py:202
+msgid "Default vertical offset for the @scrollto feature"
+msgstr ""
 
 #: ../interfaces.py:158
 msgid "Internal processing"
@@ -162,6 +182,16 @@ msgstr ""
 msgid "help_nested_blacklist"
 msgstr ""
 "Wenn aktiviert, und wenn es eine nicht-leere Ausschlußliste von CSS-Selektoren gibt, wird diese während der Abarbeitung der Positivliste angewendet"
+
+#. Default: "For a @scrollto value of \"@auto\", use the selector given for the key given here; default: \"content\". E.g., if the value is \"content\", and the selector for the \"content\" key is \"#content\", the \"#content\" selector is used to call the jQuery \"scrollTop\" method. "
+#: ../interfaces.py:208
+msgid "help_scrollto_auto_key"
+msgstr ""
+
+#. Default: "When loading new content by clicking on a hyperlink somewhere down the page, the contents could be loaded unnoticed. To prevent this, we scroll up; globally, or to the element found by the CSS selector given here. You might use the special value \"@auto\"."
+#: ../interfaces.py:191
+msgid "help_scrollto_default_selector"
+msgstr ""
 
 #. Default: "For each “normalˮ key from an AJAX response, configure a CSS selector which tells where to put the value. You can give more than one value, separated by comma, which will be tried in order."
 #: ../interfaces.py:148

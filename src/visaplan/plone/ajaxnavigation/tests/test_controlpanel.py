@@ -121,7 +121,7 @@ class RegistryTestCase(unittest.TestCase):
        self.assertTrue(hasattr(self.settings, 'selectors'))
        self.assertEqual(
            self.settings.selectors,
-           {'content': "#region-content,#content",
+           {'content': "#content",
             })
 
     # --------------------------------- [ @scrollto feature ... [

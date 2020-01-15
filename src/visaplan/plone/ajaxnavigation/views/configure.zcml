@@ -67,4 +67,11 @@
       class="visaplan.plone.ajaxnavigation.views.siteroot.SiteInfoView"
       />
 
+  <browser:page
+      name="margin-info"
+      for="*"
+      template="margin-info.pt"
+      permission="zope.Public"
+      />
+
 </configure>

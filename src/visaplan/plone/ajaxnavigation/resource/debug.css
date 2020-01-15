@@ -7,7 +7,14 @@
    * Breadcrumbs: blue;
  */
 
-#region-content {
+.area-content {
+    border: 3px dashed red;
+}
+
+/*
+ * bogus selector; not used neither in scripts nor in stylesheets!
+ */
+#area-content {
     border: 3px dotted red;
 }
 
