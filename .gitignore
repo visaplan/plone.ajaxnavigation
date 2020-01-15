@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Editor artifacts and backups
+.*.sw[poq]
+*~
+
 # C extensions
 *.so
 
@@ -130,6 +134,7 @@ scripts/
 update-module
 init
 init.vim
+CHANGES-in-*.rst
 # other little helpers
 *.vim
 
