@@ -3,15 +3,16 @@ from Products.Five.browser import BrowserView
 from zope.component import getMultiAdapter
 from Acquisition import aq_inner
 
-from visaplan.plone.ajaxnavigation.decorators import returns_json
+from visaplan.plone.tools.decorators import returns_json
 
 from visaplan.plone.ajaxnavigation.views import AjaxnavBaseBrowserView
-from visaplan.plone.ajaxnavigation.views import EmbedBaseBrowserView
+from visaplan.plone.ajaxnavigation.views import SchemaAwareBrowserView
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 
 DEFAULT_FOLDER_EMBED = embed_view_name('folder_listing')  # folder_listing_embed
 
-
+# verwende allgemeine ../AjaxnavBaseBrowserView
+'''
 class AjaxnavBrowserView(AjaxnavBaseBrowserView):
 
     def views_to_try(self, context):
@@ -36,9 +37,10 @@ class AjaxnavBrowserView(AjaxnavBaseBrowserView):
             if view:
                 yield view
         yield DEFAULT_FOLDER_EMBED
+'''
 
 
-class EmbedBrowserView(EmbedBaseBrowserView):
+class EmbedBrowserView(SchemaAwareBrowserView):
 
     def children(self, context=None, **kwargs):
         """

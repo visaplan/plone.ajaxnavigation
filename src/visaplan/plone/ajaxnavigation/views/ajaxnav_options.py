@@ -7,7 +7,7 @@ from plone.registry.interfaces import IRegistry
 
 from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
 from visaplan.plone.ajaxnavigation.data import clientside_map
-from visaplan.plone.ajaxnavigation.decorators import returns_json
+from visaplan.plone.tools.decorators import returns_json
 
 
 class AjaxnavOptions(BrowserView):

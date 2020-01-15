@@ -9,18 +9,19 @@ from AccessControl.Permissions import view as view_permission
 from plone.uuid.interfaces import IUUID
 from logging import getLogger
 
-from visaplan.plone.ajaxnavigation.decorators import returns_json
+from visaplan.plone.tools.decorators import returns_json
 from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
 from visaplan.plone.ajaxnavigation.utils import view_choice_tuple
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
 
 
+from pdb import set_trace
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
 
 __all__ = [  # public interface:
         'AjaxnavBaseBrowserView',  # for @@ajax-nav views
-        'EmbedBaseBrowserView',    # for @@embed views
+        'SchemaAwareBrowserView',  # for @@embed views
         # MarginInfoBaseBrowserView  (nothing interesting yet)
         ]
 
@@ -48,6 +49,14 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         may be None; see ..utils.view_choice_tuple().
         """
         cls = self.__class__
+
+        dp_view = queryMultiAdapter((context, self.request),
+                                    name='default_page')
+        if dp_view:
+            page_id = dp_view.getDefaultPage()
+            if page_id:
+                yield (page_id, 'embed')
+
         layout = context.getLayout()
         if layout:
             view = embed_view_name(layout)
@@ -117,6 +126,7 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         context = aq_inner(self.context)
         request = self.request
         form = request.form
+        # set_trace()
 
         # without a given URL, there probably won't be anything to do for us:
         given_url = form.pop('_given_url', None)
@@ -159,6 +169,24 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         else:
             try:
                 content = the_view()
+            except UnicodeDecodeError as e:
+                logger.error(e)
+                logger.info('NOCHMAL MIT DEBUGGER!')
+                set_trace()
+                try:
+                    content = the_view()
+                except Exception as e:
+                    logger.error(e)
+                    logger.exception(e)
+                    logger.info('... NOCHMAL MIT DEBUGGER!')
+                    res.update({
+                        '@noajax': True,
+                        'content': None,
+                        })
+                else:
+                    res.update({
+                        'content': content,
+                        })
             except Exception as e:
                 logger.error(e)
                 logger.exception(e)
@@ -181,7 +209,7 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
     # -------------------------------- ] ... class AjaxnavBaseBrowserView ]
 
 
-class EmbedBaseBrowserView(BrowserView):
+class SchemaAwareBrowserView(BrowserView):
     """
     Multipurpose base class for @@embed views
     """
@@ -204,7 +232,7 @@ class EmbedBaseBrowserView(BrowserView):
             'portal_type': context.portal_type,
             }
 
-    # ------------------ [ EmbedBaseBrowserView.schemadata() ... [
+    # ------------------ [ SchemaAwareBrowserView.schemadata() ... [
     def schemadata_kwargs(self, accept_unused=False, **kwargs):
         """
         Resolve the keyword arguments to the schemadata method
@@ -304,7 +332,7 @@ class EmbedBaseBrowserView(BrowserView):
                 res[key] = val
 
         return res
-    # ------------------ ] ... EmbedBaseBrowserView.schemadata() ]
+    # ------------------ ] ... SchemaAwareBrowserView.schemadata() ]
     # ----------------------------- ] ... Bausteine für data() ]
 
     def perm(self):
@@ -366,7 +394,7 @@ class EmbedBaseBrowserView(BrowserView):
     def known_permission_strings(self):
         return frozenset(PERMISSION_ALIASES.values())
     # ---------- ] ... "checking permission checker" ]
-    # ---------------------------------- ] ... class EmbedBaseBrowserView ]
+    # ---------------------------------- ] ... class SchemaAwareBrowserView ]
 
 
 class MarginInfoBaseBrowserView(BrowserView):

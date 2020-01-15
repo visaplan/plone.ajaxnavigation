@@ -2,7 +2,7 @@
 
 from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
-from visaplan.plone.tools.decorators import returns_json
+from zExceptions import Redirect
 
 
 class SiteInfoView(BrowserView):
@@ -11,11 +11,8 @@ class SiteInfoView(BrowserView):
         self.context = context
         self.request = request
 
-    @returns_json
     def __call__(self):
         context = aq_inner(self.context)
         portal_state = context.restrictedTraverse('@@plone_portal_state')
         navroot = portal_state.navigation_root_url()
-        return {
-            'site_url': navroot,
-            }
+        raise Redirect(navroot + '/@@ajax-siteinfo')

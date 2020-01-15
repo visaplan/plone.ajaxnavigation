@@ -4,10 +4,14 @@
     xmlns:meta="http://namespaces.zope.org/meta"
     xmlns:i18n="http://namespaces.zope.org/i18n"
     i18n_domain="visaplan.plone.animations"
-    xmlns:plone="http://namespaces.plone.org/plone">
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:zcml="http://namespaces.zope.org/zcml">
 
   <i18n:registerTranslations directory="locales" />
   <meta:provides feature="VisaplanAjaxNavigation" />
+  <include package=".oldcrumbs"
+      zcml:condition="have VisaplanTentativeBreadcrumbs"
+      />
 
   <include file="profiles.zcml" />
   <utility

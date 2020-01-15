@@ -3,3 +3,4 @@ graft docs
 include *.rst
 include VERSION*
 global-exclude *.pyc *~ .*.swp .*.swo *.vim
+global-exclude *-local.rst
