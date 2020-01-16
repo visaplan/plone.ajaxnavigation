@@ -1,0 +1,17 @@
+<div  xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="plone">
+
+<div id="content-core" tal:define="
+data  python:view.data();
+title python:data['title'];
+">
+    <h1 tal:content="title">
+    title of calling object
+    </h1>
+    <div i18n:translate="">
+    You need to login to view this page.
+    </div>
+</div><!-- #content-core -->
+</div>

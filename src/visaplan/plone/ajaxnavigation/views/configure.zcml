@@ -9,9 +9,16 @@
 
   <browser:page
      name="ajax-nav"
-     for="Products.ATContentTypes.interfaces.IATContentType"
+     for="*"
      class=".AjaxnavBaseBrowserView"
-     permission="zope2.View"
+      permission="zope.Public"
+     />
+
+  <browser:page
+     name="ajax-nav"
+     for="Products.ATContentTypes.interfaces.IATFolder"
+     class=".folder.AjaxnavBrowserView"
+      permission="zope.Public"
      />
 
   <browser:page
@@ -77,6 +84,14 @@
   <!-- [ login processing ... [ -->
   <!-- based on ./login_form.cpt from Products.CMFPLone (for now) 4.3.3;
        template ./login_form_embed.pt here: -->
+  <browser:page
+      name="please_login"
+      for="*"
+      template="please_login.pt"
+      permission="zope.Public"
+      class=".PleaseLoginBrowserView"
+      />
+
   <browser:page
       name="login_form_embed"
       for="*"

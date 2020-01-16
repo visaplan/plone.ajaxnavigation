@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# Organisatorisches:
 from __future__ import absolute_import
+
+# Organisatorisches:
 __author__ = """Tobias Herp <tobias.herp@visaplan.com>"""
 __docformat__ = 'plaintext'
 from Products.CMFPlone.interfaces import INonInstallable
@@ -20,7 +21,7 @@ import logging
 # ------------------------------------------------------ [ Daten ... [
 # UNITRACC_PORTAL_TYPES_1000 = UNITRACC_PORTAL_TYPES[:17]
 
-PROJECTNAME = __package__
+PROJECTNAME = 'visaplan.plone.ajaxnavigation'
 PROFILE_ID = PROJECTNAME + ':default'
 LOGGER_LABEL = PROJECTNAME + ': setuphandlers'
 # ------------------------------------------------------ ] ... Daten ]

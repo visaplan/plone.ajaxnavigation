@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
+
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
 from zope.component import queryMultiAdapter
@@ -25,6 +25,7 @@ __all__ = [  # public interface:
         'AjaxnavBaseBrowserView',  # for @@ajax-nav views
         'SchemaAwareBrowserView',  # for @@embed views
         # MarginInfoBaseBrowserView  (nothing interesting yet)
+        'PleaseLoginBrowserView',
         ]
 
 
@@ -51,14 +52,6 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         may be None; see ..utils.view_choice_tuple().
         """
         cls = self.__class__
-
-        dp_view = queryMultiAdapter((context, self.request),
-                                    name='default_page')
-        if dp_view:
-            page_id = dp_view.getDefaultPage()
-            if page_id:
-                yield (page_id, 'embed')
-
         layout = context.getLayout()
         if layout:
             view = embed_view_name(layout)
@@ -211,7 +204,7 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
     # -------------------------------- ] ... class AjaxnavBaseBrowserView ]
 
 
-class SchemaAwareBrowserView(BrowserView):
+class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
     """
     Multipurpose base class for @@embed views
     """
@@ -397,6 +390,10 @@ class SchemaAwareBrowserView(BrowserView):
         return frozenset(list(PERMISSION_ALIASES.values()))
     # ---------- ] ... "checking permission checker" ]
     # ---------------------------------- ] ... class SchemaAwareBrowserView ]
+
+
+class PleaseLoginBrowserView(AjaxnavBaseBrowserView):
+    pass
 
 
 class MarginInfoBaseBrowserView(BrowserView):

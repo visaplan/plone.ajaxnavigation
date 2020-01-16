@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import six
+
 def embed_view_name(viewname):
     """
     For a given view name <viewname>, construct a name of an "embed view"
