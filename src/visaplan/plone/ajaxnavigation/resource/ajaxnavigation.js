@@ -230,11 +230,11 @@ var AjaxNav = (function () {
 	}
 
 	/* The URLs to try: for .../full/path:
-	 * - .../full/path/perhaps_a_view@ajax-nav
-	 * - .../full/path@ajax-nav
+	 * - .../full/path/perhaps_a_view/@@ajax-nav
+	 * - .../full/path/@@ajax-nav
 	 *
-	 * for .../any/path@@any-view:
-	 * - .../any/path@@ajax-view
+	 * for .../any/path/@@any-view:
+	 * - .../any/path/@@ajax-view
 	 *
 	 * TODO: check for the origin in the given URL,
 	 *       and perhaps amend it
