@@ -122,6 +122,10 @@ def pop_ajaxnav_vars(dic, **kwargs):
     >>> sorted(tst3.items())
     [('b_start', 'int:25')]
     
+    Remarks:
+    - The "given_url" is not special in any way; we might use some other name
+      for the example variable. We can use standard Zope Request variables like
+      VIRTUAL_URL_PARTS[1] and URL0 etc. for such needs.
     """
     data = {}
     other = {}

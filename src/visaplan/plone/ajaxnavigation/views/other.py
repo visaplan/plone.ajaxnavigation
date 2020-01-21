@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
 from zExceptions import Redirect
+from plone.api.portal import get_navigation_root
 
 
 class SiteInfoView(BrowserView):
@@ -14,6 +15,5 @@ class SiteInfoView(BrowserView):
 
     def __call__(self):
         context = aq_inner(self.context)
-        portal_state = context.restrictedTraverse('@@plone_portal_state')
-        navroot = portal_state.navigation_root_url()
+        navroot = get_navigation_root(context).absolute_url()
         raise Redirect(navroot + '/@@ajax-siteinfo')

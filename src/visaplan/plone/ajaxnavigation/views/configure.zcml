@@ -1,24 +1,29 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:cache="http://namespaces.zope.org/cache"
     xmlns:plone="http://namespaces.plone.org/plone"
     xmlns:zcml="http://namespaces.plone.org/zcml"
     i18n_domain="visaplan.plone.ajaxnavigation">
 
   -*- extra stuff goes here -*-
 
+  <cache:rulesetType
+      name="plone.transient"
+      title="Transient views"
+      description="Should not be cached"
+      />
+
   <browser:page
      name="ajax-nav"
-     for="*"
+     for="Products.CMFCore.interfaces.ISiteRoot"
      class=".AjaxnavBaseBrowserView"
       permission="zope.Public"
      />
 
-  <browser:page
-     name="ajax-nav"
-     for="Products.ATContentTypes.interfaces.IATFolder"
-     class=".folder.AjaxnavBrowserView"
-      permission="zope.Public"
+  <cache:ruleset
+     ruleset="plone.transient"
+     for=".AjaxnavBaseBrowserView"
      />
 
   <browser:page

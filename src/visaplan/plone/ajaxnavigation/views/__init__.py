@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import six
 
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
@@ -8,6 +9,7 @@ from zope.component.interfaces import ComponentLookupError
 from Acquisition import aq_inner
 from AccessControl.Permissions import view as view_permission
 from plone.uuid.interfaces import IUUID
+from plone.outputfilters.browser.resolveuid import uuidToObject
 from logging import getLogger
 
 from visaplan.plone.tools.decorators import returns_json
@@ -15,10 +17,16 @@ from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
 from visaplan.plone.ajaxnavigation.utils import view_choice_tuple
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
+from visaplan.tools.sequences import sequence_slide
+from visaplan.tools.sequences import inject_indexes
+from visaplan.tools.debug import pp
 
+try:
+    from simplejson import dumps
+except ImportError:
+    from json import dumps
 
 from pdb import set_trace
-import six
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
 
 __all__ = [  # public interface:
@@ -27,6 +35,12 @@ __all__ = [  # public interface:
         # MarginInfoBaseBrowserView  (nothing interesting yet)
         'PleaseLoginBrowserView',
         ]
+
+# ------------------------------------------------------------ [ data ... [
+UID_INDICATORS = set(['@@resolveuid', 'resolveuid',
+                      '@@resolveUid', 'resolveUid',
+                      ])
+# ------------------------------------------------------------ ] ... data ]
 
 
 class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
@@ -41,6 +55,14 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         # XXX: This might not be early enough,
         #      e.g. for views including batch navigation:
         self._data, self._other = pop_ajaxnav_vars(request.form)
+        try:
+            path = list(request['TraversalRequestNameStack'])
+        except KeyError:
+            path = None
+        else:
+            path.reverse()
+        self._subpath = path
+        logger.info('%(context)r @@ajax-nav: subpath = %(path)r', locals())
 
     # ------------- [ choose the view for the 'context' JSON key ... [
     def views_to_try(self, context):
@@ -52,6 +74,13 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         may be None; see ..utils.view_choice_tuple().
         """
         cls = self.__class__
+        dp_view = queryMultiAdapter((context, self.request),
+                                    name='default_page')
+        if dp_view is not None:
+            page_id = dp_view.getDefaultPage()
+            if page_id:
+                yield (page_id, 'embed')
+
         layout = context.getLayout()
         if layout:
             view = embed_view_name(layout)
@@ -109,8 +138,139 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         return None
     # ------------- ] ... choose the view for the 'context' JSON key ]
 
+    # ------------------------------------ [ resolve the subpath ... [ 
+    def _resolve_subpath(self, **kwargs):
+        """
+        Analysiere den Subpfad (der auf /@@ajax-nav/ folgt und keinen
+        Query-String enthält)
+
+        Options:
+
+        - allow_subpaths: whether further method calls (beyond UID resolution)
+            are allowed to take further subpaths. Default is False, i.e.
+            the method name, if given, must be in the very last slash-separated
+            path segment.
+            Specifying True might have unexpected consequences and is not yet
+            supported.
+        - absolute_paths: whether to resolve UUIDs to absolute paths. Default
+            is True, i.e.
+            '/some/subpath/@@resolveuid/abc123' will be entirely replaced by
+            the path to the object given by the UUID "abc123".
+            When False is specified, the '/some/subpath/' part will be
+            preserved.
+        """
+        pop = kwargs.pop
+        allow_subpaths = pop('allow_subpaths', 0)
+        absolute_paths = pop('absolute_paths', 1)
+        if kwargs:
+            keys = tuple(kwargs.keys())
+            raise TypeError('Unsupported keyword argument(s)! (%(keys)s)'
+                            % locals())
+        global UID_INDICATORS
+        subpath = self._subpath
+        if not subpath:
+            return (self.context,
+                    None,
+                    )
+        changes = []
+        method_name = None
+        
+        for chunk, prev_i, current_i, next_i in inject_indexes(subpath):
+            if chunk in UID_INDICATORS:
+                if next_i is None:
+                    pa = '/'.join(subpath)
+                    raise ValueError('Invalid subpath %(pa)r: '
+                            '%(chunk)r must be followed by a UID!'
+                            % locals())
+                uid = subpath[next_i]
+                if not is_uid_shaped(uid, onerror='return'):
+                    pa = '/'.join(subpath)
+                    raise ValueError('Invalid subpath %(pa)r: '
+                            'Invalid UID %(uid)r following %(chunk)r!'
+                            % locals())
+
+                # CHECKME: Klappt das für zugriffsbeschränkte Objekte? 
+                o = uuidToObject(uid)
+                if o is None:
+                    raise ValueError('UUID %(uid)r not found!'
+                            % locals())
+                vup = o.virtual_url_path()
+                changes.append((
+                        'REPLACE',
+                        (0 if prev_i is None
+                              or absolute_paths
+                         else current_i,
+                         next_i+1),
+                        vup,
+                        ))
+            elif chunk.startswith('@@'):
+                method_name = chunk[2:]
+                if not method_name:
+                    pa = '/'.join(subpath)
+                    raise ValueError('Invalid method specification in %(pa)r'
+                                     ' (%(chunk)r)'
+                                     % locals())
+                changes.append((
+                        'DELETE',
+                        (current_i,
+                         current_i + 1),  # next_i might/should be None
+                        ))
+                if next_i is not None and not allow_subpaths:
+                    pa = '/'.join(subpath)
+                    raise ValueError('%(pa)r: subpath after method speci'
+                            'fication %(chunk)r is not allowed!'
+                            % locals())
+                
+        if changes:
+            changes.reverse()
+            for tup in changes:
+                action, indexes = tup[:2]
+                i1, i2 = indexes
+                if action == 'REPLACE':
+                    subpath[i1:i2] = tup[2]
+                elif action == 'DELETE':
+                    del subpath[i1:i2]
+                else:
+                    raise ValueError('Invalid action %(action)r! (%(tup)r)'
+                                     % locals())
+
+        pp(subpath=subpath)
+        set_trace()
+        if method_name is not None:  # explicitly given (after @@)
+            return (context.restrictedTraverse('/'.join(subpath)),
+                    method_name,
+                    )
+        elif not subpath[-1]:
+            # last chunk is empty --> no method specified 
+            return (context.restrictedTraverse('/'.join(subpath[:-1])),
+                    None,
+                    )
+
+        p1 = '/'.join(subpath)
+        try:
+            o2 = context.restrictedTraverse(p1)
+            # the subpath doesn't contain a method name: 
+            return (o2,
+                    None,
+                    )
+        except Exception as e:
+            logger.error('%(p1)r is not an object', locals())
+            logger.exception(e)
+            if subpath[1:]:
+                # we have a 2nd shot:
+                pass
+            else:
+                raise
+
+        p2 = '/'.join(subpath[:-1])
+        # the last chunk of the subpath is the method name: 
+        return (
+            context.restrictedTraverse(p2),
+            subpath[-1],
+            )
+    # ------------------------------------ ] ... resolve the subpath ]
+
     # ---------------------------------- [ construct JSON object ... [
-    @returns_json
     def __call__(self):
         """
         Return JSON data for AJAX navigation.
@@ -118,16 +278,17 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         Return "nothing" if no appropriate (normally: @@embed) view is available.
         Return False if no URL is given.
         """
-        context = aq_inner(self.context)
+        set_trace()
+        if self._subpath is not None:
+            context, view = self._resolve_subpath()
+        else:
+            context = aq_inner(self.context)
+        pt = context.portal_type
+        pp(context=context, portal_type=pt)
+
         request = self.request
         form = request.form
         # set_trace()
-
-        # without a given URL, there probably won't be anything to do for us:
-        given_url = form.pop('_given_url', None)
-        if (not given_url
-                and 0 and 'das sabotiert den Aufruf aus der Adreßzeile'):
-            return False
 
         state = context.restrictedTraverse('@@plone_context_state')
         res = {
@@ -193,7 +354,14 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
                 res.update({
                     'content': content,
                     })
-        return res
+        # since the response of sub-page @@ajax-nav methods is expected to be
+        # in JSON format already, we don't decorate this method but perform the
+        # operations of the @returns_json wrapper ourselves:
+        txt = dumps(res)
+        setHeader = request.RESPONSE.setHeader
+        setHeader('Content-Type', 'application/json; charset=utf-8')
+        setHeader('Content-Length', len(txt))
+        return txt
     # ---------------------------------- ] ... construct JSON object ]
 
     def please_login_viewname(self):
