@@ -18,5 +18,10 @@ New Features:
 
 Profile changes:
 
-.. _visaplan.plone.tools: https://pypi.org/project/visaplan.plone.tools
+- Explicitly enabled ``urlSplit.min.js`` (from visaplan.js.urlsplit_),
+  since we currently still need it
+- Set profile version to 1003
+
+.. _visaplan.plone.tools: https://pypi.org/project/visaplan.js.urlsplit
+.. _visaplan.js.urlsplit: https://pypi.org/project/visaplan.js.urlsplit
 .. _six: https://pypi.org/project/six

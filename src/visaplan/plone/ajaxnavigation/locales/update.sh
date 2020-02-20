@@ -13,7 +13,7 @@ cd $(dirname "$0")
 i18ndude rebuild-pot --pot $domain.pot --create $domain ../
 i18ndude sync --pot $domain.pot */LC_MESSAGES/$domain.po
 
-version=$(../../../../../scripts/full-version)
+version=$(../../../../../tools/full-version)
 echo "I:version is $version"
 sed --in-place \
 	-e "s,^\(\"Project-Id-Version:\) *\(PACKAGE VERSION\|$domain\)\n\",\1 $domain $version\2," \

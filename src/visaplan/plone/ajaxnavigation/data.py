@@ -24,6 +24,7 @@ _prefix = IAjaxNavigationSettings.__identifier__ + '.'
 clientside_map = {
         key: _prefix + key
         for key in (
+                # --- clientside:
                 'whitelist',
                 'blacklist',
                 'nested_blacklist',
@@ -37,6 +38,10 @@ clientside_map = {
                 'scrollto_default_selector',
                 'scrollto_default_deltay',
                 'scrollto_auto_key',
+                # --- menu:
+                'menu_item_selector',
+                'menu_item_switched_classname',
+                # development_mode (special!)
                 )}
 
 internal_map = {
@@ -57,3 +62,7 @@ PERMISSION_ALIASES = AliasDict({
         'manage_groups': ManageGroups,
         'manage_users':  manage_users,
         })
+
+# Request key to the context which was requested
+# but is not permitted:
+CALLING_CONTEXT_KEY = ('front-end', 'context')

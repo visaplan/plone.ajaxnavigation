@@ -9,9 +9,13 @@
 
   <i18n:registerTranslations directory="locales" />
   <meta:provides feature="VisaplanAjaxNavigation" />
+
+  <configure zcml:condition="installed visaplan.plone.breadcrumbs">
+  <include package="visaplan.plone.breadcrumbs" />
   <include package=".oldcrumbs"
       zcml:condition="have VisaplanTentativeBreadcrumbs"
       />
+  </configure>
 
   <include file="profiles.zcml" />
   <utility

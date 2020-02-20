@@ -103,6 +103,7 @@ class RegistryTestCase(unittest.TestCase):
            ['manage',
             'edit',
             'base_edit',
+            'logout',
             ])
 
     def test_blacklist_view_prefixes_record_in_registry(self):

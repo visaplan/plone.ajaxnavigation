@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*- vim: et ts=8 sw=4 sts=4 si tw=79 cc=+1
 """Installer for the visaplan.plone.ajaxnavigation package."""
+from __future__ import absolute_import
+from __future__ import print_function
 
 from __future__ import absolute_import
 from setuptools import find_packages

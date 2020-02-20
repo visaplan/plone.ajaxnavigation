@@ -1,0 +1,101 @@
+<registry>
+  <records interface="visaplan.plone.ajaxnavigation.controlpanel.IAjaxNavigationSettings">
+    <!-- [ CSS selectors for delegation/undelegation of the click event ... [ -->
+    <value key="whitelist"
+           purge="false">
+        <element>body</element>
+    </value>
+
+    <value key="blacklist"
+           purge="false">
+        <element>nowhere</element>
+    </value>
+
+    <value key="nested_blacklist"
+           purge="false">False</value>
+    <!-- ] ... CSS selectors for delegation/undelegation of the click event ] -->
+
+    <!-- [ distinguish view methods from object ids ... [ -->
+    <value key="view_ids"
+           purge="false">
+        <element>view</element>
+        <element>edit</element>
+        <element>base_edit</element>
+        <element>manage</element>
+    </value>
+
+    <value key="view_prefixes"
+           purge="false">
+        <element>manage_</element>
+    </value>
+
+    <value key="view_suffixes"
+           purge="false">
+        <element>_edit</element>
+        <element>_view</element>
+    </value>
+
+    <value key="blacklist_view_ids"
+           purge="false">
+        <element>base_edit</element>
+        <element>edit</element>
+        <element>logout</element>
+        <element>manage</element>
+    </value>
+
+    <value key="blacklist_view_prefixes"
+           purge="false">
+        <element>configure_</element>
+        <element>configure-</element>
+        <element>manage_</element>
+        <element>plone_</element>
+        <element>portal_</element>
+        <element>prefs_</element>
+    </value>
+
+    <value key="blacklist_view_suffixes"
+           purge="false">
+        <element>_management</element>
+    </value>
+    <!-- ] ... distinguish view methods from object ids ] -->
+
+    <!-- [ Processing of AJAX data ... [ -->
+    <value key="selectors"
+           purge="false">
+        <element key="content">#content</element>
+    </value>
+
+    <value key="scrollto_default_selector"
+           purge="false">@auto</value>
+
+    <value key="scrollto_default_deltay"
+           purge="false">0</value>
+
+    <value key="scrollto_auto_key"
+           purge="false">content</value>
+
+    <value key="menu_item_selector"
+           purge="false">.mainmenu-item &gt; a</value>
+
+    <value key="menu_item_switched_classname"
+           purge="false">selected</value>
+    <!-- ] ... Processing of AJAX data ] -->
+
+    <!-- [ development support ... [ -->
+    <value key="development_mode"
+           purge="false">auto</value>
+    <!-- ] ... development support ] -->
+
+    <!-- [ internal processing (UNUSED; PROBABLY OBSOLETE) ... [ -->
+    <value key="layout4ajax"
+           purge="false">
+        <element key="@unused">@unused</element>
+    </value>
+
+    <value key="view4ajax"
+           purge="false">
+        <element key="@unused">@unused</element>
+    </value>
+    <!-- ] ... internal processing (UNUSED; PROBABLY OBSOLETE) ] -->
+  </records>
+</registry>

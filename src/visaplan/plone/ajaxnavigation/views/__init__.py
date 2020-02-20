@@ -2,67 +2,80 @@
 from __future__ import absolute_import
 import six
 
+from urlparse import urlsplit, urlunsplit, urljoin
+
+from Globals import DevelopmentMode
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
+from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
 from zope.component.interfaces import ComponentLookupError
-from Acquisition import aq_inner
+# from Acquisition import aq_inner
 from AccessControl.Permissions import view as view_permission
 from plone.uuid.interfaces import IUUID
-from plone.outputfilters.browser.resolveuid import uuidToObject
 from logging import getLogger
 
 from visaplan.plone.tools.decorators import returns_json
 from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
+from visaplan.plone.ajaxnavigation.data import CALLING_CONTEXT_KEY
 from visaplan.plone.ajaxnavigation.utils import view_choice_tuple
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
-from visaplan.tools.sequences import sequence_slide
-from visaplan.tools.sequences import inject_indexes
-from visaplan.tools.debug import pp
 
-try:
-    from simplejson import dumps
-except ImportError:
-    from json import dumps
+from visaplan.plone.ajaxnavigation.views.helpers import _get_tool_1
+from visaplan.plone.ajaxnavigation import ToolNotFound, TemplateNotFound, _
 
 from pdb import set_trace
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
+from visaplan.tools.debug import pp
 
 __all__ = [  # public interface:
+        # for @@ajax-nav views (JSON):
         'AjaxnavBaseBrowserView',  # for @@ajax-nav views
-        'SchemaAwareBrowserView',  # for @@embed views
+        'NoAjaxBrowserView',       # ... not (yet) ready for AJAX
+        # for @@embed and other content views (HTML):
+        'AjaxLoadBrowserView',     # reuse full-page templates
+        'SchemaAwareBrowserView',  # ... use schema data
+        'PleaseLoginBrowserView',  # ... inject came_from and prompt for login
+        'AccessDeniedBrowserView', # ... inject came_from and prompt for login
+        'VoidBrowserView',         # ... empty result (None)
         # MarginInfoBaseBrowserView  (nothing interesting yet)
-        'PleaseLoginBrowserView',
         ]
 
-# ------------------------------------------------------------ [ data ... [
-UID_INDICATORS = set(['@@resolveuid', 'resolveuid',
-                      '@@resolveUid', 'resolveUid',
-                      ])
-# ------------------------------------------------------------ ] ... data ]
+
+class AjaxLoadBrowserView(BrowserView):
+    """
+    An ordinary BrowserView which simply injects ajax_load=1 into the request.
+
+    Allows to re-use normal full-page templates for AJAX requests;
+    you simply need to adjust your main_template.pt (or whatever)
+    and decide which page parts you want to let go through.
+    """
+
+    def __init__(self, context, request):
+        BrowserView.__init__(self, context, request)
+        request.set('ajax_load', 1)
+
+    def _interesting_request_vars(self, context, request):
+        print('URL0:                 %s' % (request['URL0'],))
+        print('BASE0:                %s' % (request['BASE0'],))
+        print('ACTUAL_URL:           %s' % (request['ACTUAL_URL'],))
+        print('VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],))
 
 
-class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
+class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
     """
     BrowserView for @@ajax-nav views:
     these override the __call__ method to return a JSON "object"
     """
 
     def __init__(self, context, request):
-        self.context = context
-        self.request = request
+        AjaxLoadBrowserView.__init__(self, context, request)
         # XXX: This might not be early enough,
         #      e.g. for views including batch navigation:
         self._data, self._other = pop_ajaxnav_vars(request.form)
-        try:
-            path = list(request['TraversalRequestNameStack'])
-        except KeyError:
-            path = None
-        else:
-            path.reverse()
-        self._subpath = path
-        logger.info('%(context)r @@ajax-nav: subpath = %(path)r', locals())
+        # for developer information:
+        self._view_names_tried = []
 
     # ------------- [ choose the view for the 'context' JSON key ... [
     def views_to_try(self, context):
@@ -74,19 +87,14 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         may be None; see ..utils.view_choice_tuple().
         """
         cls = self.__class__
-        dp_view = queryMultiAdapter((context, self.request),
-                                    name='default_page')
-        if dp_view is not None:
-            page_id = dp_view.getDefaultPage()
-            if page_id:
-                yield (page_id, 'embed')
-
         layout = context.getLayout()
         if layout:
             view = embed_view_name(layout)
             if view:
                 yield view
+            yield layout
         yield 'embed'
+        yield 'view'
 
     def choose_view(self, context):
         """
@@ -102,6 +110,7 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         request = self.request
         for val in self.views_to_try(context):
             tup = view_choice_tuple(val)
+            self._view_names_tried.append(tup)
             if tup in tried:
                 continue
             tried.append(tup)
@@ -123,7 +132,7 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
                     return the_view
                 # necessary to use e.g. mainpage_embed from skin layer;
                 # @@mainpage_embed *didn't* work:
-                the_view = context.restrictedTraverse(view_name)
+                the_view = _get_tool_1(view_name, context)
                 if the_view:
                     return the_view
                 logger.error('%(context)r: view %(view_name)r not found!',
@@ -138,139 +147,140 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         return None
     # ------------- ] ... choose the view for the 'context' JSON key ]
 
-    # ------------------------------------ [ resolve the subpath ... [ 
-    def _resolve_subpath(self, **kwargs):
+    # ---------------------------------- [ construct JSON object ... [
+    def get_replacement_content(self, context, request, title=None):
         """
-        Analysiere den Subpfad (der auf /@@ajax-nav/ folgt und keinen
-        Query-String enthält)
+        Return a dict which is used of the __call__ method (below)
+        in case the context can't be accessed
+        """
+        # pm = getToolByName(context, 'portal_membership')
+        pm = _get_tool_1('portal_membership', context)
+        if pm.isAnonymousUser():
+            view_name = self.please_login_viewname()
+            title =     self.please_login_title(title)
+        else:
+            view_name = self.insufficient_rights_viewname()
+            title =     self.insufficient_rights_title(title)
+        self._interesting_request_vars(context, request)
+        portal = getToolByName(context, 'portal_url').getPortalObject()
+        the_view = queryMultiAdapter((portal, request),
+                                     name=view_name)
+        if the_view is None:
+            logger.error('%(portal)r: view %(view_name)r not found!', locals())
+            return {
+                '@noajax': True,
+                'content': None,
+                }
+        try:
+            request.set(CALLING_CONTEXT_KEY, context)
+            content = the_view()
+            return {
+                '@noajax': False,
+                '@title': title,
+                'content': content,
+                }
+        except Exception as e:
+            logger.error('Calling %(view_name)r on %(portal)r --> exception %(e)r', locals())
+            self._interesting_request_vars(context, request)
+            print('*** NOCHMAL, MIT DEBUGGER:')
+            set_trace()
+            content = the_view(portal, request)
+            print('*** WIEDER ZURUECK; content:')
+            print(content)
+            print('*** ES HATTE GEKNALLT! ALSO:')
+            raise
+
+    # ------------------------------ ] ... construct JSON object ... [
+    def shortcircuit_noajax(self, context, request):
+        """
+        Detect situations which are not yet handled nicely
+
+        ... but try to handle them first!
+        """
+        form = request.form
+        pp(form=form)
+        for key, val in form.items():
+            if isinstance(val, list) and key.startswith('b_'):
+                logger.warn('%(context)r: key %(key)r has value %(val)r',
+                            locals())
+                newval = val[-1]
+                form[key] = newval
+                logger.warn('%(context)r: key %(key)r set to    %(newval)r',
+                            locals())
+        return False
+
+    # ------------------------------ ] ... construct JSON object ... [
+    def response_additions(self):
+        """
+        For subclassing: e.g. inject a '@prefered-selectors' dict into the AJAX
+        response (see .update_response below)
+        """
+        return None
+
+    # ------------------------------ ] ... construct JSON object ... [
+    def update_response(self, thedict):
+        """
+        Apply the changes provided by .response_additions.
 
         Options:
 
-        - allow_subpaths: whether further method calls (beyond UID resolution)
-            are allowed to take further subpaths. Default is False, i.e.
-            the method name, if given, must be in the very last slash-separated
-            path segment.
-            Specifying True might have unexpected consequences and is not yet
-            supported.
-        - absolute_paths: whether to resolve UUIDs to absolute paths. Default
-            is True, i.e.
-            '/some/subpath/@@resolveuid/abc123' will be entirely replaced by
-            the path to the object given by the UUID "abc123".
-            When False is specified, the '/some/subpath/' part will be
-            preserved.
+        - update (default: False)
+          If true, simply use the .update method and silently override
+          existing keys
+
+        This method collects the .response_additions of all inherited classes,
+        after the following strategy:
+
+        - the "most far away" classes are tried first, since their results may
+          be overridden (dict.update())
+        - keys already present in the given result dictionary are only updated
+          if the result is a 2-tuple,
+          and the 2nd value is a dict {'update': True}.
         """
-        pop = kwargs.pop
-        allow_subpaths = pop('allow_subpaths', 0)
-        absolute_paths = pop('absolute_paths', 1)
-        if kwargs:
-            keys = tuple(kwargs.keys())
-            raise TypeError('Unsupported keyword argument(s)! (%(keys)s)'
-                            % locals())
-        global UID_INDICATORS
-        subpath = self._subpath
-        if not subpath:
-            return (self.context,
-                    None,
-                    )
-        changes = []
-        method_name = None
-        
-        for chunk, prev_i, current_i, next_i in inject_indexes(subpath):
-            if chunk in UID_INDICATORS:
-                if next_i is None:
-                    pa = '/'.join(subpath)
-                    raise ValueError('Invalid subpath %(pa)r: '
-                            '%(chunk)r must be followed by a UID!'
-                            % locals())
-                uid = subpath[next_i]
-                if not is_uid_shaped(uid, onerror='return'):
-                    pa = '/'.join(subpath)
-                    raise ValueError('Invalid subpath %(pa)r: '
-                            'Invalid UID %(uid)r following %(chunk)r!'
-                            % locals())
+        classes = list(type(self).mro())
+        classes.reverse()
+        collected_changes = {}
+        keys_in = set(thedict.keys())
+        keys_updated = set()
 
-                # CHECKME: Klappt das für zugriffsbeschränkte Objekte? 
-                o = uuidToObject(uid)
-                if o is None:
-                    raise ValueError('UUID %(uid)r not found!'
-                            % locals())
-                vup = o.virtual_url_path()
-                changes.append((
-                        'REPLACE',
-                        (0 if prev_i is None
-                              or absolute_paths
-                         else current_i,
-                         next_i+1),
-                        vup,
-                        ))
-            elif chunk.startswith('@@'):
-                method_name = chunk[2:]
-                if not method_name:
-                    pa = '/'.join(subpath)
-                    raise ValueError('Invalid method specification in %(pa)r'
-                                     ' (%(chunk)r)'
-                                     % locals())
-                changes.append((
-                        'DELETE',
-                        (current_i,
-                         current_i + 1),  # next_i might/should be None
-                        ))
-                if next_i is not None and not allow_subpaths:
-                    pa = '/'.join(subpath)
-                    raise ValueError('%(pa)r: subpath after method speci'
-                            'fication %(chunk)r is not allowed!'
-                            % locals())
-                
-        if changes:
-            changes.reverse()
-            for tup in changes:
-                action, indexes = tup[:2]
-                i1, i2 = indexes
-                if action == 'REPLACE':
-                    subpath[i1:i2] = tup[2]
-                elif action == 'DELETE':
-                    del subpath[i1:i2]
-                else:
-                    raise ValueError('Invalid action %(action)r! (%(tup)r)'
-                                     % locals())
+        for cls in classes:
+            mod = cls.__module__
+            response_additions = getattr(cls, 'response_additions', None)
+            if response_additions is None:
+                continue
+            changes = response_additions(self)
+            if changes is None:
+                continue
+            if isinstance(changes, dict):
+                kwargs = {}
+            else:  # can be a 2-tuple
+                changes, kwargs = changes
+            pop = kwargs.pop
+            update = pop('update', False)
+            if kwargs:  # error!
+                invalid = tuple(kwargs.keys())
+                mod = cls.__module__
+                context = self.context
+                raise TypeError('Unknown keyword arguments '
+                                'in result of %(cls)r.response_additions'
+                                ' (%(mod)r; context: %(context)r)'
+                                '! %(invalid)s'
+                                % locals())
+            collected_changes.update(changes)
+            if update:
+                keys_updated.update(changes.keys())
 
-        pp(subpath=subpath)
-        set_trace()
-        if method_name is not None:  # explicitly given (after @@)
-            return (context.restrictedTraverse('/'.join(subpath)),
-                    method_name,
-                    )
-        elif not subpath[-1]:
-            # last chunk is empty --> no method specified 
-            return (context.restrictedTraverse('/'.join(subpath[:-1])),
-                    None,
-                    )
+        for key, val in collected_changes.items():
+            if key in keys_in and key not in keys_updated:
+                logger.warn('%(context)r.update_response: '
+                            'Changes for key %(key)r ignored '
+                            ' (%(val)r)',
+                            locals())
+                continue
+            thedict[key] = val
 
-        p1 = '/'.join(subpath)
-        try:
-            o2 = context.restrictedTraverse(p1)
-            # the subpath doesn't contain a method name: 
-            return (o2,
-                    None,
-                    )
-        except Exception as e:
-            logger.error('%(p1)r is not an object', locals())
-            logger.exception(e)
-            if subpath[1:]:
-                # we have a 2nd shot:
-                pass
-            else:
-                raise
-
-        p2 = '/'.join(subpath[:-1])
-        # the last chunk of the subpath is the method name: 
-        return (
-            context.restrictedTraverse(p2),
-            subpath[-1],
-            )
-    # ------------------------------------ ] ... resolve the subpath ]
-
-    # ---------------------------------- [ construct JSON object ... [
+    # ------------------------------ ] ... construct JSON object ... [
+    @returns_json
     def __call__(self):
         """
         Return JSON data for AJAX navigation.
@@ -278,42 +288,56 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
         Return "nothing" if no appropriate (normally: @@embed) view is available.
         Return False if no URL is given.
         """
-        set_trace()
-        if self._subpath is not None:
-            context, view = self._resolve_subpath()
-        else:
-            context = aq_inner(self.context)
-        pt = context.portal_type
-        pp(context=context, portal_type=pt)
-
+        # context = aq_inner(self.context)
+        context = self.context
         request = self.request
-        form = request.form
-        # set_trace()
+        MYNAME = 'ajax-nav'
+        assert MYNAME == self.__name__
+        if self.shortcircuit_noajax(context, request):
+            return {
+                '@noajax': True,
+                }
 
-        state = context.restrictedTraverse('@@plone_context_state')
+        # state = context.restrictedTraverse('@@plone_context_state')
+        # state = getToolByName(context, 'plone_context_state')
+        state = _get_tool_1('plone_context_state', context)
         res = {
             '@title': state.object_title(),
             # for history (like for incoming external links):
             '@url': context.absolute_url() + '/',
             }
-        pm = getToolByName(context, 'portal_membership')
-        ok = pm.checkPermission(view_permission, context)
+        self._res = res
+        if DevelopmentMode:
+            res['@devel-info'] = {
+                'tried-views': self._view_names_tried,
+                }
+        # pm = getToolByName(context, 'portal_membership')
+        pm = _get_tool_1('portal_membership', context)
+        can_view = pm.checkPermission(view_permission, context)
         the_view = None
-        if ok:
+        if can_view:
             the_view = self.choose_view(context)
             view_name = None
-        elif pm.isAnonymousUser():
-            view_name = self.please_login_viewname()
         else:
-            view_name = self.insufficient_rights_viewname()
+            res.update(self.get_replacement_content(context, request))
+            return res
 
-        if the_view is None and view_name is not None:
+        if view_name == MYNAME:
+            res.update({
+                '@noajax': True,
+                })
+            return res
+
+        if (the_view is None
+            and view_name is not None
+            and view_name != MYNAME):
           try:
             the_view = queryMultiAdapter((context, request),
                                          name=view_name)
           except ComponentLookupError as e:
             logger.error('%(e)r looking for %(view_name)r (%(context)r)',
                          locals())
+            raise
 
         if the_view is None:
             logger.error('%(context)r: view %(view_name)r not found!',
@@ -322,13 +346,21 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
                 '@noajax': True,
                 'content': None,
                 })
+            return res
         else:
             try:
+                pp((('context', context),
+                    ('view_name:', view_name),
+                    ('zcml_name:', self.__name__),
+                    ('res (so far):', res),
+                    'POSSIBLE RECURSION?!',
+                    ))
+                # set_trace()
                 content = the_view()
             except UnicodeDecodeError as e:
                 logger.error(e)
                 logger.info('NOCHMAL MIT DEBUGGER!')
-                set_trace()
+                # set_trace()
                 try:
                     content = the_view()
                 except Exception as e:
@@ -343,9 +375,12 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
                     res.update({
                         'content': content,
                         })
+                    self.update_response(res)
             except Exception as e:
                 logger.error(e)
                 logger.exception(e)
+                pp(e=e)
+                # set_trace()
                 res.update({
                     '@noajax': True,
                     'content': None,
@@ -354,25 +389,43 @@ class AjaxnavBaseBrowserView(BrowserView):  # ------- [ AjaxnavBaseBV ... [
                 res.update({
                     'content': content,
                     })
-        # since the response of sub-page @@ajax-nav methods is expected to be
-        # in JSON format already, we don't decorate this method but perform the
-        # operations of the @returns_json wrapper ourselves:
-        txt = dumps(res)
-        setHeader = request.RESPONSE.setHeader
-        setHeader('Content-Type', 'application/json; charset=utf-8')
-        setHeader('Content-Length', len(txt))
-        return txt
+                self.update_response(res)
+        return res
     # ---------------------------------- ] ... construct JSON object ]
 
     def please_login_viewname(self):
         return 'please_login'
 
+    def please_login_title(self, title):
+        if title is None:
+            return _('Please login')
+        return _('Please login: ${title}',
+                 mapping=locals())
+
     def insufficient_rights_viewname(self):
         return 'insufficient_rights'
+
+    def insufficient_rights_title(self, title):
+        if title is None:
+            return _('Access denied')
+        return _('Access denied: ${title}',
+                 mapping=locals())
     # -------------------------------- ] ... class AjaxnavBaseBrowserView ]
 
 
-class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
+class NoAjaxBrowserView(BrowserView):
+    """
+    Use this BrowserView class for cases where AJAX loading won't work (currently, at least),
+    and you'd rather deliver a (slower) full-page view than a faulty AJAX version
+    """
+    @returns_json
+    def __call__(self, *args, **kwargs):
+        return {
+            '@noajax': True,
+            'content': None,
+            }
+
+class SchemaAwareBrowserView(AjaxLoadBrowserView):  # [ SchemaAwareBV ... [
     """
     Multipurpose base class for @@embed views
     """
@@ -388,7 +441,7 @@ class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
 
     # ----------------------------- [ Bausteine für data() ... [
     def basedata(self):
-        context = aq_inner(self.context)
+        context = self.context
         logger.info('basedata(%(context)r)', locals())
         return {
             'UUID': IUUID(context, None),
@@ -460,7 +513,7 @@ class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
 
         For the possible keyword options, see the schemadata_kwargs method.
         """
-        context = aq_inner(self.context)
+        context = self.context
         logger.info('schemadata(%(context)r)', locals())
 
         resolved_kw = self.schemadata_kwargs(**kwargs)
@@ -505,7 +558,7 @@ class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
         permissions which are used *in* a view template.
         """
         res = {}
-        context = aq_inner(self.context)
+        context = self.context
         checkperm = getToolByName(context, 'portal_membership').checkPermission
         for alias in self.interesting_permissions:
             perm = PERMISSION_ALIASES[alias]
@@ -533,7 +586,7 @@ class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
                     may_edit   python:check_perm('Modify portal content')"
 
         """
-        context = aq_inner(self.context)
+        context = self.context
         checkperm = getToolByName(context, 'portal_membership').checkPermission
         if verbose is None:
             verbose = self.perm_checker_verbose
@@ -560,12 +613,86 @@ class SchemaAwareBrowserView(BrowserView):  # - [ class SchemaAwareBV ... [
     # ---------------------------------- ] ... class SchemaAwareBrowserView ]
 
 
-class PleaseLoginBrowserView(AjaxnavBaseBrowserView):
-    pass
+TAIL = '@@ajax-nav'
+TAIL_LEN = len(TAIL)
+class PleaseLoginBrowserView(AjaxLoadBrowserView):
+
+    def __init__(self, context, request):
+        AjaxLoadBrowserView.__init__(self, context, request)
+        self._interesting_request_vars(context, request)
+        request.set('ajax_load', 1)
+        self.set_came_from(context, request)
+
+    def set_came_from(self, context, request):
+        """
+        We need a came_from value for the login_form;
+        any host name component (netloc) is removed
+        """
+        came_from = request.get('came_from', '') or None
+        if came_from is not None:
+            came_from_parsed = urlsplit(came_from)
+            came_from_list = list(came_from_parsed)
+            if came_from_parsed.netloc:
+                came_from_list[:2] = ['', '']
+                request.set('came_from', urlunsplit(came_from_list))
+            return
+
+        val = request['ACTUAL_URL']
+        val_parsed = urlsplit(val)
+        val_list = list(val_parsed)
+        val_list[:2] = ['', '']
+        if val_parsed.path.endswith(TAIL):
+            val_list[2] = val_list[2][:-TAIL_LEN]
+        request.set('came_from', urlunsplit(val_list))
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        the_view = context.restrictedTraverse('login_form')
+        if the_view is None:
+            raise TemplateNotFound('login_form')
+        return the_view()
+        
+    def data(self):
+        context = self.context
+        request = self.request
+        state = getMultiAdapter((context, request),
+                                name='plone_context_state')
+        res = {
+            'title': state.object_title(),
+            # for history (like for incoming external links):
+            'url': context.absolute_url() + '/',
+            }
+        pp((('res:', res),
+            ))
+        return res
+
+
+class AccessDeniedBrowserView(AjaxLoadBrowserView):
+
+    def __call__(self):
+        context = self.context
+        the_view = context.restrictedTraverse('insufficient_privileges')
+        if the_view is None:
+            raise TemplateNotFound('insufficient_privileges')
+        return the_view()
+
+
+class VoidBrowserView(BrowserView):
+    """
+    A trivial BrowserView which will simply return None;
+    typically this is used as a default (to avoid errors)
+    while not-None BrowserViews are mapped to certain interfaces.
+    """
+    def __call__(self, *args, **kwargs):
+        return None
 
 
 class MarginInfoBaseBrowserView(BrowserView):
     """
     A place to add common requirements for BrowserViews
-    which are used to feed @@margin-info views
+    which are used to feed @@margin-info views.
+
+    For now, we see no reason to set ajax_load here,
+    since this class is not intended to feed full page templates.
     """

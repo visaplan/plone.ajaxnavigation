@@ -12,6 +12,7 @@ from visaplan.plone.ajaxnavigation.views import SchemaAwareBrowserView
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 
 DEFAULT_FOLDER_EMBED = embed_view_name('folder_listing')  # folder_listing_embed
+from visaplan.tools.debug import trace_this
 
 
 class AjaxnavBrowserView(AjaxnavBaseBrowserView):
@@ -38,6 +39,8 @@ class AjaxnavBrowserView(AjaxnavBaseBrowserView):
             if view:
                 yield view
         yield DEFAULT_FOLDER_EMBED
+
+    # __call__ = trace_this(AjaxnavBaseBrowserView.__call__)
 
 
 class EmbedBrowserView(SchemaAwareBrowserView):

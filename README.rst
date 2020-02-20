@@ -61,7 +61,7 @@ The general idea is:
 Features
 --------
 
-- Tries up to two URLs for each ``a`` element (only one, it the target URL ends
+- Tries up to two URLs for each ``a`` element (only one, if the target URL ends
   with "``/``", or if the final path element can be considered a view method
   name rather than an object id)
 - Can be configured using the Plone registry.
@@ -111,6 +111,24 @@ Add it to the dependencies of your package, e.g. in your ``setup.py`` file.
 
 You'll need to provide ``@@embed`` views for your content types;
 ideally, you can use your already-existing ``BrowserView`` classes.
+Usually it will be sufficient to make a copy of your ``view`` template
+and inject an ``ajax_load=1`` request variable.
+
+
+Questions
+---------
+
+"Why don't you simply inject that ``ajax_load`` variable automatically per BrowserView code?"
+
+Perhaps we will.
+
+"Why don't you drop that ``embed`` view name, and simply use ``view``, with ``ajax_load=1`` injected?
+
+Perhaps we will do so as a fallback option.
+But it might be a good idea to be able to do things differently on purpose.
+
+Probably there are several things which could be done better.
+Contributions are welcome.
 
 
 Contribute

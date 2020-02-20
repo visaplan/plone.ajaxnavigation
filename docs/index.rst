@@ -6,7 +6,7 @@ This package adds AJAX navigation to a Plone site, using jQuery.
 
 
 TL;DR:
-~~~~~~
+======
 
 There are two Javascript resources added to the registry:
 
@@ -55,7 +55,7 @@ Configuration
 =============
 
 Javascript configuration
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 The ``AjaxNav`` Javascript object has an ``init`` method which is called when
 the document is ready.
@@ -84,7 +84,7 @@ Your content types can be customized by providing the following views:
 
 
 ajax-nav
-++++++++
+~~~~~~~~
 
 Returns the data necessary to display the requested object via AJAX as a
 JSON-encoded dictionary; see the `Data keys`_.
@@ -105,7 +105,7 @@ one of the following views to fill the ``content`` key of the JSON reply:
 
 
 embed
-+++++
+~~~~~
 
 Returns the "contents" of the requested object as needed to embed it,
 including the ``h[1-6]`` HTML headline element if desired,
@@ -113,80 +113,80 @@ but perhaps excluding e.g. breadcrumbs.
 
 
 AJAX data
-~~~~~~~~~
+---------
 
 Configuration keys
 ------------------
 
 These are the keys understood by the ``AjaxNav.init`` function.
 
-========================= ======  ============================== =================================
-Key                       Type    Default                        Description
-========================= ======  ============================== =================================
-                         
-whitelist                 list    [``body``]                     CSS selectors of elements
-                                                                 which contain ``a`` elements
-                                                                 for the event delegation to be
-                                                                 applied
-                         
-blacklist                 list    *(empty)*                      CSS selectors for elements
-                                                                 from which the event delegation
-                                                                 be removed
-                         
-nested_blacklist          boolean *false*                        Regard the blacklist selectors
-                                                                 "below" the whitelist selectors
-                                                                 and undelegate immediately
-                                                                 (experimental)
-                         
-view_ids                  list    [``view``,                     For target url parsing:
-                                  ``edit``,                      recognized as view names even
-                                  ``base_edit``]                 when not prefixed by ``@@``
-                         
-view_prefixes             list    [``manage_``]                  For target url parsing:
-                                                                 e.g. ``manage_`` does very likely
-                                                                 start a view name
-                                                                 rather than an object.
-                         
-view_suffixes             list    [``_view``]                    For target url parsing:
-                                                                 e.g. ``_view`` does very likely
-                                                                 end a view name
-                                                                 rather than an object.
-                         
-blacklist_view_ids        list    [``edit``,                     View ids to suppress AJAX loading
-                                  ``base_edit``]
-                         
-blacklist_view_prefixes   list    [``manage_``]
-                         
-blacklist_view_suffixes   list    [``_edit``]
-                         
-selectors                 object  {``content``:                  Maps `Data keys`_ to CSS
-                                   ``#region-content,#content``} selectors.  This value doesn't
-                                                                 contain any specifications for
-                                                                 ``@``-prefixed keys
-                                                                 (``@url``, ``@title``, ``@ok``)
-                                                                 since those don't apply to
-                                                                 the page text but have
-                                                                 special hard-coded meanings.
-                         
-                                                                 The values are strings; however,
-                                                                 since jQuery allows multiple
-                                                                 selectors in the string, separated by
-                                                                 comma, we do so as well and process
-                                                                 them in order (e.g., fill
-                                                                 ``#region-content``, if present, and
-                                                                 otherwise ``#region``).
++---------------------------+--------+-------------------------------+----------------------------------------+
+| Key                       | Type   | Default                       |   Description                          |
++===========================+========+===============================+========================================+
+| whitelist                 | list   | [``body``]                    |   CSS selectors of elements            |
+|                           |        |                               |   which contain ``a`` elements         |
+|                           |        |                               |   for the event delegation to be       |
+|                           |        |                               |   applied                              |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| blacklist                 | list   | *(empty)*                     |   CSS selectors for elements           |
+|                           |        |                               |   from which the event delegation      |
+|                           |        |                               |   be removed                           |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| nested_blacklist          | boolean| *false*                       | Regard the blacklist selectors         |
+|                           |        |                               | "below" the whitelist selectors        |
+|                           |        |                               | and undelegate immediately             |
+|                           |        |                               | (experimental)                         |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| view_ids                  | list   | [``view``,                    |   For target url parsing:              |
+|                           |        | ``edit``,                     |   recognized as view names even        |
+|                           |        | ``base_edit``]                |   when not prefixed by ``@@``          |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| view_prefixes             | list   | [``manage_``]                 |   For target url parsing:              |
+|                           |        |                               |   e.g. ``manage_`` does very likely    |
+|                           |        |                               |   start a view name                    |
+|                           |        |                               |   rather than an object.               |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| view_suffixes             | list   | [``_view``]                   |   For target url parsing:              |
+|                           |        |                               |   e.g. ``_view`` does very likely      |
+|                           |        |                               |   end a view name                      |
+|                           |        |                               |   rather than an object.               |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| blacklist_view_ids        | list   | [``edit``, ``base_edit``]     |   View ids to suppress AJAX loading    |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| blacklist_view_prefixes   | list   |  [``manage_``]                |                                        |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| blacklist_view_suffixes   | list   |  [``_edit``]                  |                                        |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| selectors                 | object | {``content``:                 | Maps `Data keys`_ to CSS               |
+|                           |        | ``#region-content,#content``} | selectors.  This value doesn't         |
+|                           |        |                               | contain any specifications for         |
+|                           |        |                               | ``@``-prefixed keys                    |
+|                           |        |                               | (``@url``, ``@title``, ``@ok``)        |
+|                           |        |                               | since those don't apply to             |
+|                           |        |                               | the page text but have                 |
+|                           |        |                               | special hard-coded meanings.           |
+|                           |        |                               |                                        |
+|                           |        |                               | The values are strings; however,       |
+|                           |        |                               | since jQuery allows multiple           |
+|                           |        |                               | selectors in the string, separated by  |
+|                           |        |                               | comma, we do so as well and process    |
+|                           |        |                               | them in order (e.g., fill              |
+|                           |        |                               | ``#region-content``, if present, and   |
+|                           |        |                               | otherwise ``#region``).                |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| scrollto_default_selector | string | *null*                        | Default for the ``@scrollto`` key      |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| scrollto_default_deltay   | int    | 0                             | Default vertical offset for            |
+|                           |        |                               | ``@scrollto``                          |
++---------------------------+--------+-------------------------------+----------------------------------------+
+| scrollto_auto_key         | string | ``content``                   | Default key for ``@auto``:             |
+|                           |        |                               | if ``@scrollto`` is ``@auto``, use     |
+|                           |        |                               | the ``selectors`` mapped to            |
+|                           |        |                               | the ``content`` AJAX data              |
+|                           |        |                               | key by default                         |
+|                           |        |                               |                                        |
++---------------------------+--------+-------------------------------+----------------------------------------+
 
-scrollto_default_selector string  *null*                         Default for the ``@scrollto`` key
-
-scrollto_default_deltay   int     0                              Default vertical offset for ``@scrollto``
-
-scrollto_auto_key         string  ``content``                    Default key for ``@auto``:
-                                                                 if ``@scrollto`` is ``@auto``, use
-                                                                 the ``selectors`` mapped to
-                                                                 the ``content`` AJAX data
-                                                                 key by default
-
-========================= ======  ============================== =================================
 
 
 Data keys
@@ -195,47 +195,50 @@ Data keys
 These are the keys which are expected in the JSON reply from requests to
 ``@@ajaxnav``.
 
-========= ============ ================================================
-Key       Type         Description, remarks
-========= ============ ================================================
-         
-content   HTML text    The "meat".
-                       This key is "special" only in one regard:
-                       It is expected to exist.
-                       What happens for replies lacking this key
-                       is currently undefined.
-         
-@title    string       Used to set the title after filling in the ``content``.
-         
-@url      absolute URL Used for history support; usually the URL of the
-                       AJAX-loaded page as it would be needed to be given
-                       when approaching the page from outside.
-         
-@ok       boolean      Specify *False* to suppress the ``@url`` and ``@title``
-                       processing even after successfully inserting HTML text.
-         
-                       Might be used e.g. for restricted objects the current
-                       user is not allowed to view; in such cases you might want
-                       to show a login form instead.
-
-@scrollto string       A CSS selector as a scroll target for the
-                       `jQuery scrollTop function`_; default: *none*.
-
-                       When loading new content by clicking on a hyperlink
-                       somewhere down the page, the contents could be loaded
-                       unnoticed. To prevent this, we scroll up or, if a
-                       ``@scrollto`` value is given, to that element.
-
-                       If ``@auto``, the ``selector`` mapped to
-                       the ``scrollto_auto_key`` is used (see above).
-
-                       Use with care; it might not work as expected
-                       for multiple CSS selectors (separated by comma).
-
-                       If *none*, the plain-Javascript method ``window.scrollTo``
-                       is used.
-
-========= ============ ================================================
++--------------------+-------------+-------------------------------------------------------------+
+| Key                | Type        | Description, remarks                                        |
++====================+=============+=============================================================+
+| content            | HTML text   | The "meat".                                                 |
+|                    |             | This key is "special" only in one regard:                   |
+|                    |             | It is expected to exist.                                    |
+|                    |             | What happens for replies lacking this key                   |
+|                    |             | is currently undefined.                                     |
++--------------------+-------------+-------------------------------------------------------------+
+| @title             | string      | Used to set the title after filling in the ``content``.     |
++--------------------+-------------+-------------------------------------------------------------+
+| @url               | absolute URL| Used for history support; usually the URL of the            |
+|                    |             | AJAX-loaded page as it would be needed to be given          |
+|                    |             | when approaching the page from outside.                     |
++--------------------+-------------+-------------------------------------------------------------+
+| @ok                | boolean     | Specify *False* to suppress the ``@url`` and ``@title``     |
+|                    |             | processing even after successfully inserting HTML text.     |
++--------------------+-------------+-------------------------------------------------------------+
+|                    |             | Might be used e.g. for restricted objects the current       |
+|                    |             | user is not allowed to view; in such cases you might want   |
+|                    |             | to show a login form instead.                               |
++--------------------+-------------+-------------------------------------------------------------+
+| @scrollto          | string      | A CSS selector as a scroll target for the                   |
+|                    |             | `jQuery scrollTop function`_; default: *none*.              |
+|                    |             |                                                             |
+|                    |             | When loading new content by clicking on a hyperlink         |
+|                    |             | somewhere down the page, the contents could be loaded       |
+|                    |             | unnoticed. To prevent this, we scroll up or, if a           |
+|                    |             | ``@scrollto`` value is given, to that element.              |
+|                    |             |                                                             |
+|                    |             | If ``@auto``, the ``selector`` mapped to                    |
+|                    |             | the ``scrollto_auto_key`` is used (see above).              |
+|                    |             |                                                             |
+|                    |             | Use with care; it might not work as expected                |
+|                    |             | for multiple CSS selectors (separated by comma).            |
+|                    |             |                                                             |
+|                    |             | If *none*, the plain-Javascript method ``window.scrollTo``  |
+|                    |             | is used.                                                    |
++--------------------+-------------+-------------------------------------------------------------+
+| @prefered-selectors| dict of     | Used to redirect the ``content`` (and other data keys)      |
+|                    | lists       | to other, prefered selectors, if they are available.        |
+|                    |             |                                                             |
+|                    |             | Can be used to test new selectors.                          |
++--------------------+-------------+-------------------------------------------------------------+
 
 Other keys can be used if they are configured in the ``selectors``
 configuration value;

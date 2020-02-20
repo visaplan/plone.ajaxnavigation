@@ -3,6 +3,10 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
       lang="en"
+      tal:define="
+set python:request.set;
+dummy set('ajax_load', 1);
+"
       metal:use-macro="context/main_template/macros/master"
       i18n:domain="plone">
 

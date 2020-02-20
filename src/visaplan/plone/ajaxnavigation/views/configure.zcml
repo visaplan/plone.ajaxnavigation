@@ -1,34 +1,32 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
-    xmlns:cache="http://namespaces.zope.org/cache"
     xmlns:plone="http://namespaces.plone.org/plone"
     xmlns:zcml="http://namespaces.plone.org/zcml"
     i18n_domain="visaplan.plone.ajaxnavigation">
 
   -*- extra stuff goes here -*-
 
-  <cache:rulesetType
-      name="plone.transient"
-      title="Transient views"
-      description="Should not be cached"
-      />
-
+  <!-- [ @@ajax-nav: return JSON data for AJAX requests ... [ -->
   <browser:page
      name="ajax-nav"
-     for="Products.CMFCore.interfaces.ISiteRoot"
+     for="*"
      class=".AjaxnavBaseBrowserView"
       permission="zope.Public"
      />
 
-  <cache:ruleset
-     ruleset="plone.transient"
-     for=".AjaxnavBaseBrowserView"
+  <browser:page
+     name="ajax-nav"
+     for="Products.CMFCore.interfaces.IFolderish"
+     class=".folder.AjaxnavBrowserView"
+      permission="zope.Public"
      />
+  <!-- ] ... @@ajax-nav: return JSON data for AJAX requests ] -->
 
+  <!-- [ generic @@embed views ... [ -->
   <browser:page
      name="embed"
-     for="Products.ATContentTypes.interfaces.IATContentType"
+     for="Products.CMFCore.interfaces.IContentish"
      class=".SchemaAwareBrowserView"
      template="embed.pt"
      permission="zope2.View"
@@ -50,13 +48,7 @@
      template="embed.pt"
      permission="zope2.View"
      />
-
-  <browser:page
-     name="ajaxnav-options-default"
-     for="Products.CMFCore.interfaces.ISiteRoot"
-     class=".ajaxnav_options.AjaxnavOptions"
-     permission="zope2.View"
-     />
+  <!-- ] ... generic @@embed views ] -->
 
   <browser:page
       name="ajaxnav-settings"
@@ -64,6 +56,14 @@
       permission="cmf.ManagePortal"
       class="visaplan.plone.ajaxnavigation.controlpanel.AjaxNavigationSettingsControlPanel"
       />
+
+  <!-- [ supporting JSON views ... [ -->
+  <browser:page
+     name="ajaxnav-options-default"
+     for="Products.CMFCore.interfaces.ISiteRoot"
+     class=".ajaxnav_options.AjaxnavOptions"
+     permission="zope2.View"
+     />
 
   <browser:page
       name="ajax-siteinfo"
@@ -78,6 +78,7 @@
       permission="zope.Public"
       class="visaplan.plone.ajaxnavigation.views.other.SiteInfoView"
       />
+  <!-- ] ... supporting JSON views ] -->
 
   <browser:page
       name="margin-info"
@@ -86,22 +87,12 @@
       permission="zope.Public"
       />
 
-  <!-- [ login processing ... [ -->
-  <!-- based on ./login_form.cpt from Products.CMFPLone (for now) 4.3.3;
-       template ./login_form_embed.pt here: -->
+  <!-- [ very basic access control ... [ -->
   <browser:page
       name="please_login"
       for="*"
-      template="please_login.pt"
       permission="zope.Public"
-      class=".PleaseLoginBrowserView"
-      />
-
-  <browser:page
-      name="login_form_embed"
-      for="*"
-      template="login_form_embed.pt"
-      permission="zope.Public"
+      class="visaplan.plone.ajaxnavigation.views.PleaseLoginBrowserView"
       />
 
   <!-- based on ./insufficient_privileges.pt from Products.CMFPLone (for now) 4.3.3;
@@ -109,7 +100,18 @@
   <browser:page
       name="insufficient_rights"
       for="*"
-      template="insufficient_rights.pt"
+      class="visaplan.plone.ajaxnavigation.views.AccessDeniedBrowserView"
+      permission="zope.Public"
+      />
+  <!-- ] ... very basic access control ] -->
+
+  <!-- [ login processing ... [ -->
+  <!-- based on ./login_form.cpt from Products.CMFPLone (for now) 4.3.3;
+       template ./login_form_embed.pt here: -->
+  <browser:page
+      name="login_form_embed"
+      for="*"
+      template="login_form_embed.pt"
       permission="zope.Public"
       />
   <!-- ] ... login processing ] -->
