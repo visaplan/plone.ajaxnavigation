@@ -187,6 +187,11 @@ These are the keys understood by the ``AjaxNav.init`` function.
 |                           |        |                               |                                        |
 +---------------------------+--------+-------------------------------+----------------------------------------+
 
+More configuration options (yet to be documented) include:
+
+- blacklist_class_{ids,prefixes,suffixes}
+- regard_target_attribute
+- target_rel_values
 
 
 Data keys
@@ -195,27 +200,38 @@ Data keys
 These are the keys which are expected in the JSON reply from requests to
 ``@@ajaxnav``.
 
+**Please note:** the processing of the ``@ok`` key might still change!
+You are welcome to contribute to a solid and stable processing concept.
+
 +--------------------+-------------+-------------------------------------------------------------+
 | Key                | Type        | Description, remarks                                        |
 +====================+=============+=============================================================+
 | content            | HTML text   | The "meat".                                                 |
 |                    |             | This key is "special" only in one regard:                   |
-|                    |             | It is expected to exist.                                    |
-|                    |             | What happens for replies lacking this key                   |
-|                    |             | is currently undefined.                                     |
+|                    |             | It is configured by default.                                |
+|                    |             |                                                             |
+|                    |             | If no "normal" key (without a leading ``@`` is given,       |
+|                    |             | ``@noajax`` (below) defaults to *true*.                     |
 +--------------------+-------------+-------------------------------------------------------------+
 | @title             | string      | Used to set the title after filling in the ``content``.     |
 +--------------------+-------------+-------------------------------------------------------------+
-| @url               | absolute URL| Used for history support; usually the URL of the            |
-|                    |             | AJAX-loaded page as it would be needed to be given          |
+| @url               | absolute URL| Used for history support; usually the "deep link URL"       |
+|                    |             | of the AJAX-loaded page as it would be needed to be given   |
 |                    |             | when approaching the page from outside.                     |
++--------------------+-------------+-------------------------------------------------------------+
+| @noajax            | boolean     | Specify *True* to load the requeste page conventionally.    |
+|                    |             |                                                             |
+|                    |             | There will be no history processing, but you might want to  |
+|                    |             | insert some placeholder like "loading; please wait" using   |
+|                    |             | the ``content`` key. (**Note:** this is not yet             |
+|                    |             | guaranteed to work.)                                        |
 +--------------------+-------------+-------------------------------------------------------------+
 | @ok                | boolean     | Specify *False* to suppress the ``@url`` and ``@title``     |
 |                    |             | processing even after successfully inserting HTML text.     |
-+--------------------+-------------+-------------------------------------------------------------+
-|                    |             | Might be used e.g. for restricted objects the current       |
-|                    |             | user is not allowed to view; in such cases you might want   |
-|                    |             | to show a login form instead.                               |
+|                    |             |                                                             |
+|                    |             | Is used e.g. for restricted objects the current user        |
+|                    |             | is not allowed to view; in such cases  a login form (or,    |
+|                    |             | íf already logged in, an error message) is shown instead.   |
 +--------------------+-------------+-------------------------------------------------------------+
 | @scrollto          | string      | A CSS selector as a scroll target for the                   |
 |                    |             | `jQuery scrollTop function`_; default: *none*.              |

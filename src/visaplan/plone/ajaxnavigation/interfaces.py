@@ -7,6 +7,7 @@ from zope.interface import Interface
 from plone.supermodel import model
 from zope import schema
 
+from .defaults import default
 from visaplan.plone.ajaxnavigation import _
 
 
@@ -27,8 +28,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     selectors = schema.Dict(
         title=_(u"Selectors for data keys"),
-        default={'content': "#content",
-                 },
+        default=default['selectors'],
+        missing_value=default['selectors'],
         key_type=schema.BytesLine(title=_(u'AJAX response key')),
         value_type=schema.BytesLine(title=_(u'CSS selector[,...]')),
         description=_(
@@ -53,8 +54,8 @@ class IAjaxNavigationSettings(model.Schema):
     whitelist = schema.List(
         title=_(u"Whitelist"),
         value_type=schema.BytesLine(title=_(u'CSS selector')),
-        default=['body',
-                 ],
+        default=default['whitelist'],
+        missing_value=default['whitelist'],
         description=_(
             u'help_whitelist',
             default=u"CSS selectors which activate delegation"
@@ -64,7 +65,8 @@ class IAjaxNavigationSettings(model.Schema):
     blacklist = schema.List(
         title=_(u"Blacklist"),
         value_type=schema.BytesLine(title=_(u'CSS selector')),
-        default=[],
+        default=default['blacklist'],
+        missing_value=default['blacklist'],
         description=_(
             u'help_blacklist',
             default=u"CSS selectors which deactivate delegation"
@@ -73,7 +75,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     nested_blacklist = schema.Bool(
         title=_(u"Nested blacklist"),
-        default=False,
+        default=default['nested_blacklist'],
+        missing_value=default['nested_blacklist'],
         description=_(
             u'help_nested_blacklist',
             default=u"If this is set to True, and if there is a non-empty"
@@ -97,11 +100,8 @@ class IAjaxNavigationSettings(model.Schema):
     view_ids = schema.List(
         title=_(u"View IDs"),
         value_type=schema.BytesLine(title=_(u'view id')),
-        default=['view',
-                 'edit',
-                 'base_edit',
-                 'manage',
-                 ],
+        default=default['view_ids'],
+        missing_value=default['view_ids'],
         description=_(
             u'help_view_ids',
             default=u"When computing the URLs to try,"
@@ -113,8 +113,8 @@ class IAjaxNavigationSettings(model.Schema):
     view_prefixes = schema.List(
         title=_(u"View prefixes"),
         value_type=schema.BytesLine(title=_(u'view prefix')),
-        default=['manage_',  # see as well --> blacklist_view_prefixes
-                 ],
+        default=default['view_prefixes'],  # see as well --> blacklist_view_prefixes
+        missing_value=default['view_prefixes'],
         description=_(
             u'help_view_prefixes',
             default=u"If the last path segment of a URL starts with one of"
@@ -124,9 +124,8 @@ class IAjaxNavigationSettings(model.Schema):
     view_suffixes = schema.List(
         title=_(u"View suffixes"),
         value_type=schema.BytesLine(title=_(u'view suffix')),
-        default=['_edit',
-                 '_view',
-                 ],
+        default=default['view_suffixes'],
+        missing_value=default['view_suffixes'],
         description=_(
             u'help_view_suffixes',
             default=u"If the last path segment of a URL ends with one of the"
@@ -136,11 +135,8 @@ class IAjaxNavigationSettings(model.Schema):
     blacklist_view_ids = schema.List(
         title=_(u"Blacklist view IDs"),
         value_type=schema.BytesLine(title=_(u'view id')),
-        default=['base_edit',
-                 'edit',
-                 'logout',  # logout might affect the top menu, so load whole page
-                 'manage',  # ZMI -- a beast of it's own
-                 ],
+        default=default['blacklist_view_ids'],
+        missing_value=default['blacklist_view_ids'],
         description=_(
             u'help_blacklist_view_ids',
             default=u"When computing the URLs to try, the values given here "
@@ -152,13 +148,8 @@ class IAjaxNavigationSettings(model.Schema):
     blacklist_view_prefixes = schema.List(
         title=_(u"Blacklist view prefixes"),
         value_type=schema.BytesLine(title=_(u'view prefix')),
-        default=['configure_',
-                 'configure-',
-                 'manage_',  # usually: ZMI pages
-                 'plone_',
-                 'portal_',
-                 'prefs_',
-                 ],
+        default=default['blacklist_view_prefixes'],
+        missing_value=default['blacklist_view_prefixes'],
         description=_(
             u'help_blacklist_view_prefixes',
             default=u"If the last path segment of a URL starts with one of the"
@@ -169,8 +160,8 @@ class IAjaxNavigationSettings(model.Schema):
     blacklist_view_suffixes = schema.List(
         title=_(u"Blacklist view suffixes"),
         value_type=schema.BytesLine(title=_(u'view suffix')),
-        default=['_management',
-                 ],
+        default=default['blacklist_view_suffixes'],
+        missing_value=default['blacklist_view_suffixes'],
         description=_(
             u'help_blacklist_view_suffixes',
             default=u"If the last path segment of a URL ends with one of the"
@@ -178,6 +169,92 @@ class IAjaxNavigationSettings(model.Schema):
             u" for which an AJAX load won't be tried."
             ))
     # ----------------------------- ] ... views: View id recognition ]
+
+    # ----------------- [ other_exceptions: Other non-AJAX links ... [
+    model.fieldset(
+            'other_exceptions',
+            label=_(u'Other exceptions'),
+            fields=[
+                'blacklist_class_ids',
+                'blacklist_class_prefixes',
+                'blacklist_class_suffixes',
+                'regard_target_attribute'
+                ])
+
+    blacklist_class_ids = schema.List(
+        title=_(u"Blacklist class IDs"),
+        value_type=schema.BytesLine(title=_(u'class id')),
+        default=default['blacklist_class_ids'],
+        missing_value=default['blacklist_class_ids'],
+        description=_(
+            u'help_blacklist_class_ids',
+            default=u'For some classes of "a" elements, other actions than '
+            u'navigation are desired, e.g. opening of a lightbox.'
+            ))
+
+    blacklist_class_prefixes = schema.List(
+        title=_(u"Blacklist class prefixes"),
+        value_type=schema.BytesLine(title=_(u'class prefix')),
+        default=default['blacklist_class_prefixes'],
+        missing_value=default['blacklist_class_prefixes'],
+        description=_(
+            u'help_blacklist_class_prefixes',
+            default=u'You might have a set of "a" classes '
+            u"which share a common prefix and need to be excepted "
+            u"from the AJAX navigation."
+            ))
+
+    blacklist_class_suffixes = schema.List(
+        title=_(u"Blacklist class suffixes"),
+        value_type=schema.BytesLine(title=_(u'class suffix')),
+        default=default['blacklist_class_suffixes'],
+        missing_value=default['blacklist_class_suffixes'],
+        description=_(
+            u'help_blacklist_class_suffixes',
+            default=u'You might have a set of "a" classes '
+            u"which share a common suffix and need to be excepted "
+            u"from the AJAX navigation."
+            ))
+
+    regard_target_attribute = schema.Bool(
+        title=_(u"Regard target attribute"),
+        default=default['regard_target_attribute'],
+        missing_value=default['regard_target_attribute'],
+        description=_(
+            u'help_regard_target_attribute',
+            default=u"Following the Principle of Least Surprise, we regard "
+            u'existing target attributes of "a" elements, causing pages to '
+            u'continue to open in new windows (or, more likely with modern '
+            u'browsers: tabs). '
+            u'However, the use of target attributes is not recommended; '
+            u'they don\'t allow users to choose otherwise. '
+            u'Thus, we recommend you to set this value to False, '
+            u'but this must be your own explicit decistion.'
+            ))
+    # ----------------- ] ... other_exceptions: Other non-AJAX links ]
+
+    # --------------------------------------[ security: Security ... [
+    model.fieldset(
+            'security',
+            label=_(u'Security'),
+            fields=[
+                'target_rel_values',
+                ])
+
+    target_rel_values = schema.List(
+        title=_(u"rel values for a[target] links"),
+        value_type=schema.BytesLine(title=_(u'rel value')),
+        default=default['target_rel_values'],
+        missing_value=default['target_rel_values'],
+        description=_(
+            u'help_target_rel_values',
+            default=u'A window which is opened automatically by clicking '
+            u'an "a" element with a non-_self target attribute '
+            u'has access to our Window element, even if located '
+            u'in another site. For modern browsers, this can be prevented '
+            u'by using a rel="noopener" attribute.'
+            ))
+    # --------------------------------------] ... security: Security ]
 
     # -------------------------------------- [ scroll: Scrolling ... [
     model.fieldset(
@@ -191,7 +268,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     scrollto_default_selector = schema.BytesLine(
         title=_(u"Default selector for the @scrollto feature"),
-        default=None,
+        default=default['scrollto_default_selector'],
+        missing_value=default['scrollto_default_selector'],
         description=_(
             u'help_scrollto_default_selector',
             default=u'When loading new content '
@@ -204,11 +282,13 @@ class IAjaxNavigationSettings(model.Schema):
 
     scrollto_default_deltay = schema.Int(
         title=_(u"Default vertical offset for the @scrollto feature"),
-        default=0)
+        default=default['scrollto_default_deltay'])
+        # no missing_value; this didn't start up!
 
     scrollto_auto_key = schema.BytesLine(
         title=_(u"Default key for the @scrollto @auto value"),
-        default='content',
+        default=default['scrollto_auto_key'],
+        missing_value=default['scrollto_auto_key'],
         description=_(
             u'help_scrollto_auto_key',
             default=u'For a @scrollto value of "@auto", '
@@ -231,7 +311,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     menu_item_selector = schema.BytesLine(
         title=_(u"Selector menu items"),
-        default='.mainmenu-item > a',
+        default=default['menu_item_selector'],
+        missing_value=default['menu_item_selector'],
         description=_(
             u'help_menu_item_selector',
             default=u'When loading new content with AJAX, '
@@ -243,7 +324,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     menu_item_switched_classname = schema.BytesLine(
         title=_(u"Switched classname"),
-        default='selected',
+        default=default['menu_item_switched_classname'],
+        missing_value=default['menu_item_switched_classname'],
         description=_(
             u'help_menu_item_switched_classname',
             default=u'The name of a class which will be '
@@ -266,7 +348,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     development_mode = schema.BytesLine(
         title=_(u"Development mode"),
-        default='auto',
+        default=default['development_mode'],
+        missing_value=default['development_mode'],
         description=_(
             u'help_development_mode',
             default=u'In development mode, h1 headlines are bordered '
@@ -289,7 +372,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     layout4ajax = schema.Dict(
         title=_(u"Layouts for AJAX"),
-        default={},
+        default=default['layout4ajax'],
+        missing_value=default['layout4ajax'],
         key_type=schema.BytesLine(title=_(u'full-page layout')),
         value_type=schema.BytesLine(title=_(u'AJAX view')),
         description=_(
@@ -301,7 +385,8 @@ class IAjaxNavigationSettings(model.Schema):
 
     view4ajax = schema.Dict(
         title=_(u"Views for AJAX"),
-        default={},
+        default=default['view4ajax'],
+        missing_value=default['view4ajax'],
         key_type=schema.BytesLine(title=_(u'portal_type')),
         value_type=schema.BytesLine(title=_(u'AJAX view')),
         description=_(

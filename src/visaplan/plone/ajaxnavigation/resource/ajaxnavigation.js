@@ -48,6 +48,13 @@ if (!String.prototype.startsWith) {
         }
     });
 }
+// https://stackoverflow.com/a/1418059/1051649:
+if (typeof(String.prototype.trim) === "undefined") {
+    String.prototype.trim = function() {
+        return String(this).replace(/^\s+|\s+$/g, '');
+    };
+}
+
 var AjaxNav = (function () {
     var AjaxNav = {},
         DEBUG_DOTTED = true,
@@ -169,36 +176,48 @@ var AjaxNav = (function () {
     };
     AjaxNav.splitview = splitview;
 
-    var full_url = function (given) {
+    var full_url = function (given, options) {
         var parsed = urlSplit(given),
+            options = options || {},
+            strip_suffixes = typeof options.strip_suffixes === 'undefined'
+                             ? options.strip_suffixes
+                             : false,
             offset = 0,
             drop = 0,
             path,
             pathlist,
             shortened,
-            suffix,
+            suffix='',
             parsedloc;  // parsed current location
 
         // a full url is returned unchanged
         if (parsed.protocol) {
             AjaxNav.log('full_url('+given+'): complete URL');
+            if (strip_suffixes) {
+                return parsed.protocol + '://'
+                       + parsed.domain
+                       + parsed.path;
+            }
             return given;
         }
 
         // site-absolute paths start with '/'
         if (given.startsWith('/')) {
             AjaxNav.log('full_url('+given+'): complete path');
+            if (strip_suffixes) {
+                return AjaxNav.origin + parsed.path;
+            }
             return AjaxNav.origin + given;
         }
 
         // query string and fragment
-        if (parsed.query) {
-            suffix = '?'+parsed.query;
-        } else {
-            suffix = '';
-        }
-        if (parsed.fragment) {
-            suffix += '#' + parsed.fragment;
+        if (! strip_suffixes) {
+            if (parsed.query) {
+                suffix = '?'+parsed.query;
+            }
+            if (parsed.fragment) {
+                suffix += '#' + parsed.fragment;
+            }
         }
         shortened = given;
         AjaxNav.log('full_url('+given+'): assembling ...');
@@ -250,6 +269,52 @@ var AjaxNav = (function () {
         return head + tail;
     };
 
+    var parse_qs = function (qs) {
+        var i, len, liz1, liz2,
+            key, val,
+            query = {};
+        if (qs.substr(0, 1) === '?') {
+            qs = qs.substr(1);
+        }
+        liz1 = qs.split('&');
+        for (i=0, len=liz1.length; i < len; i++) {
+            // Note: only one '=' taken into account ...
+            liz2 = liz1[i].split('=');
+            key = liz2[0];
+            val = liz2[1];
+            if (typeof query[key] === 'undefined') {
+                query[key] = val
+            } else if (typeof query[key] === 'string') {
+                query[key] = [query[key], val];
+            } else {
+                query[key].push(val);
+            }
+        }
+        return query;
+    }
+
+    var url_object = function (url_o, original, qs, viewname) {
+        var query;
+        if (typeof url_o !== 'object') {
+            url_o = {url: url_o};
+        }
+        if (original) {
+            url_o['original'] = original;
+        }
+        if (viewname) {
+            url_o['viewname'] = viewname;
+        }
+        if (typeof qs === 'object') {
+            query = qs
+        } else if (qs) {
+            query = parse_qs(qs);
+        } else {
+            query = null;
+        }
+        url_o.query = query;
+        return url_o
+    }
+
     /* The URLs to try: for .../full/path:
      * - .../full/path/perhaps_a_view/@@ajax-nav
      * - .../full/path/@@ajax-nav
@@ -263,7 +328,9 @@ var AjaxNav = (function () {
     var urls2try = function (fullpath) {
         var res = [],
             suffix = '@@ajax-nav',
+            fu_opt = {strip_suffixes: true},
             parsed = splitview(fullpath),
+            i, len,
             prefix = parsed[0],
             divider = parsed[1],
             viewname = parsed[2],
@@ -274,20 +341,60 @@ var AjaxNav = (function () {
             if (viewname) {
                 if (divider == '@@') {
                     log('followed @@, must be a view: "'+viewname+'"');
-                    return [_join_path(full_url(prefix), suffix+qs)];
+                    if (prefix) {
+                        res =  [url_object(_join_path(full_url(prefix),
+                                                      suffix),
+                                           fullpath,
+                                           qs,
+                                           viewname)
+                                ];
+                    } else {
+                        res.push(url_object(suffix,
+                                            fullpath,
+                                            qs,
+                                            viewname));
+                    }
                 } else if (divider == '') {
                     // a single word; usually the id of a subpage
-                    return [_join_path(full_url(viewname), suffix+qs)];
+                    res =  [url_object(_join_path(full_url(viewname),
+                                                  suffix),
+                                       fullpath,
+                                       qs)
+                            ];
                 } else if (id_match(viewname, 'view', 'whitelisted')) {
-                    return [_join_path(full_url(prefix), suffix+qs)];
+                    res =  [url_object(_join_path(full_url(prefix),
+                                                  suffix),
+                                       fullpath,
+                                       qs,
+                                       viewname)
+                            ];
                 } else {
-                    return [_join_path(full_url(fullpath), suffix+qs),
-                            _join_path(full_url(prefix), suffix+qs)];
+                    // not whitelisted: try two urls:
+                    res =  [url_object(_join_path(full_url(fullpath, fu_opt),
+                                                  suffix),
+                                       fullpath,
+                                       qs),
+                            url_object(_join_path(full_url(prefix),
+                                                  suffix),
+                                       fullpath,
+                                       qs,
+                                       viewname)
+                            ];
                 }
             } else {
-                return [_join_path(full_url(fullpath), suffix+qs)];
+                // no path, or ends with slash:
+                res =  [url_object(_join_path(full_url(fullpath), suffix+qs),
+                                   fullpath,
+                                   qs)
+                        ];
             }
         }
+        len = res.length;
+        log('urls2try('+fullpath+'): returning '+len+' objects');
+        for (i=0; i < len; i++) {
+            log(res[0]);
+        }
+        return res;
     };
     AjaxNav.urls2try = urls2try;
 
@@ -333,8 +440,8 @@ var AjaxNav = (function () {
             if (selector) {
                 $(selector).each(function () {
                     $(this).html(content);
-                    done=true;
-                    return false;
+                    done = true;
+                    return false; // terminate loop
                 });
                 if (done)
                     return done;
@@ -443,6 +550,83 @@ var AjaxNav = (function () {
     };
     AjaxNav.get_fill_selectors = get_fill_selectors;
 
+    /* has blacklisted class
+     */
+    var has_blacklisted_class = function (elem) {
+        var cls_raw = $(elem).attr('class'),
+            classes, len, i;
+        if (! cls_raw) {
+            return false;
+        }
+        classes = cls_raw.trim().split(/\s+/);
+        len = classes.length;
+        if (len === 0) {
+            return false;
+        }
+        var options = AjaxNav.options,
+            class_ids = options.blacklist_class_ids,
+            class_prefixes = options.blacklist_class_prefixes,
+            len_prefixes = class_prefixes.length,
+            class_suffixes = options.blacklist_class_suffixes,
+            len_suffixes = class_suffixes.length,
+            cls, testval, j, len2;
+        for (i=0; i < len; i++) {
+            cls = classes[i];
+            if (class_ids.indexOf(cls) !== -1) {
+                return true;
+            }
+            for (j=0; j < len_prefixes; j++) {
+                if (cls.startsWith(class_prefixes[j])) {
+                    return true;
+                }
+            }
+            for (j=0; j < len_suffixes; j++) {
+                if (cls.endsWith(class_suffixes[j])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    AjaxNav.has_blacklisted_class = has_blacklisted_class;
+
+    var amend_target_rel_values = function (elem) {
+        var relvals = $(elem).attr('rel'),
+            options = AjaxNav.options,
+            new_relvals = options.target_rel_values,
+            i, len, val,
+            changed = false;
+            len, i;
+        if (typeof relvals === 'string') {
+            relvals = relvals.trim().split(/\s+/);
+        } else if (typeof relvals !== 'object') {
+            relvals = [];
+        }
+        for (i=0, len = new_relvals.length; i < len; i++) {
+            val = new_relvals[i];
+            if (relvals.indexOf(val) === -1) {
+                relvals.push(val);
+                changed = true;
+            }
+        }
+        if (changed) {
+            $(elem).attr('rel', relvals.join(' '));
+        }
+    }
+    AjaxNav.amend_target_rel_values = amend_target_rel_values;
+
+    var has_nondefault_target = function (elem) {
+        var target = $(elem).attr('target');
+        if (! target || target === '_self') {
+            return false;
+        }
+        // our AJAX processing might fail, so we need to
+        // do this in any case:
+        amend_target_rel_values(elem);
+        return AjaxNav.options.regard_target_attribute;
+    }
+    AjaxNav.has_nondefault_target = has_nondefault_target;
+
     /* get scrollto selector  (get_scrollto_selector -- NOT YET IMPLEMENTED)
      *
      * We expect one selector here, and we don't intend to use per-request
@@ -471,11 +655,60 @@ var AjaxNav = (function () {
      * "load a fresh page from an url which might or might not work"
      * and "rebuild a page from the browser history".
      */
-    var use_url = function (url, query) {
+    var use_url = function (url_o, additional_query) {
         var reply_ok = null,
+            url_o = url_o || {},
+            url = (typeof url_o === 'string'
+                   ? url_o
+                   : (typeof url_o.url !== 'undefined'
+                      ? url_o.url
+                      : '@@ajax-nav'
+                      )),
+            query_from_url = typeof url_o.query === 'object'
+                             ? url_o.query
+                             : null,
+            query = {},
+            key,
+            viewname = (typeof url_o !== 'object'
+                        ? null
+                        : (typeof url_o.viewname !== 'undefined'
+                           ? url_o.viewname
+                           : null
+                           )),
+            original = (typeof url_o !== 'object'
+                        ? null
+                        : (typeof url_o.original !== 'undefined'
+                           ? url_o.original
+                           : null
+                           )),
+            additional_query = additional_query || null,
+            result_o = {'try_other': null,
+                        'ok': null,  // <- reply_ok
+                        'processed_contents': null,
+                        'noajax': null},
             newtitle = null,
             newurl = null,
+            noajax = null,
             data_keys = [];
+        if (query_from_url) {
+            for (key in query_from_url) {
+                query[key] = query_from_url[key];
+            }
+        }
+        if (additional_query) {
+            for (key in additional_query) {
+                if (typeof query[key] !== 'undefined') {
+                    continue;
+                }
+                query[key] = additional_query[key];
+            }
+        }
+        if (viewname) {
+            query['_viewname'] = viewname;
+        }
+        if (original) {
+            query['_original_url'] = original;
+        }
         $.ajax(url, {
             async: false,
             cache: false,  // development
@@ -492,6 +725,8 @@ var AjaxNav = (function () {
                 ii,
                 invalid_count = 0,
                 invalid_max = 3;
+            // we've got JSON data, so we had the correct URL already:
+            result_o.try_other = false;
             log(textStatus+'; data ('+(typeof data)+'):');
             log(data)
             for (key in data) {   // iterate response data ...
@@ -505,8 +740,7 @@ var AjaxNav = (function () {
                     } else if (key == '@noajax') {
                         log('use_url('+url+'): ' + key + ' found');
                         if (data[key]) {
-                            reply_ok = false;
-                            noajax = true;  // from AjaxNav.click
+                            noajax = true;  // from use_url
                         } else {
                             log('Hu? data[' + key +
                                 '] is not truish! ('+data[key]+')');
@@ -542,6 +776,18 @@ var AjaxNav = (function () {
             if (reply_ok === null) {
                 reply_ok = data_keys.length > 0;
             }
+            if (noajax === null) {
+                noajax = data_keys.length === 0;
+            }
+            result_o.processed_contents = data_keys.length > 0;
+            result_o.ok = reply_ok;
+            result_o.noajax = noajax;
+            if (noajax) {
+                // we might have inserted some placeholder "content",
+                // but we surely want to load the requested page
+                // conventionally:
+                return;
+            }
             if (reply_ok) {
                 AjaxNav.history_and_title(newurl, newtitle, data);
                 AjaxNav.scroll_to(scrollto);
@@ -564,15 +810,20 @@ var AjaxNav = (function () {
             if (http_status === 401) {
                 unauthorized = true;
                 log(url+': unauthorized');
+                result_o.try_other = false;
+            } else if (http_status === 404) {
+                // if this is the first URL tried, at least:
+                result_o.try_other = true;
             } else if (http_status == 401) {
                 unauthorized = true;
                 log(url+': unauthorized (NON-NUMERIC)');
+                result_o.try_other = false;
             } else {
                 log(url+': OTHER ERROR');
             }
-            reply_ok = false;
+            result_o.ok = false;
         });  // ... use_url>ajax.fail
-        return reply_ok;
+        return result_o;
     };  // ... use_url(url, query)
 
     /* The click handling function
@@ -598,8 +849,8 @@ var AjaxNav = (function () {
             href =      clickedon.attr('href'),
             cls  =      clickedon.attr('class'),
             elem_data = clickedon.data(),
-            unauthorized = false,
-            noajax = false;
+            result_o =  null,
+            unauthorized = false;
 
         log('clickedon:');
         log(clickedon);
@@ -618,6 +869,17 @@ var AjaxNav = (function () {
             $(this).off('click', AjaxNav.click);
             return true;  // continue with non-AJAX processing
         }
+        if (has_blacklisted_class(clickedon)) {
+            log('AjaxNav: has blacklisted class');
+            // $(this).off('click', AjaxNav.click);
+            return true;  // continue with standard processing
+        }
+
+        if (has_nondefault_target(clickedon)) {
+            // By default, we regard the target attribute
+            return true;
+        }
+
         if (hostname_mismatch(href)) {
             log('AjaxNav: Hostname mismatch ("'+href+'"); urlSplit:');
             log(urlSplit(href));
@@ -647,13 +909,24 @@ var AjaxNav = (function () {
 
         // --------------------------- [ try one or two urls ... [
         for (i=0, len=urls_list.length; i < len; i++) {
-            if (use_url(urls_list[i], query)) {
+            result_o = use_url(urls_list[i], query);
+            if (result_o.try_other) {
+                continue;
+            } else if (result_o.noajax) {
+                return true;
+            } else if (result_o.ok) {
                 event.preventDefault();
                 return
-            } else if (unauthorized) {
-                return true;
+            } else if (result_o.unauthorized) {
+                if (result_o.processed_contents) {
+                    event.preventDefault();
+                    return;
+                } else {
+                    return true;
+                }
             } else {
-                log("Can't use URL " + urls_list[i]);
+                log("Can't use URL " + urls_list[i]+ '; result_o:');
+                log(result_o);
             }
         }
         // --------------------------- ] ... try one or two urls ]
@@ -661,10 +934,64 @@ var AjaxNav = (function () {
     };  // clickfunc(event)
     AjaxNav.click = clickfunc;
 
-    /* process_data: for the browser history
+    /* load url: e.g. triggered by form actions
+     */
+    var load_url = function (href, query) {
+        var i, len, 
+            query = query || {},
+            result_o =  null,
+            unauthorized = false;
+
+        if (typeof query.fullpageOnly !== 'undefined'
+            &&     query.fullpageOnly) {
+            return true;  // server-side mark "always load full page"
+        }
+
+        if (! href) {
+            log('AjaxNav: no href attribute ("' + href + '")');
+            return true;  // continue with non-AJAX processing
+        }
+        if (hostname_mismatch(href)) {
+            log('AjaxNav: Hostname mismatch ("'+href+'"); urlSplit:');
+            log(urlSplit(href));
+            return true;  // continue with non-AJAX processing
+        }
+
+        // includes mismatch detection (non-AJAX urls:):
+        var urls_list = urls2try(href);
+        if (urls_list.length === 0) {
+            return true;
+        }
+
+        // --------------------------- [ try one or two urls ... [
+        for (i=0, len=urls_list.length; i < len; i++) {
+            result_o = use_url(urls_list[i], query);
+            if (result_o.try_other) {
+                continue;
+            } else if (result_o.noajax) {
+                return true;
+            } else if (result_o.ok) {
+                return
+            } else if (result_o.unauthorized) {
+                if (result_o.processed_contents) {
+                    return;
+                } else {
+                    return true;
+                }
+            } else {
+                log("Can't use URL " + urls_list[i]+ '; result_o:');
+                log(result_o);
+            }
+        }
+        // --------------------------- ] ... try one or two urls ]
+        return true;
+    };
+    AjaxNav.load_url = load_url;
+
+    /* process_data: use the browser history
      *
-     * Performs a simplified subset of the processing done by the use_use_url
-     * function, (hopefully) sufficient to rebuild a pre-built page from the
+     * Performs a simplified subset of the processing done by the use_url
+     * function, sufficient to rebuild a pre-built page from the
      * browser history
      */
     var process_data = function (data) {
@@ -676,6 +1003,7 @@ var AjaxNav = (function () {
             data_keys = [],
             selectors = null,
             newurl = null,
+            noajax = null,
             invalid_count = 0,
             invalid_max = 3,
             auto_key = AjaxNav.options.scrollto_auto_key;
@@ -693,12 +1021,13 @@ var AjaxNav = (function () {
                     reply_ok = data[key];
                 } else if (key == '@noajax') {
                     log('use_url('+url+'): ' + key + ' found');
+                    log("THIS COMES UNEXPECTEDLY!");
                     if (data[key]) {
                         reply_ok = false;
-                        noajax = true;  // from AjaxNav.click
+                        noajax = true;  // from use_url
                     } else {
-                        log('Hu? data[' + key +
-                            '] is not truish! ('+data[key]+')');
+                        log('Hu? data[' + key + ']'+
+                            ' is not truish! ('+data[key]+')');
                     }
                 } else if (key == '@scrollto') {
                     scrollto = data[key];
@@ -768,189 +1097,294 @@ var AjaxNav = (function () {
     };
     AjaxNav.scroll_to = scroll_to;
 
-    log('AjaxNav loaded.')
-    return AjaxNav;
-})();
-
-// To be called explicitly, optionally providing a key:
-AjaxNav.init = function (key) {
-    if (typeof key === 'undefined' || ! key) {
-        key = 'default';
+    var split_and_trimmed = function (s, options) {
+        var res = [],
+            splitter = (typeof options['splitter'] !== 'undefined'
+                        ? options['splitter']
+                        : ','),
+            do_trim = (typeof options['trim'] !== 'undefined'
+                       ? (options['trim'] && true || false)
+                       : true),
+            tmpstr,
+            tmplst = [],
+            i, len;
+        if (! s) {
+            return [];
+        } else if (typeof s !== 'string') {
+            return s;
+        }
+        if (! splitter) {
+            if (do_trim) {
+                s = s.trim();
+            }
+            if (s) {
+                return [s];
+            } else {
+                return [];
+            }
+        }
+        tmplst = s.split(splitter);
+        for (i=0, len=tmplst.length; i < len; i++) {
+            if (do_trim) {
+                tmpstr = tmplst[i].trim();
+            } else {
+                tmpstr = tmplst[i];
+            }
+            if (tmpstr) {
+                res.push(tmpstr);
+            }
+        }
+        return res;
     }
+    AjaxNav.split_and_trimmed = split_and_trimmed;
 
-    var ajaxnav_init = function (data, textStatus, jqXHR) {
-        AjaxNav.log('AjaxNav.init('+key+') received data:');
-        AjaxNav.log(data);
+    var coerce_to_list_of_strings = function (key, data, options) {
+        var val = null,
+            tmpstr,
+            tmplst = [],
+            novalues,
+            i, len,
+            changed=false;
 
-        // ------------------------ [ initial (un)delegation ... [
-        var whitelist = data.whitelist,
-            blacklist = data.blacklist,
-            i, len, ii, blacklist_length=null, nested,
-            key, val, newval, newlist, chunk,
-            selector;
-
-        if (whitelist === undefined) {
-            data.whitelist = whitelist = ['body'];
-        }
-
-        if (blacklist === undefined) {
-            data.nested_blacklist = nested = false;
-            data.blacklist = blacklist = [];
+        // use default?
+        if (typeof data[key] === 'undefined') {
+            if (typeof options['default'] !== 'undefined') {
+                val = split_and_trimmed(options['default'], options);
+                changed = true;
+            } else {
+                data[key] = [];
+                return;
+            }
         } else {
-            nested = data.nested_blacklist;
+            val = data[key];
+            if (! val) {
+                data[key] = [];
+                return;
+            }
+        }
+        // ... default used, if necessary.
+        // It might still need to be checked for no-values.
+
+        novalues = (typeof options['novalues'] !== 'undefined'
+                    ? split_and_trimmed(options['novalues'], options)
+                    : ['@novalue']);
+        if (typeof val !== 'object') {
+            val = split_and_trimmed(val);
+            changed = true;
+        }
+        if (typeof novalues !== 'object') {
+            novalues = split_and_trimmed(novalues, options)
+        }
+
+        for (i=0, len=val.length; i < len; i++) {
+            tmpstr = val[i];
+            if (novalues.indexOf(tmpstr) === -1) {
+                tmplst.push(tmpstr);
+            } else {
+                changed = true;
+            }
+        }
+        if (changed) {
+            data[key] = tmplst;
+        }
+    };
+    AjaxNav.coerce_to_list_of_strings = coerce_to_list_of_strings;
+
+    // To be called explicitly, optionally providing a key:
+    AjaxNav.init = function (key) {
+        if (typeof key === 'undefined' || ! key) {
+            key = 'default';
+        }
+
+        var ajaxnav_init = function (data, textStatus, jqXHR) {
+            AjaxNav.log('AjaxNav.init('+key+') received data:');
+            AjaxNav.log(data);
+
+            // ------------------------ [ initial (un)delegation ... [
+            var whitelist,
+                blacklist = data.blacklist,
+                i, len, ii, blacklist_length=null, nested,
+                key, val, newval, newlist, chunk,
+                selector;
+
+            coerce_to_list_of_strings('whitelist', data, {
+                'default': ['body']
+                });
+            whitelist = data.whitelist;
+
+            coerce_to_list_of_strings('blacklist', data, {
+                'default': []
+                });
+            blacklist = data.blacklist;
             blacklist_length = blacklist.length;
-            if (nested === undefined) {
-                data.nested_blacklist = nested = false;
+            if (typeof data.nested_blacklist === 'undefined') {
+                data.nested_blacklist = false;
             }
-        }
+            nested = data.nested_blacklist;
 
-        for (var i=0, len=whitelist.length; i < len; i++) {
-            selector = whitelist[i];
-            $(selector).on('click', 'a', AjaxNav.click);
-            if (nested) {
-                for (var ii=0; ii < blacklist_length; ii++) {
-                    $(selector).off('click', blacklist[ii], AjaxNav.click);
-                }
-            }
-        }
-        if (blacklist_length && ! nested) {
-            for (var i=0; i < blacklist_length; i++) {
-                selector = blacklist[i]
-                $(selector).off('click', 'a', AjaxNav.click);
-            }
-        }
-        // ------------------------ ] ... initial (un)delegation ]
-
-        // ------------------------- [ view name recognition ... [
-        // (for path components after a final "/" but w/o "@@")
-        if (typeof data.view_ids === 'undefined') {
-            data.view_ids = ['view',
-                             'edit',
-                             'base_edit'];
-        }
-        if (typeof data.view_prefixes === 'undefined') {
-            data.view_prefixes = ['manage_'];
-        }
-        if (typeof data.view_suffixes === 'undefined') {
-            data.view_suffixes = ['_view'];
-        }
-        // ------------------------- ] ... view name recognition ]
-
-        // ------------------------------------- [ blacklist ... [
-        // (view ids which will always be loaded the non-AJAX way)
-        if (typeof data.blacklist_view_ids === 'undefined') {
-            data.blacklist_view_ids = ['edit',
-                                       'base_edit',
-                                       'logout',
-                                       'manage'];
-        }
-        if (typeof data.blacklist_view_prefixes === 'undefined') {
-            data.blacklist_view_prefixes = ['manage_'];
-        }
-        if (typeof data.blacklist_view_suffixes === 'undefined') {
-            data.blacklist_view_suffixes = ['_edit'];
-        }
-        // ------------------------------------- ] ... blacklist ]
-
-        // ---------------------------- [ keys --> selectors ... [
-        if (typeof data.selectors === 'undefined') {
-            data.selectors = {
-                content: '#content'
-            };
-        } else {  // convert the strings to lists:
-            newval = {}
-            for (key in data.selectors) {
-                newlist = newval[key] = [];
-                val = data.selectors[key].split(',');
-                for (i=0, len=val.length; i < len; i++) {
-                    chunk = val[i].trim();
-                    if (chunk) {
-                        newlist.push(chunk);
+            for (var i=0, len=whitelist.length; i < len; i++) {
+                selector = whitelist[i];
+                $(selector).on('click', 'a', AjaxNav.click);
+                if (nested) {
+                    for (var ii=0; ii < blacklist_length; ii++) {
+                        $(selector).off('click', blacklist[ii], AjaxNav.click);
                     }
                 }
             }
-            data.selectors = newval;
-        }
-        // ---------------------------- ] ... keys --> selectors ]
-
-        // ----------------------------------- [ menu topics ... [
-        if (typeof data.menu_item_selector === 'undefined') {
-            data.menu_item_selector = '.mainmenu-item > a';
-        }
-        if (typeof data.menu_item_switched_classname === 'undefined') {
-            data.menu_item_switched_classname = 'selected';
-        }
-        // ----------------------------------- ] ... menu topics ]
-
-        // --------------------------- [ @@scrollto defaults ... [
-        if (typeof data.scrollto_default_selector === 'undefined') {
-            data.scrollto_default_selector = null;
-        }
-        if (typeof data.scrollto_default_deltay === 'undefined') {
-            data.scrollto_default_deltay = 0;
-        }
-        if (typeof data.scrollto_auto_key === 'undefined') {
-            data.scrollto_auto_key = 'content';
-        }
-        if (! data.scrollto_auto_key) {
-            data.scrollto_auto_key = null;
-        }
-        // --------------------------- ] ... @@scrollto defaults ]
-        // --------------------------- [ development support ... [
-        if (typeof data.development_mode === 'undefined') {
-            data.development_mode = true;
-        }
-        if (typeof data.development_style_delegate === 'undefined') {
-            data.development_style_delegate = {
-                'background-color': "lime"
+            if (blacklist_length && ! nested) {
+                for (var i=0; i < blacklist_length; i++) {
+                    selector = blacklist[i]
+                    $(selector).off('click', 'a', AjaxNav.click);
+                }
             }
-        }
-        if (typeof data.development_style_undelegate === 'undefined') {
-            data.development_style_undelegate = {
-                'background-color': "yellow"
-            }
-        }
-        // --------------------------- ] ... development support ]
-        AjaxNav.options = data;
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
-        window.addEventListener('popstate', event => {
-               const { state } = event;
-               console.log(state);
-               AjaxNav.process_data(state);
-        });
-        AjaxNav.log('AjaxNav.init('+key+') completed.');
-    };  // ... ajaxnav_init
+            // ------------------------ ] ... initial (un)delegation ]
 
-    $.ajax({
-        dataType: 'json',
-        url: location.href+'/@@ajax-siteinfo'
-    })
-    .done(function (data, textStatus, jqXHR) {
-        var url = AjaxNav.origin = data.site_url;
-        url += '/@@ajaxnav-options-'+key;
-        AjaxNav.log('Site url is        '+AjaxNav.origin);
-        AjaxNav.log('Sending request to '+url);
+            // ------------------------- [ view name recognition ... [
+            // (for path components after a final "/" but w/o "@@")
+            coerce_to_list_of_strings('view_ids', data, {
+                'default':  ['view',
+                             'edit',
+                             'base_edit']
+                });
+            coerce_to_list_of_strings('view_prefixes', data, {
+                'default': ['manage_']
+                });
+            coerce_to_list_of_strings('view_suffixes', data, {
+                'default': ['_view']
+                });
+            // ------------------------- ] ... view name recognition ]
+
+            // ------------------------------------- [ blacklist ... [
+            // (view ids which will always be loaded the non-AJAX way)
+            coerce_to_list_of_strings('blacklist_view_ids', data, {
+                'default': ['edit',
+                            'base_edit',
+                            'logout',
+                            'manage']
+                });
+            coerce_to_list_of_strings('blacklist_view_prefixes', data, {
+                'default': ['manage_']
+                });
+            coerce_to_list_of_strings('blacklist_view_suffixes', data, {
+                'default': ['_edit']
+                });
+            // ------------------------------------- ] ... blacklist ]
+
+            // --------------------- [ blacklisted by attributes ... [
+            // for certain links, identified by classes,
+            // we might have a working solution already
+            coerce_to_list_of_strings('blacklist_class_ids', data, {
+                'default': ['lightbox']
+                });
+            coerce_to_list_of_strings('blacklist_class_prefixes', data, {
+                'default': []
+                });
+            coerce_to_list_of_strings('blacklist_class_suffixes', data, {
+                'default': []
+                });
+            // Following the Principle of Least Surprise, we regard
+            // existing target=_blank attributes by default.
+            // You may choose to ignore them, though, since the use of
+            // this feature is not recommended.
+            if (typeof data.regard_target_attribute === 'undefined') {
+                data.regard_target_attribute = true;
+            }
+            // --------------------- ] ... blacklisted by attributes ]
+
+            // -------------------------------------- [ security ... [
+            // see e.g. https://mathiasbynens.github.io/rel-noopener/:
+            coerce_to_list_of_strings('target_rel_values', data, {
+                'default': ['noopener']
+                });
+            // -------------------------------------- ] ... security ]
+
+            // ---------------------------- [ keys --> selectors ... [
+            if (typeof data.selectors === 'undefined') {
+                data.selectors = {
+                    content: '#content'
+                };
+            } else {  // convert the strings to lists:
+                newval = {}
+                for (key in data.selectors) {
+                    newlist = newval[key] = [];
+                    val = data.selectors[key].split(',');
+                    for (i=0, len=val.length; i < len; i++) {
+                        chunk = val[i].trim();
+                        if (chunk) {
+                            newlist.push(chunk);
+                        }
+                    }
+                }
+                data.selectors = newval;
+            }
+            // ---------------------------- ] ... keys --> selectors ]
+
+            // ----------------------------------- [ menu topics ... [
+            if (typeof data.menu_item_selector === 'undefined') {
+                data.menu_item_selector = '.mainmenu-item > a';
+            }
+            if (typeof data.menu_item_switched_classname === 'undefined') {
+                data.menu_item_switched_classname = 'selected';
+            }
+            // ----------------------------------- ] ... menu topics ]
+
+            // --------------------------- [ @@scrollto defaults ... [
+            if (typeof data.scrollto_default_selector === 'undefined') {
+                data.scrollto_default_selector = null;
+            }
+            if (typeof data.scrollto_default_deltay === 'undefined') {
+                data.scrollto_default_deltay = 0;
+            }
+            if (typeof data.scrollto_auto_key === 'undefined') {
+                data.scrollto_auto_key = 'content';
+            }
+            if (! data.scrollto_auto_key) {
+                data.scrollto_auto_key = null;
+            }
+            // --------------------------- ] ... @@scrollto defaults ]
+            // --------------------------- [ development support ... [
+            if (typeof data.development_mode === 'undefined') {
+                data.development_mode = true;
+            }
+            // --------------------------- ] ... development support ]
+            AjaxNav.options = data;
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
+            window.addEventListener('popstate', event => {
+                   const { state } = event;
+                   console.log(state);
+                   AjaxNav.process_data(state);
+            });
+            AjaxNav.log('AjaxNav.init('+key+') completed.');
+        };  // ... ajaxnav_init
+
         $.ajax({
-            // dataType: 'json',
-            cache: false,  // development
-            // url: AjaxNav.origin+'/@@ajaxnav-options-'+key
-            url: url
+            dataType: 'json',
+            url: '@@ajax-siteinfo'
         })
-        .done(ajaxnav_init)
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            AjaxNav.log('E:AjaxNav.init('+key+') --> Error '+textStatus+':');
-            AjaxNav.log(jqXHR);
-            if (errorThrown !== undefined) {
-                AjaxNav.log(errorThrown);
-            }
-            // alert('AjaxNav.init: Error '+textStatus+' for key "'+key+'"');
+        .done(function (data, textStatus, jqXHR) {
+            var url = AjaxNav.origin = data.site_url;
+            url += '/@@ajaxnav-options-'+key;
+            AjaxNav.log('Site url is        '+AjaxNav.origin);
+            AjaxNav.log('Sending request to '+url);
+            $.ajax({
+                // dataType: 'json',
+                cache: false,  // development
+                // url: AjaxNav.origin+'/@@ajaxnav-options-'+key
+                url: url
+            })
+            .done(ajaxnav_init)
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                AjaxNav.log('E:AjaxNav.init('+key+') --> Error '+textStatus+':');
+                AjaxNav.log(jqXHR);
+                if (errorThrown !== undefined) {
+                    AjaxNav.log(errorThrown);
+                }
+                // alert('AjaxNav.init: Error '+textStatus+' for key "'+key+'"');
+            });
         });
-    });
-};
-/*
-$(window).on('popstate', function (event) {
-    console.log('popstate:');
-    console.log(event.state);
-});
-*/
+    };  // AjaxNav.init
+
+    log('AjaxNav loaded.')
+    return AjaxNav;
+})();
 // -*- coding: utf-8 -*- vim: ts=4 sw=4 sts=4 expandtab ai noic tw=79 cc=+1

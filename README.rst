@@ -31,21 +31,23 @@ The general idea is:
   - Management pages (e.g. starting with ``manage_``)
   - Other pages which don't load the navigation links etc. anyway,
     or wouldn't work when loaded via AJAX
-  - Anchor elements with certain attributes
+  - Anchor elements with certain attributes (``data-fullpage-only="true"``)
   - Views for contexts which don't have a suitable embedable view yet.
 
   For such link targets, this function will simply return *true*,
   and the page is loaded in the standard way.
 
 - If that check function concludes, "let's load the target via AJAX",
+  it will send a request to an ``.../@@ajax-nav`` address which will return
+  all necessary JSON data; using the result,
   it will look for certain elements on the page and try to update them:
 
-  - ``content``
+  - ``#content`` (the target for ``content`` as of the default configuration)
 
-    and, optionally:
+  and, optionally:
 
   - breadcrumbs
-  - other page elements
+  - other page elements, like context specific search forms.
 
   It will also set the page url and title accordingly
   (from the ``@url`` and ``@title`` keys of the JSON reply, respectively),
@@ -57,6 +59,9 @@ The general idea is:
   the target page is loaded the normal, non-AJAX way
   (i.e., loading the whole page).
 
+- All hyperlinks will *continue* to work with Javascript switched off;
+  of course, pages will load faster when switched on.
+
 
 Features
 --------
@@ -64,17 +69,24 @@ Features
 - Tries up to two URLs for each ``a`` element (only one, if the target URL ends
   with "``/``", or if the final path element can be considered a view method
   name rather than an object id)
-- Can be configured using the Plone registry.
+- Can be configured using the Plone registry:
+
+  - ``target`` attributes of ``a`` elements are regarded *by default*,
+    following the `Principle of Least Surprise`_.
+    However, you are encouraged to disregard them, since the use of this
+    attribute is not recommended.
+  - By default, ``a[target]`` elements are secured by adding to them a ``rel``
+    value of noopener_.
 
 
 To do
 -----
 
-- Provide ``@@embed`` views for all standard objects.
-- Provide ``@@please_login`` and ``@@insufficient_rights`` views.
 - Use a `web worker`_.
-- Find reliable CSS destination selectors for the ``content``.
 - Make this package RequireJS_-aware.
+- Provide support for additional search configurations.
+- Pick values from contents to be replaced, and re-insert them
+  (e.g. search expressions in context specific search forms).
 
 
 Examples
@@ -118,16 +130,32 @@ and inject an ``ajax_load=1`` request variable.
 Questions
 ---------
 
-"Why don't you simply inject that ``ajax_load`` variable automatically per BrowserView code?"
+"Why don't you simply inject that ``ajax_load`` variable
+automatically per BrowserView code?"
 
-Perhaps we will.
+Yes, we do so already.
 
-"Why don't you drop that ``embed`` view name, and simply use ``view``, with ``ajax_load=1`` injected?
+There is a simple ``.views.AjaxLoadBrowserView`` class which takes care of
+this, and a few subclasses.
 
-Perhaps we will do so as a fallback option.
-But it might be a good idea to be able to do things differently on purpose.
+"Why don't you drop that ``embed`` view name, and simply use ``view``,
+with ``ajax_load=1`` injected?
 
-Probably there are several things which could be done better.
+We do so as a fallback option.
+But some of our pages simply don't work this way
+(e.g. because some necessary scripts are loaded in a METAL slot
+which is dropped if ``ajax_load`` is found true),
+so we need to be able to be explicit.
+
+Thus, an ``..._embed`` view is used, if present, and then the standard view
+jumps in as a fallback.
+
+The visaplan.plone.ajaxnavigation package was developed as a drop-in solution
+for sites which might not do everything right already.
+If your site works fine with ``ajax_load`` injected, you'll need to do less
+customization work to make it run.
+
+Quite probably there are several things which could be done better.
 Contributions are welcome.
 
 
@@ -158,5 +186,7 @@ The project is licensed under the GPLv2 (or later).
 .. _`web worker`: https://html.spec.whatwg.org/multipage/workers.html#workers
 .. _RequireJS: https://requirejs.org/
 .. _visaplan.plone.ajaxnavigation: https://pypi.org/project/visaplan.plone.ajaxnavigation
+.. _`Principle of Least Surprise`: https://en.wikipedia.org/wiki/Principle_of_least_astonishment
+.. _noopener: https://mathiasbynens.github.io/rel-noopener/
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et

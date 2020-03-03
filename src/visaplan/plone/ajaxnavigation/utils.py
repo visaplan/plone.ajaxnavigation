@@ -33,16 +33,32 @@ def embed_view_name(viewname):
 
     If the argument is "false" (e.g. an empty string), None is returned:
     >>> embed_view_name('')
+
+    If no 'view' suffix is found, we consider the divider(s) used.
+    If only dashes are used, we use a dash:
+    >>> embed_view_name('my-images')
+    'my-images-embed'
+    
+    If none are found, or both, the underscore is used:
+    >>> embed_view_name('my-cool_images')
+    'my-cool_images_embed'
+    >>> embed_view_name('dontknow')
+    'dontknow_embed'
     """
     if viewname == 'view':  # shortcut; doesn't change the result
         return 'embed'
     elif not viewname:
         return None
     dividers = ('_', '-')
+    used = []
     for divider in dividers:
         liz = viewname.split(divider)
         if liz[-1] == 'view':
             return divider.join(liz[:-1] + ['embed'])
+        if liz[1:]:
+            used.append(divider)
+    if used:
+        return used[0].join((viewname, 'embed'))
     return dividers[0].join((viewname, 'embed'))
 
 

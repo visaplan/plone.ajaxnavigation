@@ -8,7 +8,7 @@
 
     <value key="blacklist"
            purge="false">
-        <element>nowhere</element>
+        <element>@novalue</element>
     </value>
 
     <value key="nested_blacklist"
@@ -79,6 +79,29 @@
 
     <value key="menu_item_switched_classname"
            purge="false">selected</value>
+
+    <value key="blacklist_class_ids"
+           purge="false">
+        <element>lightbox</element>
+    </value>
+
+    <value key="blacklist_class_prefixes"
+           purge="false">
+        <element>@novalue</element>
+    </value>
+
+    <value key="blacklist_class_suffixes"
+           purge="false">
+        <element>@novalue</element>
+    </value>
+
+    <value key="regard_target_attribute"
+           purge="false">True</value>
+
+    <value key="target_rel_values"
+           purge="false">
+        <element>noopener</element>
+    </value>
     <!-- ] ... Processing of AJAX data ] -->
 
     <!-- [ development support ... [ -->

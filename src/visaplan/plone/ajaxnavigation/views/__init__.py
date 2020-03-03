@@ -199,15 +199,29 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         """
         form = request.form
         pp(form=form)
+        changes = 0
+        ok = True
         for key, val in form.items():
-            if isinstance(val, list) and key.startswith('b_'):
-                logger.warn('%(context)r: key %(key)r has value %(val)r',
-                            locals())
-                newval = val[-1]
-                form[key] = newval
-                logger.warn('%(context)r: key %(key)r set to    %(newval)r',
-                            locals())
-        return False
+            if isinstance(val, list):
+                if key.startswith('b_'):
+                    logger.warn('%(context)r: key %(key)r has value %(val)r',
+                                locals())
+                    newval = val[-1]
+                    form[key] = newval
+                    changes += 1
+                    logger.warn('%(context)r: key %(key)r set to    %(newval)r',
+                                locals())
+                elif key == 'uid':
+                    same_set = set(val)
+                    if len(same_set) == 1:
+                        form[key] = val[0]
+                        changes += 1
+                    else:
+                        ok = False
+        if changes:
+            pp('%(changes)d changes:' % locals(),
+               form=form)
+        return not ok
 
     # ------------------------------ ] ... construct JSON object ... [
     def response_additions(self):

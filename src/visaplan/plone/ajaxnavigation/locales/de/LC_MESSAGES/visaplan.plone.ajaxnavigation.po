@@ -1,10 +1,10 @@
 # --- PLEASE EDIT THE LINES BELOW CORRECTLY ---
 # Deutsche Lokalisierung zu visaplan.plone.ajaxnavigation.
-# Tobias Herp <tobias.herp@visaplan.com>, 2020.
+# visaplan GmbH, Bochum, Germany, 2020
 msgid ""
 msgstr ""
-"Project-Id-Version: visaplan.plone.ajaxnavigation 1.0.dev2\n"
-"POT-Creation-Date: 2020-02-20 13:08+0000\n"
+"Project-Id-Version: visaplan.plone.ajaxnavigation 1.0\n"
+"POT-Creation-Date: 2020-03-03 12:26+0000\n"
 "PO-Revision-Date: 2019-07-12 17:53+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@visaplan.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,17 +32,17 @@ msgid "AJAX response key"
 msgstr ""
 "AJAX-Antwortschlüssel"
 
-#: ../interfaces.py:294
+#: ../interfaces.py:379
 msgid "AJAX view"
 msgstr ""
 "AJAX-Sicht"
 
-#: ../views/__init__.py:410
+#: ../views/__init__.py:424
 msgid "Access denied"
 msgstr ""
 "Zugriff verweigert"
 
-#: ../views/__init__.py:411
+#: ../views/__init__.py:425
 msgid "Access denied: ${title}"
 msgstr ""
 "Zugriff verweigert: ${title}"
@@ -61,6 +61,21 @@ msgstr ""
 msgid "Blacklist"
 msgstr ""
 "Ausschlußliste"
+
+#: ../interfaces.py:194
+msgid "Blacklist class IDs"
+msgstr ""
+"Ausschlußliste für \"a\"-Klassen"
+
+#: ../interfaces.py:205
+msgid "Blacklist class prefixes"
+msgstr ""
+"Ausschlußliste für Klassenpräfixe"
+
+#: ../interfaces.py:217
+msgid "Blacklist class suffixes"
+msgstr ""
+"Ausschlußliste für Klassensuffixe"
 
 #: ../interfaces.py:137
 msgid "Blacklist view IDs"
@@ -92,42 +107,42 @@ msgid "Child objects"
 msgstr ""
 "Kindobjekte"
 
-#: ../interfaces.py:210
+#: ../interfaces.py:295
 msgid "Default key for the @scrollto @auto value"
 msgstr ""
 "Schlüsselvorgabe für den @scrollto-Wert „@auto“"
 
-#: ../interfaces.py:193
+#: ../interfaces.py:278
 msgid "Default selector for the @scrollto feature"
 msgstr ""
 "Selektor-Vorgabe für @scrollto"
 
-#: ../interfaces.py:206
+#: ../interfaces.py:291
 msgid "Default vertical offset for the @scrollto feature"
 msgstr ""
 "Vertikaler Versatz für @scrollto"
 
-#: ../interfaces.py:268
+#: ../interfaces.py:353
 msgid "Development mode"
 msgstr ""
 "Entwicklungsmodus"
 
-#: ../interfaces.py:259
+#: ../interfaces.py:344
 msgid "Development support"
 msgstr ""
 "Entwicklungsunterstützung"
 
-#: ../interfaces.py:284
+#: ../interfaces.py:369
 msgid "Internal processing"
 msgstr ""
 "Interne Verarbeitung"
 
-#: ../interfaces.py:291
+#: ../interfaces.py:376
 msgid "Layouts for AJAX"
 msgstr ""
 "Layouts für AJAX"
 
-#: ../interfaces.py:226
+#: ../interfaces.py:311
 msgid "Menu processing"
 msgstr ""
 "Menüverarbeitung"
@@ -137,21 +152,36 @@ msgid "Nested blacklist"
 msgstr ""
 "Verschachtelte Ausschlußliste"
 
-#: ../views/__init__.py:401
+#: ../interfaces.py:185
+msgid "Other exceptions"
+msgstr ""
+"Andere Ausnahmen"
+
+#: ../views/__init__.py:415
 msgid "Please login"
 msgstr ""
 "Bitte anmelden"
 
-#: ../views/__init__.py:402
+#: ../views/__init__.py:416
 msgid "Please login: ${title}"
 msgstr ""
 "Bitte anmelden: ${title}"
 
-#: ../interfaces.py:185
+#: ../interfaces.py:229
+msgid "Regard target attribute"
+msgstr ""
+"target-Attribute beachten"
+
+#: ../interfaces.py:270
 msgid "Scrolling"
 msgstr ""
 
-#: ../interfaces.py:233
+#: ../interfaces.py:247
+msgid "Security"
+msgstr ""
+"Sicherheit"
+
+#: ../interfaces.py:318
 msgid "Selector menu items"
 msgstr ""
 "Selektor für Menüpunkte"
@@ -171,7 +201,7 @@ msgid "Settings for the visaplan.plone.ajaxnavigation package"
 msgstr ""
 "Konfiguration des Pakets visaplan.plone.ajaxnavigation"
 
-#: ../interfaces.py:245
+#: ../interfaces.py:330
 msgid "Switched classname"
 msgstr ""
 "Umgeschaltete CSS-Klasse"
@@ -196,7 +226,7 @@ msgid "View suffixes"
 msgstr ""
 "Suffixe für Sichten-Bezeichner"
 
-#: ../interfaces.py:303
+#: ../interfaces.py:388
 msgid "Views for AJAX"
 msgstr ""
 "AJAX-Sichten"
@@ -206,7 +236,22 @@ msgid "Whitelist"
 msgstr ""
 "Positivliste"
 
-#: ../interfaces.py:293
+#: ../interfaces.py:195
+msgid "class id"
+msgstr ""
+"Klassenname"
+
+#: ../interfaces.py:206
+msgid "class prefix"
+msgstr ""
+"Klassenpräfix"
+
+#: ../interfaces.py:218
+msgid "class suffix"
+msgstr ""
+"Klassensuffix"
+
+#: ../interfaces.py:378
 msgid "full-page layout"
 msgstr ""
 "Vollseiten-Layout"
@@ -216,6 +261,28 @@ msgstr ""
 msgid "help_blacklist"
 msgstr ""
 "CSS-Selektoren für Seitenbereiche, in denen die Konversion von a-Elementen für die AJAX-Navigation unterdrückt werden soll"
+
+#. Default: "For some classes of \"a\" elements, other actions than navigation are desired, e.g. opening of a lightbox."
+#: ../interfaces.py:198
+msgid "help_blacklist_class_ids"
+msgstr ""
+"Für bestimmte Klassen von \"a\"-Elementen sollen möglicherweise andere "
+"Aktionen ausgeführt werden, z. B. die Darstellung von Bildern in einer "
+"Lightbox."
+
+#. Default: "You might have a set of \"a\" classes which share a common prefix and need to be excepted from the AJAX navigation."
+#: ../interfaces.py:209
+msgid "help_blacklist_class_prefixes"
+msgstr ""
+"Sie haben möglicherweise eine Familie von \"a\"-Elemente mit Klassen mit einem gemeinsamen Präfix, "
+"die von der Ajax-Navigation nicht verarbeitet werden dürfen."
+
+#. Default: "You might have a set of \"a\" classes which share a common suffix and need to be excepted from the AJAX navigation."
+#: ../interfaces.py:221
+msgid "help_blacklist_class_suffixes"
+msgstr ""
+"Sie haben möglicherweise eine Familie von \"a\"-Elemente mit Klassen mit einem gemeinsamen Suffix, "
+"die von der Ajax-Navigation nicht verarbeitet werden dürfen."
 
 #. Default: "When computing the URLs to try, the values given here (when following the last slash in the path, of course) are considered view ids for which an AJAX load won't be tried."
 #: ../interfaces.py:144
@@ -236,25 +303,25 @@ msgstr ""
 "Wenn das letzte Pfadsegment einer URL mit einem der hier angegebenen Werte endet, wird es als Name einer Sicht betrachtet, für die keine AJAX-Ansteuerung versucht werden soll."
 
 #. Default: "In development mode, h1 headlines are bordered after loading contents via AJAX; furthermore, the \"a\" elements are styled according to the delegation / undelegation logic.\nYou may specify \"on\", \"off\" or \"auto\"; With \"auto\", this key reflects Zope's DevelopmentMode."
-#: ../interfaces.py:270
+#: ../interfaces.py:355
 msgid "help_development_mode"
 msgstr ""
 "Im Entwicklungsmodus werden h1-Überschriften farbig umrandet. Sie können wählen zwischen „on“ (eingeschaltet), „off“ (aus) und „auto“; bei „auto“ gibt dieser Wert den „DevelopmentMode“ der Zope-Instanz wieder."
 
 #. Default: "Having detected the layout of the current target object, we may map an AJAX version to each “full-pageˮ layout."
-#: ../interfaces.py:295
+#: ../interfaces.py:380
 msgid "help_layout4ajax"
 msgstr ""
 "Insbesondere bei Ordnern können unterschiedliche Layouts aktiviert sein. Für jedes „normale“ (Vollseiten-) Layout kann hier eine AJAX-Version konfiguriert werden."
 
 #. Default: "When loading new content with AJAX, the context indicated by a currently highlighted main menu item might be left; thus, the main menu must be updated to reflect the change, based on the current URL."
-#: ../interfaces.py:235
+#: ../interfaces.py:320
 msgid "help_menu_item_selector"
 msgstr ""
 "Beim Laden von Seiteninhalten per Ajax kommt es vor, daß der Kontext des aktuell hervorgehobenen Hauptmenüpunkts verlassen wird. Das Hauptmenü muß daher (anhand der aktuellen URL) aktualisiert werden."
 
 #. Default: "The name of a class which will be added to the main menu item to be highlighted and removed from all others, matching the <main_item_selector>"
-#: ../interfaces.py:247
+#: ../interfaces.py:332
 msgid "help_menu_item_switched_classname"
 msgstr ""
 "Der Name einer CSS-Klasse, die dem aktuell hervorzuhebenden Menüpunkt hinzugefügt und allen anderen auf den Selektor \"main_item_selector\" passenden Menüpunkten entzogen wird"
@@ -265,14 +332,19 @@ msgid "help_nested_blacklist"
 msgstr ""
 "Wenn aktiviert, und wenn es eine nicht-leere Ausschlußliste von CSS-Selektoren gibt, wird diese während der Abarbeitung der Positivliste angewendet"
 
+#. Default: "Following the Principle of Least Surprise, we regard existing target attributes of \"a\" elements, causing pages to continue to open in new windows (or, more likely with modern browsers: tabs). However, the use of target attributes is not recommended; they don't allow users to choose otherwise. Thus, we recommend you to set this value to False, but this must be your own explicit decistion."
+#: ../interfaces.py:231
+msgid "help_regard_target_attribute"
+msgstr ""
+
 #. Default: "For a @scrollto value of \"@auto\", use the selector given for the key given here; default: \"content\". E.g., if the value is \"content\", and the selector for the \"content\" key is \"#content\", the \"#content\" selector is used to call the jQuery \"scrollTop\" method. "
-#: ../interfaces.py:212
+#: ../interfaces.py:297
 msgid "help_scrollto_auto_key"
 msgstr ""
 "Wenn der @scrollto-Wert „@auto“ konfiguriert ist, verwende den Selektor für den hier angegebenen Schlüssel (Vorgabe: „content“; wenn hier also „content“ konfiguriert ist, und der Selektor für „content“ ist „#content“, wird nach dem Laden der Inhalte „#content“ angesteuert (mittels der „scrollTop“-Methode von jQuery)."
 
 #. Default: "When loading new content by clicking on a hyperlink somewhere down the page, the contents could be loaded unnoticed. To prevent this, we scroll up; globally, or to the element found by the CSS selector given here. You might use the special value \"@auto\"."
-#: ../interfaces.py:195
+#: ../interfaces.py:280
 msgid "help_scrollto_default_selector"
 msgstr ""
 "Wenn Inhalte nachgeladen werden durch Klick auf einen Verweis im unteren Bereich einer Seite, kann es vorkommen, daß dies unbemerkt bleibt. Um dies zu verhindern, gehen wir nach oben; entweder an den Seitenanfang oder zum (mutmaßlich soeben aktualisierten) Element, das durch den hier konfigurierten Selektor angegeben wird. Sie können den speziellen Wert „@auto“ verwenden."
@@ -283,8 +355,13 @@ msgid "help_selectors"
 msgstr ""
 "Für jeden „normalen“ Schlüssel der AJAX-Antwort benötigen wir einen CSS-Selektor mit der Angabe, wohin sein Wert geschrieben werden soll. Sie können jeweils mehr als einen Wert angeben, durch Komma getrennt; diese werden in der angegebenen Reihenfolge probiert."
 
+#. Default: "A window which is opened automatically by clicking an \"a\" element with a non-_self target attribute has access to our Window element, even if located in another site. For modern browsers, this can be prevented by using a rel=\"noopener\" attribute."
+#: ../interfaces.py:257
+msgid "help_target_rel_values"
+msgstr ""
+
 #. Default: "For each “portal_typeˮ, we may map an AJAX version corresponding to the standard full-page view."
-#: ../interfaces.py:307
+#: ../interfaces.py:392
 msgid "help_view4ajax"
 msgstr ""
 "Für jeden „portal_type“ können wir eine AJAX-Version der normalen Vollseitenansicht konfigurieren."
@@ -313,10 +390,20 @@ msgid "help_whitelist"
 msgstr ""
 "CSS-Selektoren für Seitenbereiche, in denen die Konversion von a-Elementen für die AJAX-Navigation angewendet werden soll"
 
-#: ../interfaces.py:305
+#: ../interfaces.py:390
 msgid "portal_type"
 msgstr ""
 "Portaltyp"
+
+#: ../interfaces.py:254
+msgid "rel value"
+msgstr ""
+"rel-Wert"
+
+#: ../interfaces.py:253
+msgid "rel values for a[target] links"
+msgstr ""
+"rel-Werte für a-Elemente mit target-Attribut"
 
 #: ../interfaces.py:99
 msgid "view id"

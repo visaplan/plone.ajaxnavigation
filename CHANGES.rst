@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-1.0.dev1 (unreleased)
----------------------
+1.0 (unreleased)
+----------------
 
 - Initial release.
   [tobiasherp]
