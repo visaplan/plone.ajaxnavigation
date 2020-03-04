@@ -24,10 +24,19 @@
   <!-- [ Migrationsschritte (Upgrade steps) ... [
        - Zielversion in ./profiles/default/metadata.xml aktualisieren!
        - siehe <http://maurits.vanrees.org/weblog/archive/2009/12/catalog>
+      description="Creates all configuration keys which don't already exist, using default values"
     -->
   <genericsetup:upgradeStep
       source="*"
-      destination="1004"
+      destination="1"
+      title="Initialize configuration settings"
+      description="Make all configuration keys available"
+      profile="visaplan.plone.ajaxnavigation:default"
+      handler=".setuphandlers.register_settings_interface"
+      />
+  <genericsetup:upgradeStep
+      source="1"
+      destination="2"
       title="Reload GS profiles"
       description=""
       profile="visaplan.plone.ajaxnavigation:default"

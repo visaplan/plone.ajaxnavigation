@@ -16,8 +16,15 @@ from visaplan.plone.tools.setup import (
         step,
         )
 
+from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
+from .defaults import default
+from plone.registry import Record
+
 # Logging:
 import logging
+from visaplan.tools.debug import pp
+
+
 # ------------------------------------------------------ [ Daten ... [
 # UNITRACC_PORTAL_TYPES_1000 = UNITRACC_PORTAL_TYPES[:17]
 
@@ -49,6 +56,16 @@ def post_install(context):
 def uninstall(context):
     """Uninstall script"""
     # Do something at the end of the uninstallation of this package.
+
+
+@step
+def register_settings_interface(context, logger=logger):
+    """
+    The interface must be registered explicitly;
+    otherwise we'll get errors because of missing values!
+    """
+    registry = getToolByName(context, 'portal_registry')
+    registry.registerInterface(IAjaxNavigationSettings)
 
 
 # ------------------------ [ Migrationsschritte, ./profiles.zcml ... [
