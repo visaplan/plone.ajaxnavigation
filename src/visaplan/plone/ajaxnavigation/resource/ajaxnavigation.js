@@ -577,6 +577,7 @@ var AjaxNav = (function () {
         var common_selectors = AjaxNav.options.selectors[key],
             local_selectors = [],
             prefered_selectors,
+            val,
             selector, i, len;
         if (typeof data['@prefered-selectors'] !== 'undefined') {
             prefered_selectors = data['@prefered-selectors'][key];
@@ -589,9 +590,17 @@ var AjaxNav = (function () {
         // AjaxNav.options.selectors[key] is currently server-side configured
         // as a string (which may contain commas),
         // but converted to a list during loading of options.
+        if (typeof common_selectors === 'string') {
+            log('get_fill_selectors(..., '+key+ '): '+
+                'found a string! ('+common_selectors+')');
+            common_selectors = common_selectors.split(',');
+        }  // (CHECKME: the above might now be obsolete)
         if (typeof common_selectors !== 'undefined') {
             for (i=0, len=common_selectors.length; i < len; i++) {
-                local_selectors.push(common_selectors[i]);
+                val = common_selectors[i];
+                if (val) {
+                    local_selectors.push(val);
+                }
             }
         }
         return local_selectors;
@@ -1221,7 +1230,8 @@ var AjaxNav = (function () {
      * AjaxNav.split_and_trimmed as necessary.
      */
     var coerce_to_list_of_strings = function (key, data, options) {
-        var val = null,
+        var val = null,       // defaults for split_and_trimmed:
+            options = options || {trim: true, splitter: ","},
             tmpstr,
             tmplst = [],
             novalues,
@@ -1251,7 +1261,7 @@ var AjaxNav = (function () {
                     ? split_and_trimmed(options['novalues'], options)
                     : ['@novalue']);
         if (typeof val !== 'object') {
-            val = split_and_trimmed(val);
+            val = split_and_trimmed(val, options);
             changed = true;
         }
         if (typeof novalues !== 'object') {
@@ -1286,7 +1296,7 @@ var AjaxNav = (function () {
             var whitelist,
                 blacklist = data.blacklist,
                 i, len, ii, blacklist_length=null, nested,
-                key, val, newval, newlist, chunk,
+                key, val, subdata, newlist, chunk,
                 selector;
 
             coerce_to_list_of_strings('whitelist', data, {
@@ -1385,20 +1395,13 @@ var AjaxNav = (function () {
                 data.selectors = {
                     content: '#content'
                 };
-            } else {  // convert the strings to lists:
-                newval = {}
-                for (key in data.selectors) {
-                    newlist = newval[key] = [];
-                    val = data.selectors[key].split(',');
-                    for (i=0, len=val.length; i < len; i++) {
-                        chunk = val[i].trim();
-                        if (chunk) {
-                            newlist.push(chunk);
-                        }
-                    }
-                }
-                data.selectors = newval;
             }
+            // convert the strings to lists:
+            subdata = data.selectors;
+            for (key in subdata) {
+                coerce_to_list_of_strings(key, subdata);
+            }
+            data.selectors = subdata;
             // ---------------------------- ] ... keys --> selectors ]
 
             // ----------------------------------- [ menu topics ... [
