@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import six
+from __future__ import print_function
 
-from urlparse import urlsplit, urlunsplit, urljoin
+from six import string_types as six_string_types
+from six.moves.urllib.parse import urlsplit, urlunsplit, urljoin
 
 from Globals import DevelopmentMode
 from Products.CMFCore.utils import getToolByName
@@ -57,10 +58,10 @@ class AjaxLoadBrowserView(BrowserView):
         request.set('ajax_load', 1)
 
     def _interesting_request_vars(self, context, request):
-        print('URL0:                 %s' % (request['URL0'],))
-        print('BASE0:                %s' % (request['BASE0'],))
-        print('ACTUAL_URL:           %s' % (request['ACTUAL_URL'],))
-        print('VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],))
+        print(('URL0:                 %s' % (request['URL0'],)))
+        print(('BASE0:                %s' % (request['BASE0'],)))
+        print(('ACTUAL_URL:           %s' % (request['ACTUAL_URL'],)))
+        print(('VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],)))
 
 
 class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
@@ -86,7 +87,13 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         (like 'embed'), or 2-tuples (page_id, view_name), where page_id
         may be None; see ..utils.view_choice_tuple().
         """
-        cls = self.__class__
+        request = self.request
+        given_viewname = request.get('_viewname') or None
+        # if a viewname was extracted from clientside code, we try this first:
+        if given_viewname:
+            yield embed_view_name(given_viewname)
+            yield given_viewname
+
         layout = context.getLayout()
         if layout:
             view = embed_view_name(layout)
@@ -282,7 +289,7 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
                                 % locals())
             collected_changes.update(changes)
             if update:
-                keys_updated.update(changes.keys())
+                keys_updated.update(list(changes.keys()))
 
         for key, val in collected_changes.items():
             if key in keys_in and key not in keys_updated:
@@ -315,10 +322,27 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         # state = context.restrictedTraverse('@@plone_context_state')
         # state = getToolByName(context, 'plone_context_state')
         state = _get_tool_1('plone_context_state', context)
+        visible_url = request.get('_original_url') or None
+        if visible_url is None:
+            logger.warn('No _original_url; using context!')
+            visible_url = context.absolute_url() + '/',
+        elif isinstance(visible_url, six_string_types):
+            logger.info('visible_url (from Request) is %(visible_url)r', locals())
+        else:
+            logger.error('visible_url (from Request) is %(visible_url)r (STRING expected!)',
+                         locals())
+            if isinstance(visible_url, (list, tuple)):
+                tmp = set([url for url in set(visible_url) if url])
+                if len(tmp) == 1:
+                    visible_url = list(tmp)[0]
+            else:
+                visible_url = 0
+            if not visible_url:
+                visible_url = context.absolute_url() + '/',
         res = {
             '@title': state.object_title(),
             # for history (like for incoming external links):
-            '@url': context.absolute_url() + '/',
+            '@url': visible_url,
             }
         self._res = res
         if DevelopmentMode:
@@ -488,7 +512,7 @@ class SchemaAwareBrowserView(AjaxLoadBrowserView):  # [ SchemaAwareBV ... [
                 raise TypeError('If fields are given, omit_fields must be empty!'
                                 ' (fields=%(fields)r, omit_fields=%(omit_fields)r)'
                                 % locals())
-            if isinstance(fields, six.string_types):
+            if isinstance(fields, six_string_types):
                 fields = set([fields])
             elif isinstance(fields, set):
                 pass
@@ -499,7 +523,7 @@ class SchemaAwareBrowserView(AjaxLoadBrowserView):  # [ SchemaAwareBV ... [
             omit_fields = kwargs.pop('omit_fields', None) or set()
             if omit_fields is None:
                 pass
-            elif isinstance(omit_fields, six.string_types):
+            elif isinstance(omit_fields, six_string_types):
                 omit_fields = set([omit_fields])
             elif isinstance(omit_fields, set):
                 pass
@@ -666,7 +690,7 @@ class PleaseLoginBrowserView(AjaxLoadBrowserView):
         if the_view is None:
             raise TemplateNotFound('login_form')
         return the_view()
-        
+
     def data(self):
         context = self.context
         request = self.request

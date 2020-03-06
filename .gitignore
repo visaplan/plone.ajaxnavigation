@@ -10,22 +10,29 @@ __pycache__/
 # C extensions
 *.so
 
+# Buildout
+parts/
+buildout-cache/
+develop-eggs/
+.installed.cfg
+.mr.developer.cfg
+.installed.cfg
+
 # Distribution / packaging
 .Python
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
 lib/
 lib64/
-parts/
+local/
 sdist/
+test.plone_addon/
 var/
 wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 MANIFEST
 
@@ -38,6 +45,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+pip-selfcheck.json
 
 # Unit test / coverage reports
 htmlcov/
@@ -95,12 +103,13 @@ ENV/
 env.bak/
 venv.bak/
 
-# Virtual Environment
+# VirtualEnv / Virtual Environment
 bin/
 Scripts/
 include/
 lib64
 pip-selfcheck.json
+.profile
 
 # Spyder project settings
 .spyderproject
@@ -117,12 +126,6 @@ pip-selfcheck.json
 
 # SCM
 .svn/
-
-# VirtualEnv
-bin/
-include/
-lib64
-pip-selfcheck.json
 
 # Vim editor
 *~
