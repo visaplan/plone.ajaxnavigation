@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+
 from Products.CMFCore.utils import getToolByName
 from zope.component import queryMultiAdapter
 from zope.component.interfaces import ComponentLookupError
@@ -33,7 +37,7 @@ def _get_tool_1(name, context, request=None):
     # Thus, we put that nasty trial-and-error stuff in this function
     # and hope to understand that topic better later.
     debug('getting %(name)r for %(context)r ...', locals())
-    if not isinstance(name, basestring):
+    if not isinstance(name, six_string_types):
         raise TypeError('Expected %(name)r (the 1st argument) '
                         'to be a string!'
                         % locals())

@@ -26,7 +26,7 @@ def valid_suffix(suffix):
     suffix = suffix.strip()
     if not suffix:
         return suffix
-    allowed = set('.dev0123456789')
+    allowed = set('.dev0123456789rc')
     disallowed = set(suffix).difference(allowed)
     if disallowed:
         disallowed = ''.join(sorted(disallowed))
