@@ -18,7 +18,6 @@ from visaplan.plone.tools.setup import (
 
 from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
 from .defaults import default
-from plone.registry import Record
 
 # Logging:
 import logging

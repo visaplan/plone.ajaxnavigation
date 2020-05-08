@@ -9,7 +9,7 @@ from Globals import DevelopmentMode
 
 from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
 from visaplan.plone.ajaxnavigation.data import clientside_map
-from visaplan.plone.ajaxnavigation.utils import NoneOrBool
+from visaplan.plone.ajaxnavigation.minifuncs import NoneOrBool
 from visaplan.plone.tools.decorators import returns_json
 
 
@@ -29,8 +29,6 @@ class AjaxnavOptions(BrowserView):
             res[key] = proxy[dotted]
 
         key = 'development_mode'
-        res[key] = False
-        return res
         val = NoneOrBool(proxy.get(key, 'auto'))
         if val is None:
             val = bool(DevelopmentMode)
