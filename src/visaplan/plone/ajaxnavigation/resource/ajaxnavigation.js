@@ -58,12 +58,19 @@ if (typeof(String.prototype.trim) === "undefined") {
 var AjaxNav = (function () {
     var AjaxNav = {},
         DEBUG_DOTTED = true,
+        REGEX_UID = /^[0-9a-f]{32}$/,
+        SPECIAL_QV_PREFIX = '@',
+        DATA_PREFIX = SPECIAL_QV_PREFIX+'data-',
+        CLASS_VARNAME = SPECIAL_QV_PREFIX+'class',
+        URL_VARNAME = SPECIAL_QV_PREFIX+'original_url',
+        VIEW_VARNAME = SPECIAL_QV_PREFIX+'viewname',
         log = function (txt) {
         if (typeof console !== 'undefined' &&
                 typeof console.log === 'function') {
                 console.log(txt);
             }
         };
+    var looks_like_uid = AjaxNav.looks_like_uid = REGEX_UID.test;
     log('AjaxNav loading ...')
     AjaxNav.log = log;
     if (typeof URL === 'undefined') {
@@ -122,55 +129,130 @@ var AjaxNav = (function () {
     };
     AjaxNav.id_match = id_match;
 
+    AjaxNav.urlSplit = function (url, options) {
+        var options = options || {},
+            replace_view_ids = typeof options.replace_view_ids !== 'undefined'
+                               ? options.replace_view_ids
+                               : AjaxNav.options.replace_view_ids,
+            i, maxi,
+            corrections = false,
+            parsed =   urlSplit(url),
+            _domain =  parsed.domain;
+
+        // local URLs are misinterpreted by urlSplit unless starting with "/":
+        if (_domain) {
+            if (_domain === '.') {              // "./some/path" (!)
+                parsed.domain = '';
+                corrections = true;
+            } else
+            if (_domain.indexOf('.') === -1 &&  // "some/path"
+                ! parsed.protocol &&
+                ! parsed.port) {
+                // when we insert './', urlSplit will invent a '.' domain ...
+                parsed = urlsplit('/'+s);
+                corrections = true;
+            }
+        }
+        if (corrections) {
+            parsed.pathList[0] = '';       // instead of '/'
+            parsed.directoryList[0] = '';  // same; for "completeness"
+        }                                  // (we ignore .request for now)
+
+        var fragment = parsed.fragment,
+            pali =     parsed.pathList,
+            leopali =  pali.length;
+
+        if (replace_view_ids) {
+            var old, repl,
+                replacements = AjaxNav.options.replaced_path_chunks;
+            for (i=1; i < leopali; i++) {
+                old = parsed.pathList[i];
+                if (typeof replacements[old] !== 'undefined') {
+                    parsed.pathList[i] = replacements[old];
+                    corrections = true;
+                }
+            }
+        }
+
+        if (fragment) {
+            var fileName = leopali
+                           ? pali[leopali - 1]
+                           : '',
+                polatz = fileName.indexOf('#');
+            // urlSplit detects the fragment
+            // but doesn't remove it from the "fileName"
+            if (polatz !== -1) {
+                fileName = fileName.substring(0, polatz);
+                parsed.pathList[leopali - 1] = fileName;
+                parsed.fileName = fileName;
+                corrections = true;
+            }
+        } else
+        if (typeof fragment !== 'string') {
+            parsed.fragment = '';
+        }
+
+        if (corrections) {
+            parsed.path = parsed.pathList.join('');
+            parsed.directory = parsed.directoryList.join('');
+        }
+        return parsed;
+    };  // AjaxNav.urlSplit, a wrapper for urlSplit
+
     /*
-     * split a path and return a list [prefix, div, view]:
+     * split a path and return a list [prefix, div, view, query, fragment]:
      * div -- '@@' or '/'
      * prefix -- everything before <div>
      * view -- a suspected view name (after <div>)
+     * query -- converted into an object already
+     * fragment -- starting with '#', or empty
      *
      * NOTE: When following other charactes, a '@@' is not sufficient for Zope
      *       to recognise a method name; '/@@' is required. For simplicity, we
      *       are a little bit sloppy here. But we use hyperlinks here which
-     *       have been used as classic full-page links anyway, so we don't
-     *       expect such invalid input anyway.
+     *       have been used as classic full-page links, so we don't expect
+     *       such invalid input anyway.
      *
      * A query string (starting with a question mark) is cropped from
      * the view name and returned in the 4th part ([3]) of the list.
      */
     var splitview = function (s) {
-        var res = [],
-            posa = s.indexOf('@@'),
-            poslasl = s.lastIndexOf('/'),
-            qs = '',
-            posqm = s.indexOf('?');
-        if (posqm === -1) {
-            posqm = s.length;
-        } else {
-            qs = s.substring(posqm);
-        }
+        var res =      [],
+            parsed =   AjaxNav.urlSplit(s),
+            path =     parsed.path,
+            fragment = (typeof parsed.fragment === 'string' && parsed.fragment)
+                       ? '#' + parsed.fragment
+                       : '',
+            posa =     path.indexOf('@@'),
+            poslasl =  path.lastIndexOf('/');
+
         if (poslasl > -1) {  // position of last slash
             if (posa > poslasl) {
-                return [s.substring(0, posa),
+                return [path.substring(0, posa),
                         '@@',
-                        s.substring(posa+2, posqm),
-                        qs]
+                        path.substring(posa+2),
+                        parsed.queryObject,
+                        fragment]
             } else {
-                return [s.substring(0, poslasl),
+                return [path.substring(0, poslasl),
                         '/',
-                        s.substring(poslasl+1, posqm),
-                        qs]
+                        path.substring(poslasl+1),
+                        parsed.queryObject,
+                        fragment]
             }
         }
         if (posa > -1) {
-            return [s.substring(0, posa),
+            return [path.substring(0, posa),
                     '@@',
-                    s.substring(posa+2, posqm),
-                    qs]
+                    path.substring(posa+2),
+                    parsed.queryObject,
+                    fragment]
         } else {
             return ['',
                     '',
-                    s.substring(0, posqm),
-                    qs]
+                    path,
+                    parsed.queryObject,
+                    fragment]
         }
     };
     AjaxNav.splitview = splitview;
@@ -310,24 +392,34 @@ var AjaxNav = (function () {
      * ... and, optionally:
      * - viewname - an assumed view name
      *              -> the 'viewname' attribute, if truish
+<<<<<<< HEAD
      */
     var url_object = function (url_o, original, qs, viewname) {
         var query;
+=======
+     * - fragment - must be a string, if given; a leading '#' is inserted,
+     *              if missing
+     */
+    var url_object = function (url_o, original, query, viewname, fragment) {
+        if (typeof fragment !== 'undefined' && fragment) {
+            if (!fragment.startsWith('#')) {
+                fragment = '#' + fragment;
+            }
+        } else {
+            frament = '';
+        }
+>>>>>>> hotfix
         if (typeof url_o !== 'object') {
-            url_o = {url: url_o};
+            url_o = {url: url_o+fragment};
         }
         if (original) {
-            url_o['original'] = original;
+            url_o['original'] = original+fragment;
         }
         if (viewname) {
             url_o['viewname'] = viewname;
         }
-        if (typeof qs === 'object') {
-            query = qs
-        } else if (qs) {
-            query = parse_qs(qs);
-        } else {
-            query = null;
+        if (typeof query === 'string') {
+            query = parse_qs(query);
         }
         url_o.query = query;
         return url_o
@@ -352,49 +444,91 @@ var AjaxNav = (function () {
             prefix = parsed[0],
             divider = parsed[1],
             viewname = parsed[2],
-            qs = parsed[3];
+            qo = parsed[3],  // query object
+            fragment = parsed[4],
+            replacement = null;
         if (id_match(viewname, 'blacklist_view', 'blacklisted')) {
             return null;
         } else {
             if (viewname) {
-                if (divider == '@@') {
+                if (REGEX_UID.test(viewname)) {
+                    // found a UID (invalid viewname): append /@@ajax-nav
+                    res.push(url_object(prefix+divider+viewname+'/'+suffix,
+                                        fullpath,
+                                        qo,
+                                        null,
+                                        fragment));
+                } else
+                if (viewname === 'ajax-nav') {
+                    if (! prefix.endsWith('/')) {
+                        prefix += '/';
+                    }
+                    res.push(url_object(fullpath,
+                                        prefix,
+                                        qo,
+                                        null,
+                                        fragment));
+                } else
+                if (AjaxNav.options.dropped_view_ids.indexOf(viewname) !== -1) {
+                    if (! prefix.endsWith('/')) {
+                        prefix += '/';
+                    }
+                    res.push(url_object(prefix+suffix,
+                                        prefix,
+                                        qo,
+                                        null,
+                                        fragment));
+                } else
+                if (divider === '@@') {
                     log('followed @@, must be a view: "'+viewname+'"');
                     if (prefix) {
                         res =  [url_object(_join_path(full_url(prefix),
                                                       suffix),
                                            fullpath,
-                                           qs,
-                                           viewname)
+                                           qo,
+                                           viewname,
+                                           fragment)
                                 ];
                     } else {
                         res.push(url_object(suffix,
                                             fullpath,
-                                            qs,
-                                            viewname));
+                                            qo,
+                                            viewname,
+                                            fragment));
                     }
-                } else if (divider == '') {
+                } else if (divider === '') {
                     // a single word; usually the id of a subpage
                     res =  [url_object(_join_path(full_url(viewname),
                                                   suffix),
                                        fullpath,
-                                       qs)
+                                       qo,
+                                       null,
+                                       fragment)
                             ];
                 } else if (id_match(viewname, 'view', 'whitelisted')) {
                     res =  [url_object(_join_path(full_url(prefix),
                                                   suffix),
                                        fullpath,
-                                       qs,
-                                       viewname)
+                                       qo,
+                                       viewname,
+                                       fragment)
                             ];
                 } else {
                     // not whitelisted: try two urls:
                     res =  [url_object(prefix+divider+viewname+'/'+suffix,
                                        fullpath,
+<<<<<<< HEAD
                                        qs),
+=======
+                                       qo,
+                                       null,
+                                       fragment),
+>>>>>>> hotfix
                             url_object(prefix+'/'+suffix,
                                        fullpath,
-                                       qs,
-                                       viewname)
+                                       qo,
+                                       viewname,
+                                       fragment)
                             ];
                 }
             } else {
@@ -402,7 +536,9 @@ var AjaxNav = (function () {
                 res =  [url_object(_join_path(full_url(fullpath, fu_opt),
                                               suffix),
                                    fullpath,
-                                   qs)
+                                   qo,
+                                   null,
+                                   fragment)
                         ];
             }
         }
@@ -447,8 +583,9 @@ var AjaxNav = (function () {
      * now this is done by the AjaxNav.get_fill_selectors function.
      *
      * So, is this function still necessary?
+     * (update: it tries to catch errors now.)
      */
-    var fill_first = function (selectors, content) {
+    var fill_first = function (selectors, content, url) {
         var selector,
             i, len,
             done=false;
@@ -456,7 +593,23 @@ var AjaxNav = (function () {
             selector = selectors[i].trim();
             if (selector) {
                 $(selector).each(function () {
+                    try {
                     $(this).html(content);
+                    }
+                    catch (e) {
+                        log('Error filling '+selector+':');
+                        log(e);
+                        var errpos = get_message_position(selector),
+                            msg = errpos !== null
+                                  ? create_error_message(url)
+                                  : null;
+                        if (errpos === 'top') {
+                            $(this).prepend(msg);
+                        } else
+                        if (errpos === 'bottom') {
+                            $(this).append(msg);
+                        }
+                    }
                     done = true;
                     return false; // terminate loop
                 });
@@ -515,8 +668,12 @@ var AjaxNav = (function () {
             }
         }                                           // -- ] ... HOTFIX ]
         // Maintain main menu items
+<<<<<<< HEAD
         var parsed = urlSplit(the_url),
             full_url = url+'/',
+=======
+        var full_url = url+'/',
+>>>>>>> hotfix
             path_only = ''
             options = AjaxNav.options,
             menu_item_selector = options.menu_item_selector,
@@ -761,10 +918,10 @@ var AjaxNav = (function () {
             }
         }
         if (viewname) {
-            query['_viewname'] = viewname;
+            query[VIEW_VARNAME] = viewname;
         }
         if (original) {
-            query['_original_url'] = original;
+            query[URL_VARNAME] = original;
         }
         $.ajax(url, {
             async: false,
@@ -824,7 +981,8 @@ var AjaxNav = (function () {
                         } else if (invalid_count > 100) {
                             break;
                         }
-                    } else if (AjaxNav.fill_first(selectors, data[key])) {
+                    } else if (AjaxNav.fill_first(selectors, data[key]),
+                                                  data['@url']) {
                         // yes, we found some place for our data:
                         data_keys.push(key);
                     }
@@ -956,10 +1114,10 @@ var AjaxNav = (function () {
         // !!! query['_given_url'] = href;
 
         for (a in elem_data) {
-            query['data-'+a] = elem_data[a];
+            query[DATA_PREFIX+a] = elem_data[a];
         }
         if (cls) {
-            query['_class'] = cls;
+            query[CLASS_VARNAME] = cls;
         }
         // !!! query._href = full_url(href);
         // -------------------------- ] ... compile query object ]
@@ -1110,7 +1268,8 @@ var AjaxNav = (function () {
                     } else if (invalid_count > 100) {
                         break;
                     }
-                } else if (AjaxNav.fill_first(selectors, data[key])) {
+                } else if (AjaxNav.fill_first(selectors, data[key]),
+                                              data['@url']) {
                     // yes, we found some place for our data:
                     data_keys.push(key);
                 }
@@ -1282,6 +1441,26 @@ var AjaxNav = (function () {
     };
     AjaxNav.coerce_to_list_of_strings = coerce_to_list_of_strings;
 
+    var get_message_position = function (selector) {
+        return 'top';
+    }
+
+    var create_error_message = function (url) {
+        if (typeof url === 'string' && url) {
+            return $('<p class="error">' +
+                '<strong>Sorry!</strong> ' +
+                'There was an error loading the requested text into this page. ' +
+                'It might help to load ' +
+                '<a data-fullpageOnly="true">the page as a whole</a>.' +
+                '</p>').find('a').attr('href', url);
+        } else {
+            return $('<p class="error">' +
+                '<strong>Sorry!</strong> ' +
+                'There was an error loading the requested text into this page.' +
+                '</p>');
+        }
+    };
+
     // To be called explicitly, optionally providing a key:
     AjaxNav.init = function (key) {
         if (typeof key === 'undefined' || ! key) {
@@ -1345,6 +1524,29 @@ var AjaxNav = (function () {
                 'default': ['_view']
                 });
             // ------------------------- ] ... view name recognition ]
+
+            // --- [ dropped view names (replaced by @@ajax-nav) ... [
+            coerce_to_list_of_strings('dropped_view_ids', data, {
+                'default':  ['view']
+                });
+            // --- ] ... dropped view names (replaced by @@ajax-nav) ]
+
+            if (typeof data.replace_view_ids === 'undefined') {
+                data.replace_view_ids = false;
+            }
+            if (typeof data.replaced_view_ids === 'undefined') {
+                data.replaced_view_ids = {
+                    'resolveUid':  'resolveuid',
+                    'resolvei18n': 'resolveuid',
+                    };
+            }
+            var tmp_replaced_path_chunks = {};
+            for (var key in data.replaced_view_ids) {
+                var val = data.replaced_view_ids[key];
+                tmp_replaced_path_chunks[key+'/'] = '@@' + val + '/';
+                tmp_replaced_path_chunks['@@'+key+'/'] = '@@' + val + '/';
+            }
+            data.replaced_path_chunks = tmp_replaced_path_chunks;
 
             // ------------------------------------- [ blacklist ... [
             // (view ids which will always be loaded the non-AJAX way)
