@@ -2,6 +2,20 @@ Changelog
 =========
 
 
+1.2.1 (2021-07-09)
+------------------
+
+Bugfixes:
+
+- Missing import in .views._load module
+
+Improvements:
+
+- _get_tool_1 catches TypeError exceptions for getToolByName
+
+[tobiasherp]
+
+
 1.2.0 (2021-06-30)
 ------------------
 

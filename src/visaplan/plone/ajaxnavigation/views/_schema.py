@@ -19,18 +19,18 @@ from Products.CMFCore.utils import getToolByName
 from plone.uuid.interfaces import IUUID
 
 # Local imports:
-from visaplan.plone.ajaxnavigation.data import (
-    PERMISSION_ALIASES,
-    )
+from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
 
 # Logging / Debugging:
 from logging import getLogger
 
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
+# Local imports:
+from ._load import AjaxLoadBrowserView
+
 # Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp
-from ._load import AjaxLoadBrowserView
 
 
 class SchemaAwareBrowserView(AjaxLoadBrowserView):

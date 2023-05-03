@@ -23,11 +23,11 @@ from plone.uuid.interfaces import IUUID
 from visaplan.plone.tools.decorators import returns_json
 
 # Local imports:
-from visaplan.plone.ajaxnavigation.exceptions import TemplateNotFound
 from visaplan.plone.ajaxnavigation.data import (
     CALLING_CONTEXT_KEY,
     PERMISSION_ALIASES,
     )
+from visaplan.plone.ajaxnavigation.exceptions import TemplateNotFound
 from visaplan.plone.ajaxnavigation.utils import (
     embed_view_name,
     parse_current_url,
@@ -52,11 +52,11 @@ else:
     HAVE_DEPRECATION = True
     from zope.deprecation import deprecated
 
+# Local imports:
+from ._base import AjaxnavBrowserView
 from ._load import AjaxLoadBrowserView
 from ._login import PleaseLoginBrowserView
 from ._schema import SchemaAwareBrowserView
-from ._base import AjaxnavBrowserView
-
 
 __all__ = [  # public interface:
         # for @@ajax-nav views (JSON):

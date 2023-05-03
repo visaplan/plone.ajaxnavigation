@@ -7,7 +7,13 @@ from six.moves.urllib.parse import urlsplit, urlunsplit
 # Standard library:
 from posixpath import sep
 
+# Zope:
 from Products.Five.browser import BrowserView
+
+# Plone:
+from plone.uuid.interfaces import IUUID
+
+# Local imports:
 from visaplan.plone.ajaxnavigation.utils import (
     parse_current_url,
     pop_ajaxnav_vars,

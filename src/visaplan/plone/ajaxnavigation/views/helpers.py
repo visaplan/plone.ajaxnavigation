@@ -50,6 +50,8 @@ def _get_tool_1(name, context, request):
         val = getToolByName(context, name)
     except AttributeError as e:
         debug('getToolByName FAILED.')
+    except TypeError as e:
+        debug('getToolByName FAILED: %(e)s; name=%(name)r', locals())
     else:
         if val is not None:
             debug('getToolByName succeeded.')

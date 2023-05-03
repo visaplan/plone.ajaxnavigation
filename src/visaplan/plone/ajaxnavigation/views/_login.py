@@ -4,9 +4,11 @@ from __future__ import absolute_import, print_function
 
 from six.moves.urllib.parse import urlsplit, urlunsplit
 
+# Zope:
 from zope.component import getMultiAdapter
-from ._load import AjaxLoadBrowserView
 
+# Local imports:
+from ._load import AjaxLoadBrowserView
 from visaplan.plone.ajaxnavigation.exceptions import TemplateNotFound
 
 # Logging / Debugging:

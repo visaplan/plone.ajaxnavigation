@@ -14,11 +14,14 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter('ignore', ImportWarning)
 
+    # Plone:
     from plone.app.robotframework.testing import AUTOLOGIN_LIBRARY_FIXTURE
     # from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
-    from plone.app.testing import FunctionalTesting
-    from plone.app.testing import IntegrationTesting
-    from plone.app.testing import PloneSandboxLayer
+    from plone.app.testing import (
+        FunctionalTesting,
+        IntegrationTesting,
+        PloneSandboxLayer,
+        )
     from plone.testing import z2
 
 # Setup tools:

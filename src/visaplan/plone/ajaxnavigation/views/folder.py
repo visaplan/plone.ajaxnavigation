@@ -12,11 +12,12 @@ from visaplan.plone.tools.decorators import returns_json
 from visaplan.tools.minifuncs import check_kwargs
 
 # Local imports:
-from visaplan.plone.ajaxnavigation.utils import embed_view_name
-from ._schema import SchemaAwareBrowserView
 from ._base import AjaxnavBrowserView as _Base
+from ._schema import SchemaAwareBrowserView
+from visaplan.plone.ajaxnavigation.utils import embed_view_name
 
 DEFAULT_FOLDER_EMBED = embed_view_name('folder_listing')  # folder_listing_embed
+
 # Logging / Debugging:
 from visaplan.tools.debug import trace_this
 

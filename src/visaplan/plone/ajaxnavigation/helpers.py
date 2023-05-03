@@ -3,6 +3,7 @@ visaplan.plone.ajaxnavigation: Add AJAX navigation to a Plone site.
 
 Short description
 """
+# Python compatibility:
 from __future__ import absolute_import
 
 # Zope:

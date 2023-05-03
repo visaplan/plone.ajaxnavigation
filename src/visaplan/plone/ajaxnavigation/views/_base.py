@@ -25,10 +25,8 @@ from visaplan.plone.tools.decorators import returns_json
 
 # Local imports:
 from visaplan.plone.ajaxnavigation import _
+from visaplan.plone.ajaxnavigation.data import CALLING_CONTEXT_KEY
 from visaplan.plone.ajaxnavigation.exceptions import ToolNotFound
-from visaplan.plone.ajaxnavigation.data import (
-    CALLING_CONTEXT_KEY,
-    )
 from visaplan.plone.ajaxnavigation.utils import (
     embed_view_name,
     view_choice_tuple,
@@ -39,11 +37,12 @@ from visaplan.plone.ajaxnavigation.views.helpers import _get_tool_1
 from logging import getLogger
 
 logger = getLogger('visaplan.plone.ajaxnavigation:views._base')
+# Local imports:
+from ._load import AjaxLoadBrowserView
+
 # Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp
-
-from ._load import AjaxLoadBrowserView
 
 
 class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
