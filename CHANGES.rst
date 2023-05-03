@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+1.2.2 (2021-08-25)
+------------------
+
+Bugfixes:
+
+- Corrected an import in the ``.helpers`` module
+
+[tobiasherp]
+
+
 1.2.1 (2021-07-09)
 ------------------
 

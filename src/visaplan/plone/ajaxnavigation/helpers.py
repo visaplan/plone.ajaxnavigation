@@ -13,7 +13,7 @@ from zope.component import getUtility
 from plone.registry.interfaces import IRegistry
 
 # visaplan:
-from visaplan.tools.dicts import ChangesCollector
+from visaplan.tools.classes import ChangesCollector
 from visaplan.tools.minifuncs import check_kwargs
 
 # Local imports:
