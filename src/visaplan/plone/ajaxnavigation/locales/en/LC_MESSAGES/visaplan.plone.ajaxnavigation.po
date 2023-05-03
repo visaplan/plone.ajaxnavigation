@@ -322,6 +322,14 @@ msgstr ""
 #: ../interfaces.py:231
 msgid "help_regard_target_attribute"
 msgstr ""
+"Following the Principle of Least Surprise, we regard "
+"existing target attributes of \"a\" elements, causing pages to "
+"continue to open in new windows (or, more likely with modern "
+"browsers: tabs). "
+"However, the use of target attributes is not recommended; "
+"they don\'t allow users to choose otherwise. "
+"Thus, we recommend you to set this value to False, "
+"but this must be your own explicit decision."
 
 #. Default: "For a @scrollto value of \"@auto\", use the selector given for the key given here; default: \"content\". E.g., if the value is \"content\", and the selector for the \"content\" key is \"#content\", the \"#content\" selector is used to call the jQuery \"scrollTop\" method. "
 #: ../interfaces.py:297

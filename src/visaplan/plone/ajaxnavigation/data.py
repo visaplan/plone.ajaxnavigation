@@ -21,20 +21,28 @@ _prefix = IAjaxNavigationSettings.__identifier__ + '.'
 clientside_map = {
         key: _prefix + key
         for key in (
-                # --- clientside:
+                'selectors',
+                # --- where to (un)delegate:
                 'whitelist',
                 'blacklist',
                 'nested_blacklist',
+                'blacklist_class_ids',
+                'blacklist_class_prefixes',
+                'blacklist_class_suffixes',
+                # --- view id recognition:
                 'view_ids',
                 'view_prefixes',
                 'view_suffixes',
                 'blacklist_view_ids',
                 'blacklist_view_prefixes',
                 'blacklist_view_suffixes',
-                'selectors',
+                # --- scrolling:
                 'scrollto_default_selector',
                 'scrollto_default_deltay',
                 'scrollto_auto_key',
+                # --- target attributes:
+                'regard_target_attribute',
+                'target_rel_values',  # security!
                 # --- menu:
                 'menu_item_selector',
                 'menu_item_switched_classname',

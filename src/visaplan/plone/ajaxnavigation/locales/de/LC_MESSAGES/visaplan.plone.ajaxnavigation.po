@@ -336,6 +336,14 @@ msgstr ""
 #: ../interfaces.py:231
 msgid "help_regard_target_attribute"
 msgstr ""
+"Nach dem Prinzip der geringsten Überraschung beachten wir "
+"existierende target-Attribute von \2a\"-Elementen, die dazu führen, "
+"daß das Ziel in einem neuen Fenster geöffnet wird "
+"(oder, bei modernen Browsern wahrscheinlicher: in einem neuen Tab). "
+"Allerdings wird von der Verwendung dieses Attributs abgeraten, "
+"weil es dem Anwender keine Wahl läßt, das Ziel eben doch im selben Fenster und Tab "
+"zu öffnen; daher empfehlen wir, diese Wert auf \"False\" zu setzen; "
+"aber dies muß Ihre eigene aktive Entscheidung sein."
 
 #. Default: "For a @scrollto value of \"@auto\", use the selector given for the key given here; default: \"content\". E.g., if the value is \"content\", and the selector for the \"content\" key is \"#content\", the \"#content\" selector is used to call the jQuery \"scrollTop\" method. "
 #: ../interfaces.py:297

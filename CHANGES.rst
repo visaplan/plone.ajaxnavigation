@@ -2,6 +2,24 @@ Changelog
 =========
 
 
+1.2.3 (2021-12-20)
+------------------
+
+Bugfixes:
+
+- Javascript code:
+
+  - Declare ``reply_ok`` in ``AjaxNav.process_data`` as well
+
+Temporary changes:
+
+- Added to ``blacklist_view_ids``:
+
+  - ``structure-edit`` (visaplan.plone.structures)
+
+[tobiasherp]
+
+
 1.2.2 (2021-08-25)
 ------------------
 

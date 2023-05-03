@@ -23,7 +23,7 @@ def valid_suffix(suffix):
     suffix = suffix.strip()
     if not suffix:
         return suffix
-    allowed = set('.dev0123456789rcpost')
+    allowed = set('dev.0123456789rcpost')
     disallowed = set(suffix).difference(allowed)
     if disallowed:
         disallowed = ''.join(sorted(disallowed))
@@ -169,15 +169,15 @@ setup_kwargs = dict(
         'setuptools',
         'six',  # Python 3 compatibility
         # -*- Extra requirements: -*-
-        'visaplan.tools >= 1.3.1.dev8',  # ChangesCollector
+        'visaplan.tools >= 1.3.1',  # ChangesCollector
         'simplejson',
-        'visaplan.js.urlsplit',
+        'visaplan.js.urlsplit >=1.1.0',  # urlUnsplit function
         'plone.api',
         # KGS of Plone 4.3.8-9:
         'Products.GenericSetup>=1.8.2',
         # tests failed:
         'plone.app.dexterity',
-        'visaplan.plone.tools >= 1.1.6',  # decorators module
+        'visaplan.plone.tools >= 1.4.8',  # .setup.load_and_cook
     ],
     extras_require={
         'test': [

@@ -1178,7 +1178,8 @@ var AjaxNav = (function () {
         if (typeof data !== 'object') {
             return;
         }
-        var key,
+        var reply_ok = null,
+            key,
             scrollto = AjaxNav.options.scrollto_default_selector,
             data_keys = [],
             selectors = null,
@@ -1597,6 +1598,9 @@ var AjaxNav = (function () {
             // the ordering facility doesn't work properly when AJAX-loaded:
             data.blacklist_view_ids.push('folder_contents');
             // data.blacklist_class_ids.push('sort_on');
+            // --------------------------- [ Struktureditor ... [
+            data.blacklist_view_ids.push('structure-edit');
+            // --------------------------- ] ... Struktureditor ]
             // ------------------------------- [ Kurseditor ... [
             data.blacklist_class_ids.push('content-open');
             data.blacklist_class_ids.push('folderish-browser');
