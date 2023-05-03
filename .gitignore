@@ -22,7 +22,6 @@ develop-eggs/
 .Python
 build/
 dist/
-docs/*.html
 downloads/
 eggs/
 .eggs/

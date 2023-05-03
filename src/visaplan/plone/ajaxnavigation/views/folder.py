@@ -17,9 +17,7 @@ from visaplan.tools.debug import trace_this
 
 class AjaxnavBrowserView(AjaxnavBaseBrowserView):
 
-    base__views_to_try = AjaxnavBaseBrowserView.views_to_try
-
-    def views_to_try(self, context, viewname=None):
+    def views_to_try(self, context):
         """
         For folders: call getLayout, and replace the final _view by _embed
 
@@ -28,28 +26,18 @@ class AjaxnavBrowserView(AjaxnavBaseBrowserView):
         are used (as returned by the please_login_viewname and
         insufficient_rights_viewname methods, respectively).
         """
-        # from pdb import set_trace; set_trace()
-        if viewname is None:
-            viewname = self.get_given_viewname() or 0
-
-        # for folders, we check the default_page first
-        # and use its layout:
+        cls = self.__class__
         dp_view = getMultiAdapter((context, self.request),
                                   name='default_page')
         page_id = dp_view.getDefaultPage()
         if page_id:
-            the_page = context.restrictedTraverse(page_id)
-            if the_page:
-                for vn in self.base__views_to_try(the_page, viewname):
-                    # since we have resolved the page_id,
-                    # we should yield it: 
-                    yield (the_page, vn)
+            yield (page_id, 'embed')
 
-        # if no default page configured or not found,
-        # continue standard processing: 
-        for tup in self.base__views_to_try(context, viewname):
-            yield tup
-
+        layout = context.getLayout()
+        if layout:
+            view = embed_view_name(layout)
+            if view:
+                yield view
         yield DEFAULT_FOLDER_EMBED
 
     # __call__ = trace_this(AjaxnavBaseBrowserView.__call__)

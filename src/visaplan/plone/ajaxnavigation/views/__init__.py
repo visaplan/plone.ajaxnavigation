@@ -5,7 +5,6 @@ from __future__ import print_function
 from six import string_types as six_string_types
 from six.moves.urllib.parse import urlsplit, urlunsplit, urljoin
 
-from posixpath import sep
 from Globals import DevelopmentMode
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
@@ -18,20 +17,16 @@ from plone.uuid.interfaces import IUUID
 from logging import getLogger
 
 from visaplan.plone.tools.decorators import returns_json
-
 from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
 from visaplan.plone.ajaxnavigation.data import CALLING_CONTEXT_KEY
 from visaplan.plone.ajaxnavigation.utils import view_choice_tuple
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
-from visaplan.plone.ajaxnavigation.utils import (strip_method_name,
-        strip_method_name_dammit,
-        parse_current_url,
-        )
 
 from visaplan.plone.ajaxnavigation.views.helpers import _get_tool_1
 from visaplan.plone.ajaxnavigation import ToolNotFound, TemplateNotFound, _
 
+from pdb import set_trace
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
 from visaplan.tools.debug import pp
 
@@ -60,143 +55,13 @@ class AjaxLoadBrowserView(BrowserView):
 
     def __init__(self, context, request):
         BrowserView.__init__(self, context, request)
-        self._data, self._other = pop_ajaxnav_vars(request.form)
         request.set('ajax_load', 1)
 
-    # --------- [ information from ../resource/ajaxnavigation.js ... [
-    def get_visible_url(self, context=None, request=None):
-        """
-        Return the (given and checked and/or calculated) visible URL
-
-        *Always* use this method to get the value for the '@url' JSON key!
-        """
-        other = self._other
-        url = other.get('original_url')
-        if url:
-            corrected_url = self.corrected_visible_url(url, context, request)
-            if corrected_url is None:
-                return url
-
-            other['original_url'] = corrected_url
-            return corrected_url
-        return self._compute_visible_url(context, request)
-
-    def corrected_visible_url(self, url, context=None, request=None):
-        """
-        Return a corrected URL, or None
-
-        Fixes the following problems:
-
-        - UUIDs (after [@@]resolve[uU]id, resolvei18n and the like)
-          are resolved
-        - UUID resolution methods which lack a following UID value
-          are removed
-
-        Errors are logged.
-        """
-        parsed, resinfo = parse_current_url(url)
-        if not resinfo:  # everything is fine
-            return None
-        errors = resinfo.get('errors')
-        if errors:
-            logger.warn('corrected_visible_url(%r) found %d error(s):',
-                        (url, len(errors),
-                         ))
-            for err in errors:
-                logger.warn(err)
-
-        uid = resinfo.pop('uid', None)
-        if uid is not None:
-            if context is None:
-                context = self.context
-            my_uid = IUUID(context, None)
-            if my_uid != uid:
-                logger.warn('corrected_visible_url(%(url)r): '
-                            'found UID %(uid)r '
-                            "doesn't match context UID %(my_uid)r"
-                            ' %(context)r',
-                            locals())
-            my_url = context.absolute_url()
-            my_path = urlsplit(my_url).path
-            shortened_path = parsed[2]
-            if shortened_path == sep:
-                parsed[2] = my_path + shortened_path
-            else:
-                assert not shortened_path.startswith(sep), ('If a UID is '
-                    'found (%(uid)r), the shortened path %(shortened_path)r '
-                    'should *be* %(sep)r or not start with %(sep)r'
-                    ) % locals()
-                if sep not in shortened_path:
-                    suspected_viewname = shortened_path
-                    given_viewname = self.get_given_viewname()
-                    if given_viewname is not None:
-                        if given_viewname != suspected_viewname:
-                            logger.warn('corrected_visible_url(%(url)r): '
-                                        'URL suggests %(suspected_viewname)r '
-                                        'but %(given_viewname)r was given!',
-                                        locals())
-                parsed[2] = sep.join((my_path, shortened_path))
-
-        for key, val in resinfo.items():
-            logger.warn('corrected_visible_url(%(url)r): %(key)s: %(val)r',
-                        locals())
-
-        # the path might e.g. have simply become normalized:
-        new_url = urlunsplit(parsed)
-        logger.info('corrected_visible_url(%(url)r) --> %(new_url)r',
-                    locals())
-        return new_url
-
-    def get_given_viewname(self):
-        """
-        Return the given viewname or None
-        """
-        return self._other.get('viewname') or None
-
-    def given_viewname(self, default=None):
-        """
-        Return the given viewname; if not yet present,
-        and if a (trueish) default is given, set it.
-        """
-        other = self._other
-        val = other.get('viewname')
-        if val:
-            return val
-        elif default:
-            other['viewname'] = default
-            return default
-        else:
-            return default
-    # --------- ] ... information from ../resource/ajaxnavigation.js ]
-
-    def _compute_visible_url(self, context, request):
-        """
-        fallback method for cases of missing @original_url
-        """
-        if context is None:
-            context = self.context
-        url = context.absolute_url() + '/'
-        view_name = self.get_given_viewname()
-        if view_name:
-            url += view_name
-        # we don't do too much here; it's an emergency substitute after all!
-        return url
-
     def _interesting_request_vars(self, context, request):
-<<<<<<< HEAD
         print(('URL0:                 %s' % (request['URL0'],)))
         print(('BASE0:                %s' % (request['BASE0'],)))
         print(('ACTUAL_URL:           %s' % (request['ACTUAL_URL'],)))
         print(('VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],)))
-=======
-        pp('URL0:                 %s' % (request['URL0'],),
-           'BASE0:                %s' % (request['BASE0'],),
-           'ACTUAL_URL:           %s' % (request['ACTUAL_URL'],),
-           'VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],),
-           ('self._data: ', self._data),
-           ('self._other:', self._other),
-           )
->>>>>>> hotfix
 
 
 class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
@@ -207,34 +72,27 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
 
     def __init__(self, context, request):
         AjaxLoadBrowserView.__init__(self, context, request)
+        # XXX: This might not be early enough,
+        #      e.g. for views including batch navigation:
+        self._data, self._other = pop_ajaxnav_vars(request.form)
         # for developer information:
         self._view_names_tried = []
 
     # ------------- [ choose the view for the 'context' JSON key ... [
-    # ------------------------------------ [ views_to_try() ... [
-    def views_to_try(self, context, viewname=None):
+    def views_to_try(self, context):
         """
         Override this method to inject special views.
 
         The yielded values can be simply strings representing view names
-        (like 'embed'), or 2-tuples (object_or_id, view_name), where object_or_id
+        (like 'embed'), or 2-tuples (page_id, view_name), where page_id
         may be None; see ..utils.view_choice_tuple().
         """
         request = self.request
-<<<<<<< HEAD
         given_viewname = request.get('_viewname') or None
         # if a viewname was extracted from clientside code, we try this first:
         if given_viewname:
             yield embed_view_name(given_viewname)
             yield given_viewname
-=======
-        if viewname is None:
-            viewname = self.get_given_viewname() or 0
-        # if a viewname was extracted from clientside code, we try this first:
-        if viewname:
-            yield embed_view_name(viewname)
-            yield viewname
->>>>>>> hotfix
 
         layout = context.getLayout()
         if layout:
@@ -242,12 +100,10 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
             if view:
                 yield view
             yield layout
-        # last resort:
         yield 'embed'
         yield 'view'
-        # -------------------------------- ] ... views_to_try() ]
 
-    def choose_view(self, context):  # ---- [ choose_view() ... [
+    def choose_view(self, context):
         """
         This method is called *after* performing the View permission check;
         see as well the please_login_viewname and insufficient_rights_viewname
@@ -261,23 +117,19 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         request = self.request
         for val in self.views_to_try(context):
             tup = view_choice_tuple(val)
-            object_or_id, view_name = tup
-            self._view_names_tried.append(view_name)
+            self._view_names_tried.append(tup)
             if tup in tried:
                 continue
             tried.append(tup)
-
-            if object_or_id is None:
+            page_id, view_name = tup
+            if page_id is None:
                 o = context
-            elif isinstance(object_or_id, six_string_types):
-                o = context.restrictedTraverse(object_or_id)
+            else:
+                o = context.restrictedTraverse(page_id)
                 if not o:
                     continue
-            else:  # e.g. folder.AjaxnavBrowserView.views_to_try looks for
-                   # default pages and yields them, since it has sought them:
-                o = object_or_id
             try:
-                the_view = queryMultiAdapter((o, self.request),
+                the_view = queryMultiAdapter((context, self.request),
                                              name=view_name)
             except ComponentLookupError as e:
                 logger.error('%(e)r looking for %(view_name)r (%(context)r)',
@@ -285,10 +137,9 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
             else:
                 if the_view:
                     return the_view
-                # continue
                 # necessary to use e.g. mainpage_embed from skin layer;
                 # @@mainpage_embed *didn't* work:
-                the_view = _get_tool_1(view_name, o)
+                the_view = _get_tool_1(view_name, context)
                 if the_view:
                     return the_view
                 logger.error('%(context)r: view %(view_name)r not found!',
@@ -300,7 +151,7 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         else:
             logger.error('%(context)r, %(cls)r: no view names!',
                          locals())
-        return None  # -------------------- ] ... choose_view() ]
+        return None
     # ------------- ] ... choose the view for the 'context' JSON key ]
 
     # ---------------------------------- [ construct JSON object ... [
@@ -471,7 +322,6 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         # state = context.restrictedTraverse('@@plone_context_state')
         # state = getToolByName(context, 'plone_context_state')
         state = _get_tool_1('plone_context_state', context)
-<<<<<<< HEAD
         visible_url = request.get('_original_url') or None
         if visible_url is None:
             logger.warn('No _original_url; using context!')
@@ -489,9 +339,6 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
                 visible_url = 0
             if not visible_url:
                 visible_url = context.absolute_url() + '/',
-=======
-        visible_url = self.get_visible_url(context, request)
->>>>>>> hotfix
         res = {
             '@title': state.object_title(),
             # for history (like for incoming external links):
@@ -528,7 +375,6 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
           except ComponentLookupError as e:
             logger.error('%(e)r looking for %(view_name)r (%(context)r)',
                          locals())
-            logger.exception(e)
             raise
 
         if the_view is None:
@@ -540,15 +386,15 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
                 })
             return res
         else:
-            content = None
             try:
                 pp((('context', context),
                     ('view_name:', view_name),
-                    ('the_view:', the_view),
                     ('zcml_name:', self.__name__),
                     ('res (so far):', res),
+                    'POSSIBLE RECURSION?!',
                     ))
-                content = the_view(context, request)
+                # set_trace()
+                content = the_view()
             except UnicodeDecodeError as e:
                 logger.error(e)
                 logger.info('NOCHMAL MIT DEBUGGER!')
@@ -561,18 +407,27 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
                     logger.info('... NOCHMAL MIT DEBUGGER!')
                     res.update({
                         '@noajax': True,
+                        'content': None,
                         })
+                else:
+                    res.update({
+                        'content': content,
+                        })
+                    self.update_response(res)
             except Exception as e:
                 logger.error(e)
                 logger.exception(e)
                 pp(e=e)
+                # set_trace()
                 res.update({
                     '@noajax': True,
+                    'content': None,
                     })
-            res.update({
-                'content': content,
-                })
-            self.update_response(res)
+            else:
+                res.update({
+                    'content': content,
+                    })
+                self.update_response(res)
         return res
     # ---------------------------------- ] ... construct JSON object ]
 
@@ -596,52 +451,17 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
     # -------------------------------- ] ... class AjaxnavBaseBrowserView ]
 
 
-class NoAjaxBrowserView(AjaxnavBaseBrowserView):
+class NoAjaxBrowserView(BrowserView):
     """
     Use this BrowserView class for cases where AJAX loading won't work (currently, at least),
     and you'd rather deliver a (slower) full-page view than a faulty AJAX version
     """
     @returns_json
     def __call__(self, *args, **kwargs):
-        context = self.context
-        request = self.request
-
-        pm = _get_tool_1('portal_membership', context)
-        can_view = pm.checkPermission(view_permission, context)
-        if can_view:
-            # view permitted, but (sorry) no AJAX yet: 
-            return {
-                '@noajax': True,
-                'content': None,
-                }
-
-        state = _get_tool_1('plone_context_state', context)
-        title = state.object_title()
-        res = {
-            # for history (like for incoming external links):
-            '@url': visible_url,
+        return {
+            '@noajax': True,
+            'content': None,
             }
-
-        if pm.isAnonymousUser():
-            view_name = self.please_login_viewname()
-            title =     self.please_login_title(title)
-        else:
-            view_name = self.insufficient_rights_viewname()
-            title =     self.insufficient_rights_title(title)
-        the_view = queryMultiAdapter((context, request),
-                                     name=view_name)
-        if the_view is None:
-            logger.error('%(context)r: view %(view_name)r not found!', locals())
-            res.update({
-                '@noajax': True,
-                })
-            return res
-
-        content = the_view()
-        res.update({
-            'content': content,
-            '@title': title,
-            })
 
 class SchemaAwareBrowserView(AjaxLoadBrowserView):  # [ SchemaAwareBV ... [
     """

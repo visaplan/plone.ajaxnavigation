@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*- vim: et ts=8 sw=4 sts=4 si tw=79 cc=+1
 """Installer for the visaplan.plone.ajaxnavigation package."""
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
+from __future__ import print_function
 
-from setuptools import setup, find_packages
+from __future__ import absolute_import
+from setuptools import find_packages
+from setuptools import setup
 from os.path import isfile
 
 package_name = 'visaplan.plone.ajaxnavigation'
@@ -140,11 +143,9 @@ setup_kwargs = dict(
         "Environment :: Web Environment",
         "Framework :: Plone",
         "Framework :: Plone :: 4.3",
-        'Framework :: Zope2',
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: JavaScript",
         "Intended Audience :: Developers",
         "Natural Language :: German",
         "Operating System :: OS Independent",
