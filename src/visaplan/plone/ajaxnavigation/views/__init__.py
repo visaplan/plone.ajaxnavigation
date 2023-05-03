@@ -55,13 +55,36 @@ class AjaxLoadBrowserView(BrowserView):
 
     def __init__(self, context, request):
         BrowserView.__init__(self, context, request)
+        self._data, self._other = pop_ajaxnav_vars(request.form)
         request.set('ajax_load', 1)
 
+    def get_visible_url(self, context=None, request=None):
+        other = self._other
+        url = other.get('original_url')
+        if url:
+            return url
+        return self._compute_visible_url(context, request)
+
+    def _compute_visible_url(self, context, request):
+        """
+        fallback method for cases of missing @original_url
+        """
+        if context is None:
+            context = self.context
+        url = context.absolute_url() + '/'
+        other = self._other
+        view_name = other.get('viewname')
+        if view_name:
+            url += view_name
+        # we don't do too much here; it's an emergency substitute after all!
+        return url
+
     def _interesting_request_vars(self, context, request):
-        print(('URL0:                 %s' % (request['URL0'],)))
-        print(('BASE0:                %s' % (request['BASE0'],)))
-        print(('ACTUAL_URL:           %s' % (request['ACTUAL_URL'],)))
-        print(('VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],)))
+        pp('URL0:                 %s' % (request['URL0'],),
+           'BASE0:                %s' % (request['BASE0'],),
+           'ACTUAL_URL:           %s' % (request['ACTUAL_URL'],),
+           'VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],),
+           )
 
 
 class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
@@ -72,9 +95,6 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
 
     def __init__(self, context, request):
         AjaxLoadBrowserView.__init__(self, context, request)
-        # XXX: This might not be early enough,
-        #      e.g. for views including batch navigation:
-        self._data, self._other = pop_ajaxnav_vars(request.form)
         # for developer information:
         self._view_names_tried = []
 
@@ -322,23 +342,7 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         # state = context.restrictedTraverse('@@plone_context_state')
         # state = getToolByName(context, 'plone_context_state')
         state = _get_tool_1('plone_context_state', context)
-        visible_url = request.get('_original_url') or None
-        if visible_url is None:
-            logger.warn('No _original_url; using context!')
-            visible_url = context.absolute_url() + '/',
-        elif isinstance(visible_url, six_string_types):
-            logger.info('visible_url (from Request) is %(visible_url)r', locals())
-        else:
-            logger.error('visible_url (from Request) is %(visible_url)r (STRING expected!)',
-                         locals())
-            if isinstance(visible_url, (list, tuple)):
-                tmp = set([url for url in set(visible_url) if url])
-                if len(tmp) == 1:
-                    visible_url = list(tmp)[0]
-            else:
-                visible_url = 0
-            if not visible_url:
-                visible_url = context.absolute_url() + '/',
+        visible_url = self.get_visible_url(context, request)
         res = {
             '@title': state.object_title(),
             # for history (like for incoming external links):
@@ -451,17 +455,52 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
     # -------------------------------- ] ... class AjaxnavBaseBrowserView ]
 
 
-class NoAjaxBrowserView(BrowserView):
+class NoAjaxBrowserView(AjaxnavBaseBrowserView):
     """
     Use this BrowserView class for cases where AJAX loading won't work (currently, at least),
     and you'd rather deliver a (slower) full-page view than a faulty AJAX version
     """
     @returns_json
     def __call__(self, *args, **kwargs):
-        return {
-            '@noajax': True,
-            'content': None,
+        context = self.context
+        request = self.request
+
+        pm = _get_tool_1('portal_membership', context)
+        can_view = pm.checkPermission(view_permission, context)
+        if can_view:
+            # view permitted, but (sorry) no AJAX yet: 
+            return {
+                '@noajax': True,
+                'content': None,
+                }
+
+        state = _get_tool_1('plone_context_state', context)
+        title = state.object_title()
+        res = {
+            # for history (like for incoming external links):
+            '@url': visible_url,
             }
+
+        if pm.isAnonymousUser():
+            view_name = self.please_login_viewname()
+            title =     self.please_login_title(title)
+        else:
+            view_name = self.insufficient_rights_viewname()
+            title =     self.insufficient_rights_title(title)
+        the_view = queryMultiAdapter((context, request),
+                                     name=view_name)
+        if the_view is None:
+            logger.error('%(context)r: view %(view_name)r not found!', locals())
+            res.update({
+                '@noajax': True,
+                })
+            return res
+
+        content = the_view()
+        res.update({
+            'content': content,
+            '@title': title,
+            })
 
 class SchemaAwareBrowserView(AjaxLoadBrowserView):  # [ SchemaAwareBV ... [
     """

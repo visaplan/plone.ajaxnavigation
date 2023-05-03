@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 import six
 
-from visaplan.tools.minifuncs import makeBool
 from string import whitespace
 WHITESPACE = frozenset(whitespace)
 
@@ -105,7 +104,7 @@ def dromedarCase(s, offset=0, strict=True):
 
     For conversion of "data-" names we specify an offset of 5:
 
-    >>> dromedarCase('data-other-name', offset=5)
+    >>> dromedarCase('@data-other-name', offset=6)
     'otherName'
 
     Preconverted names are not changed:
@@ -148,6 +147,9 @@ def dromedarCase(s, offset=0, strict=True):
     return ''.join(res)
 
 
+SPECIAL_QV_PREFIX = '@'
+DATA_PREFIX = SPECIAL_QV_PREFIX+'data-'
+DATA_OFFSET = len(DATA_PREFIX)
 def pop_ajaxnav_vars(dic, **kwargs):
     """
     Remove all vars from the request form data which might disturb standard
@@ -165,7 +167,7 @@ def pop_ajaxnav_vars(dic, **kwargs):
     ...     d, o = pop_ajaxnav_vars(*args, **kwargs)
     ...     return (sorted(d.items()), sorted(o.items()))
     >>> def testdata(**kwargs):
-    ...     res = {'_': '123', '_given_url': 'https://somewhere.org/'}
+    ...     res = {'_': '123', '@original_url': 'https://somewhere.org/'}
     ...     res.update(kwargs)
     ...     return res
 
@@ -173,9 +175,9 @@ def pop_ajaxnav_vars(dic, **kwargs):
 
     >>> tst1 = testdata()
     >>> sorted(tst1.items())
-    [('_', '123'), ('_given_url', 'https://somewhere.org/')]
+    [('@original_url', 'https://somewhere.org/'), ('_', '123')]
     >>> pav(tst1)
-    ([], [('given_url', 'https://somewhere.org/')])
+    ([], [('original_url', 'https://somewhere.org/')])
 
     The extracted vars have been removed "in-place" from the given dict:
     >>> sorted(tst1.items())
@@ -185,39 +187,41 @@ def pop_ajaxnav_vars(dic, **kwargs):
 
     >>> tst2 = testdata()
     >>> pav(tst2, nocache=False)
-    ([], [('given_url', 'https://somewhere.org/')])
+    ([], [('original_url', 'https://somewhere.org/')])
     >>> sorted(tst2.items())
     [('_', '123')]
 
     Another example with "data" and something which will be left alone:
 
-    >>> tst3 = testdata(**{'data-for': '#gaga', 'b_start': 'int:25'})
+    >>> tst3 = testdata(**{'@data-for': '#gaga', 'b_start': 'int:25'})
+    >>> sorted(tst3.items())
+    [('@data-for', '#gaga'), ('@original_url', 'https://somewhere.org/'), ('_', '123'), ('b_start', 'int:25')]
     >>> pav(tst3)
-    ([('for', '#gaga')], [('given_url', 'https://somewhere.org/')])
+    ([('for', '#gaga')], [('original_url', 'https://somewhere.org/')])
     >>> sorted(tst3.items())
     [('b_start', 'int:25')]
     
     The 'ajax_load' variable is used by standard Plone (or used to be, at least),
     and thus is preserved in the original request dictionary;
-    in fact, it simply doesn't start with 'data-':
+    in fact, it simply doesn't start with '@data-':
 
-    >>> req4 = testdata(**{'data-for': '#gaga', 'b_start': 'int:25',
+    >>> req4 = testdata(**{'@data-for': '#gaga', 'b_start': 'int:25',
     ...                    'ajax_load': 1})
     >>> sorted(req4.items())
-    [('_', '123'), ('_given_url', 'https://somewhere.org/'), ('ajax_load', 1), ('b_start', 'int:25'), ('data-for', '#gaga')]
+    [('@data-for', '#gaga'), ('@original_url', 'https://somewhere.org/'), ('_', '123'), ('ajax_load', 1), ('b_start', 'int:25')]
     >>> dat4, oth4 = pav(req4)
     >>> dat4
     [('for', '#gaga')]
     >>> oth4
-    [('given_url', 'https://somewhere.org/')]
+    [('original_url', 'https://somewhere.org/')]
     >>> sorted(req4.items())
     [('ajax_load', 1), ('b_start', 'int:25')]
 
     The "data-"-prefixed names of the first returned dict are converted to dromedarCase:
 
-    >>> req5 = testdata(**{'data-dromedar-case': 42})
+    >>> req5 = testdata(**{'@data-dromedar-case': 42})
     >>> pav(req5)
-    ([('dromedarCase', 42)], [('given_url', 'https://somewhere.org/')])
+    ([('dromedarCase', 42)], [('original_url', 'https://somewhere.org/')])
 
     """
     data = {}
@@ -228,9 +232,10 @@ def pop_ajaxnav_vars(dic, **kwargs):
         raise TypeError('Undefined kwargs found! (%(bogus)s)'
                         % locals())
     for key in dic.keys():
-        if key.startswith('data-'):
+        if key.startswith(DATA_PREFIX):
             try:
-                tail = dromedarCase(key, offset=5)
+                tail = dromedarCase(key, DATA_OFFSET)
+                # print key, '-->', tail
             except ValueError:
                 other[key] = dic.pop(key)
             else:
@@ -249,7 +254,7 @@ def pop_ajaxnav_vars(dic, **kwargs):
                     raise
                 else:
                     del dic[key]
-        elif key.startswith('_'):
+        elif key.startswith(SPECIAL_QV_PREFIX):
             # for now, all such variables are considered AjaxNav-only.
             # We might add a keyword argument with some default value.
             tail = key[1:]
@@ -257,46 +262,8 @@ def pop_ajaxnav_vars(dic, **kwargs):
     return data, other
 
 
-def NoneOrBool(val):
-    """
-    A variant of visaplan.tools.minifuncs.NoneOrBool which translates 'auto' into None
-
-    >>> NoneOrBool('')
-    >>> NoneOrBool('auto')
-    >>> NoneOrBool('auto') is None
-    True
-    >>> NoneOrBool('True')
-    True
-    >>> NoneOrBool('on')
-    True
-    >>> NoneOrBool('oFf')
-    False
-
-    Wrong values yield ValueErrors:
-
-    >>> NoneOrBool('perhaps')
-    Traceback (most recent call last):
-        ...
-    ValueError: invalid literal for int() with base 10: 'perhaps'
-
-    A 'None' *string* is refused as well:
-    >>> NoneOrBool('None')
-    Traceback (most recent call last):
-        ...
-    ValueError: invalid literal for int() with base 10: 'none'
-    """
-    
-    if val is None or val == '':
-        return None
-    elif isinstance(val, six.string_types):
-        val = val.strip().lower()
-        if val in ('', 'auto'):
-            return None
-        return bool(makeBool(val))
-    else:
-        return bool(val)
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
+else:
+    from .minifuncs import NoneOrBool

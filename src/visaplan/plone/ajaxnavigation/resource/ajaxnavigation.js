@@ -58,12 +58,19 @@ if (typeof(String.prototype.trim) === "undefined") {
 var AjaxNav = (function () {
     var AjaxNav = {},
         DEBUG_DOTTED = true,
+        REGEX_UID = /^[0-9a-f]{32}$/,
+        SPECIAL_QV_PREFIX = '@',
+        DATA_PREFIX = SPECIAL_QV_PREFIX+'data-',
+        CLASS_VARNAME = SPECIAL_QV_PREFIX+'class',
+        URL_VARNAME = SPECIAL_QV_PREFIX+'original_url',
+        VIEW_VARNAME = SPECIAL_QV_PREFIX+'viewname',
         log = function (txt) {
         if (typeof console !== 'undefined' &&
                 typeof console.log === 'function') {
                 console.log(txt);
             }
         };
+    var looks_like_uid = AjaxNav.looks_like_uid = REGEX_UID.test;
     log('AjaxNav loading ...')
     AjaxNav.log = log;
     if (typeof URL === 'undefined') {
@@ -357,6 +364,12 @@ var AjaxNav = (function () {
             return null;
         } else {
             if (viewname) {
+                if (REGEX_UID.test(viewname)) {
+                    // found a UID (invalid viewname): append /@@ajax-nav
+                    res.push(url_object(prefix+divider+viewname+'/'+suffix,
+                                        fullpath,
+                                        qs));
+                } else
                 if (divider == '@@') {
                     log('followed @@, must be a view: "'+viewname+'"');
                     if (prefix) {
@@ -761,10 +774,10 @@ var AjaxNav = (function () {
             }
         }
         if (viewname) {
-            query['_viewname'] = viewname;
+            query[VIEW_VARNAME] = viewname;
         }
         if (original) {
-            query['_original_url'] = original;
+            query[URL_VARNAME] = original;
         }
         $.ajax(url, {
             async: false,
@@ -956,10 +969,10 @@ var AjaxNav = (function () {
         // !!! query['_given_url'] = href;
 
         for (a in elem_data) {
-            query['data-'+a] = elem_data[a];
+            query[DATA_PREFIX+a] = elem_data[a];
         }
         if (cls) {
-            query['_class'] = cls;
+            query[CLASS_VARNAME] = cls;
         }
         // !!! query._href = full_url(href);
         // -------------------------- ] ... compile query object ]
@@ -1432,13 +1445,6 @@ var AjaxNav = (function () {
                 data.development_mode = true;
             }
             // --------------------------- ] ... development support ]
-            // ---------------------------------------- [ HOTFIX ... [
-            data.blacklist_view_ids.push('search_view');
-            data.blacklist_view_ids.push('course_ppt_view');
-            data.blacklist_class_prefixes.push('lightbox');
-            data.development_mode = false;
-            data.selectors['search-miniform'] = ['#search-miniform-container'];
-            // ---------------------------------------- ] ... HOTFIX ]
             AjaxNav.options = data;
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
             window.addEventListener('popstate', event => {
