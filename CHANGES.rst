@@ -2,6 +2,37 @@ Changelog
 =========
 
 
+1.0.2.1 (2020-03-27)
+--------------------
+
+- Includes all changes of version 1.0.2
+
+- Hardcoded configuration changes
+  (for internal use).
+
+[tobiasherp]
+
+
+1.0.2 (2020-03-27)
+------------------
+
+Bugfixes:
+
+- Use of default pages (of folders) should work now
+- If a visible ``.../@@ajax-nav`` url is found, we have the JSON url already
+  and thus strip this trailing part; otherwise we'd display the JSON data
+  rather than perform the intended page update.
+
+  There are server-side measures to help prevent such urls as well,
+  since we don't want people to see and use them.
+- ``.../view`` URLs are treated specially as well - the ``/view``
+  is considered a non-information (just use the standard view) in this regard.
+  Thus, URLs ending with ``/view`` are treated the same
+  as those ending with ``/``.
+
+[tobiasherp]
+
+
 1.0.1.1 (2020-03-24)
 --------------------
 
@@ -46,7 +77,8 @@ New Features:
 1.0.0.3 (2020-03-06)
 --------------------
 
-- Hotfixes due to customization problems.
+- Hotfixes due to customization problems
+  (for internal use).
 
 [tobiasherp]
 

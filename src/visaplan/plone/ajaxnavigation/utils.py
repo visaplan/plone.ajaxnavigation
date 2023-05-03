@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-import six
+from __future__ import absolute_import, print_function
+from six import string_types as six_string_types
 
 from string import whitespace
 WHITESPACE = frozenset(whitespace)
+
+from os import makedirs
+from time import strftime
+from os.path import join as path_join
+from urlparse import urlsplit, urlunsplit
+
+__all__ = [
+        'embed_view_name',
+        'view_choice_tuple',
+        'dromedarCase',
+        'pop_ajaxnav_vars',
+        'strip_method_name',
+        'strip_method_name_dammit',
+        ]
 
 
 def embed_view_name(viewname):
@@ -67,22 +81,22 @@ def view_choice_tuple(val):
     and return a (page_id, viewname) tuple.
 
     Folders might have a default page which should be used:
-    >>> view_choice_tuple(('introduction', 'embed'))
-    ('introduction', 'embed')
+    >>> view_choice_tuple(('introduction', 'document_embed'))
+    ('introduction', 'document_embed')
 
     In this case, the calling folder has an 'introduction' page which is
-    considered its associated page, and will be rendered using its 'embed'
-    method ('introduction/@@embed').
-
-    Now that we have a page_id, it is on the choose_view method
-    to look for that page and call the given view.
+    considered its associated page, and we'll use the "layout" of this
+    page (unless some other viewname was specified, of course).
+    The choice (and transformation) of that view name is subject to the
+    AjaxnavBaseBrowserView.views_to_try method.
 
     For non-folders (which can't have a default_page mapped),
-    we'll usually only get the name of a view:
+    we'll usually only get the name of a view;
+    we'll inject None, representing the calling context, to get a 2-tuple:
     >>> view_choice_tuple('embed')
     (None, 'embed')
     """
-    if isinstance(val, six.string_types):
+    if isinstance(val, six_string_types):
         return (None, val)
     elif val[2:] or not val[1:]:
         raise ValueError('Please specify either a string '
@@ -96,13 +110,13 @@ def view_choice_tuple(val):
 
 def dromedarCase(s, offset=0, strict=True):
     """
-    Convert a dashed variable name (like common for HTML5 "data-" attributes
+    Convert a dashed variable name (like common for HTML5 "data-" attributes)
     to its dromedar-cased form.
 
     >>> dromedarCase('dashed-name')
     'dashedName'
 
-    For conversion of "data-" names we specify an offset of 5:
+    For conversion of "@data-" names we specify an offset of 6:
 
     >>> dromedarCase('@data-other-name', offset=6)
     'otherName'
@@ -260,6 +274,57 @@ def pop_ajaxnav_vars(dic, **kwargs):
             tail = key[1:]
             other[tail] = dic.pop(key)
     return data, other
+
+
+def strip_method_name(url):
+    """
+    We sometimes see @@ajax-nav URLs where we don't want them:
+    >>> url = 'https://dev-de.unitracc.de/aktuelles/news-und-artikel/@@ajax-nav?b_start:int=25'
+
+    When those cause problems, we need to strip the '@@ajax-nav' part
+    but like to keep the '/':
+    >>> strip_method_name(url)
+    'https://dev-de.unitracc.de/aktuelles/news-und-artikel/?b_start:int=25'
+    """
+    parsed = urlsplit(url)
+    url_list = list(parsed)
+    pa = url_list[2]
+    if pa.endswith('/@@ajax-nav'):
+        url_list[2] = pa[:-10]
+    elif 'ajax-nav' in pa:
+        raise ValueError('URL %(url)r looks broken (misplaced "ajax-nav")!'
+                         % locals())
+    return urlunsplit(url_list)
+
+
+def strip_method_name_dammit(url):
+    """
+    We might see '@@ajax-nav' in places where it can't possibly work,
+    and thus the strip_method_name function (above) won't fix it.
+
+    We certainly want to fix the error.
+    But we want our instance to run.
+    Thus, this function will help us in cases of such broken URLs:
+    >>> url = 'https://dev-de.unitracc.de/aktuelles@@ajax-nav?b_start:int=25'
+
+    This url will make strip_method_name choke; but:
+    >>> strip_method_name_dammit(url)
+    'https://dev-de.unitracc.de/aktuelles/?b_start:int=25'
+    """
+    parsed = urlsplit(url)
+    url_list = list(parsed)
+    pa = url_list[2]
+    pa_list = pa.split('/')
+    changed = []
+    for seg in pa_list:
+        if seg.endswith('@@ajax-nav'):
+            changed.append(seg[:-10])
+        else:
+            changed.append(seg)
+    url_list[2] = '/'.join([seg for seg in changed
+                            if seg]
+                            + [''])
+    return urlunsplit(url_list)
 
 
 if __name__ == '__main__':

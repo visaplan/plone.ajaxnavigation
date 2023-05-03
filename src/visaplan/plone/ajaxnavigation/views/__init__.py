@@ -22,11 +22,13 @@ from visaplan.plone.ajaxnavigation.data import CALLING_CONTEXT_KEY
 from visaplan.plone.ajaxnavigation.utils import view_choice_tuple
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
 from visaplan.plone.ajaxnavigation.utils import pop_ajaxnav_vars
+from visaplan.plone.ajaxnavigation.utils import (strip_method_name,
+        strip_method_name_dammit,
+        )
 
 from visaplan.plone.ajaxnavigation.views.helpers import _get_tool_1
 from visaplan.plone.ajaxnavigation import ToolNotFound, TemplateNotFound, _
 
-from pdb import set_trace
 logger = getLogger('visaplan.plone.ajaxnavigation:views')
 from visaplan.tools.debug import pp
 
@@ -58,12 +60,36 @@ class AjaxLoadBrowserView(BrowserView):
         self._data, self._other = pop_ajaxnav_vars(request.form)
         request.set('ajax_load', 1)
 
-    def get_visible_url(self, context=None, request=None):
+    # --------- [ information from ../resource/ajaxnavigation.js ... [
+    def _get_raw_visible_url(self, context=None, request=None):
         other = self._other
         url = other.get('original_url')
         if url:
             return url
         return self._compute_visible_url(context, request)
+
+    def get_visible_url(self, context=None, request=None):
+        url = self._get_raw_visible_url(context, request)
+        bogus = '@@ajax-nav'
+        if bogus in url:
+            logger.warn('.get_visible_url (%(context)r):'
+                        ' URL contains %(bogus)r! (%(url)r)',
+                        locals())
+            try:
+                url = strip_method_name(url)
+            except ValueError as e:
+                logger.exception(e)
+                logger.error('.get_visible_url: %(url)r looks'
+                        ' REALLY broken!',
+                        locals())
+                url = strip_method_name_dammit(url)
+            logger.info('Repaired URL is %(url)r', locals())
+            self._other['original_url'] = url
+        return url
+
+    def get_given_viewname(self):
+        return self._other.get('viewname') or None
+    # --------- ] ... information from ../resource/ajaxnavigation.js ]
 
     def _compute_visible_url(self, context, request):
         """
@@ -84,6 +110,8 @@ class AjaxLoadBrowserView(BrowserView):
            'BASE0:                %s' % (request['BASE0'],),
            'ACTUAL_URL:           %s' % (request['ACTUAL_URL'],),
            'VIRTUAL_URL_PARTS[1]: %s' % (request['VIRTUAL_URL_PARTS'][1],),
+           ('self._data: ', self._data),
+           ('self._other:', self._other),
            )
 
 
@@ -99,20 +127,22 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         self._view_names_tried = []
 
     # ------------- [ choose the view for the 'context' JSON key ... [
-    def views_to_try(self, context):
+    # ------------------------------------ [ views_to_try() ... [
+    def views_to_try(self, context, viewname=None):
         """
         Override this method to inject special views.
 
         The yielded values can be simply strings representing view names
-        (like 'embed'), or 2-tuples (page_id, view_name), where page_id
+        (like 'embed'), or 2-tuples (object_or_id, view_name), where object_or_id
         may be None; see ..utils.view_choice_tuple().
         """
         request = self.request
-        given_viewname = request.get('_viewname') or None
+        if viewname is None:
+            viewname = self.get_given_viewname() or 0
         # if a viewname was extracted from clientside code, we try this first:
-        if given_viewname:
-            yield embed_view_name(given_viewname)
-            yield given_viewname
+        if viewname:
+            yield embed_view_name(viewname)
+            yield viewname
 
         layout = context.getLayout()
         if layout:
@@ -120,10 +150,12 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
             if view:
                 yield view
             yield layout
+        # last resort:
         yield 'embed'
         yield 'view'
+        # -------------------------------- ] ... views_to_try() ]
 
-    def choose_view(self, context):
+    def choose_view(self, context):  # ---- [ choose_view() ... [
         """
         This method is called *after* performing the View permission check;
         see as well the please_login_viewname and insufficient_rights_viewname
@@ -137,19 +169,23 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         request = self.request
         for val in self.views_to_try(context):
             tup = view_choice_tuple(val)
-            self._view_names_tried.append(tup)
+            object_or_id, view_name = tup
+            self._view_names_tried.append(view_name)
             if tup in tried:
                 continue
             tried.append(tup)
-            page_id, view_name = tup
-            if page_id is None:
+
+            if object_or_id is None:
                 o = context
-            else:
-                o = context.restrictedTraverse(page_id)
+            elif isinstance(object_or_id, six_string_types):
+                o = context.restrictedTraverse(object_or_id)
                 if not o:
                     continue
+            else:  # e.g. folder.AjaxnavBrowserView.views_to_try looks for
+                   # default pages and yields them, since it has sought them:
+                o = object_or_id
             try:
-                the_view = queryMultiAdapter((context, self.request),
+                the_view = queryMultiAdapter((o, self.request),
                                              name=view_name)
             except ComponentLookupError as e:
                 logger.error('%(e)r looking for %(view_name)r (%(context)r)',
@@ -157,9 +193,10 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
             else:
                 if the_view:
                     return the_view
+                # continue
                 # necessary to use e.g. mainpage_embed from skin layer;
                 # @@mainpage_embed *didn't* work:
-                the_view = _get_tool_1(view_name, context)
+                the_view = _get_tool_1(view_name, o)
                 if the_view:
                     return the_view
                 logger.error('%(context)r: view %(view_name)r not found!',
@@ -171,7 +208,7 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
         else:
             logger.error('%(context)r, %(cls)r: no view names!',
                          locals())
-        return None
+        return None  # -------------------- ] ... choose_view() ]
     # ------------- ] ... choose the view for the 'context' JSON key ]
 
     # ---------------------------------- [ construct JSON object ... [
@@ -379,6 +416,7 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
           except ComponentLookupError as e:
             logger.error('%(e)r looking for %(view_name)r (%(context)r)',
                          locals())
+            logger.exception(e)
             raise
 
         if the_view is None:
@@ -390,15 +428,15 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
                 })
             return res
         else:
+            content = None
             try:
                 pp((('context', context),
                     ('view_name:', view_name),
+                    ('the_view:', the_view),
                     ('zcml_name:', self.__name__),
                     ('res (so far):', res),
-                    'POSSIBLE RECURSION?!',
                     ))
-                # set_trace()
-                content = the_view()
+                content = the_view(context, request)
             except UnicodeDecodeError as e:
                 logger.error(e)
                 logger.info('NOCHMAL MIT DEBUGGER!')
@@ -411,27 +449,18 @@ class AjaxnavBaseBrowserView(AjaxLoadBrowserView):  # [ AjaxnavBaseBV ... [
                     logger.info('... NOCHMAL MIT DEBUGGER!')
                     res.update({
                         '@noajax': True,
-                        'content': None,
                         })
-                else:
-                    res.update({
-                        'content': content,
-                        })
-                    self.update_response(res)
             except Exception as e:
                 logger.error(e)
                 logger.exception(e)
                 pp(e=e)
-                # set_trace()
                 res.update({
                     '@noajax': True,
-                    'content': None,
                     })
-            else:
-                res.update({
-                    'content': content,
-                    })
-                self.update_response(res)
+            res.update({
+                'content': content,
+                })
+            self.update_response(res)
         return res
     # ---------------------------------- ] ... construct JSON object ]
 

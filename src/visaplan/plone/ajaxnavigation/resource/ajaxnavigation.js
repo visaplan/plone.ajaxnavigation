@@ -370,7 +370,23 @@ var AjaxNav = (function () {
                                         fullpath,
                                         qs));
                 } else
-                if (divider == '@@') {
+                if (viewname === 'ajax-nav') {
+                    if (! prefix.endsWith('/')) {
+                        prefix += '/';
+                    }
+                    res.push(url_object(fullpath,
+                                        prefix,
+                                        qs));
+                } else
+                if (viewname === 'view') {
+                    if (! prefix.endsWith('/')) {
+                        prefix += '/';
+                    }
+                    res.push(url_object(prefix+suffix,
+                                        prefix,
+                                        qs));
+                } else
+                if (divider === '@@') {
                     log('followed @@, must be a view: "'+viewname+'"');
                     if (prefix) {
                         res =  [url_object(_join_path(full_url(prefix),
@@ -385,7 +401,7 @@ var AjaxNav = (function () {
                                             qs,
                                             viewname));
                     }
-                } else if (divider == '') {
+                } else if (divider === '') {
                     // a single word; usually the id of a subpage
                     res =  [url_object(_join_path(full_url(viewname),
                                                   suffix),
@@ -1445,14 +1461,6 @@ var AjaxNav = (function () {
                 data.development_mode = true;
             }
             // --------------------------- ] ... development support ]
-            // ---------------------------------------- [ HOTFIX ... [
-            data.blacklist_view_ids.push('search_view');
-            data.blacklist_view_ids.push('course_ppt_view');
-            data.blacklist_class_ids.push('sort_on');
-            data.blacklist_class_prefixes.push('lightbox');
-            data.development_mode = false;
-            data.selectors['search-miniform'] = ['#search-miniform-container'];
-            // ---------------------------------------- ] ... HOTFIX ]
             AjaxNav.options = data;
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
             window.addEventListener('popstate', event => {

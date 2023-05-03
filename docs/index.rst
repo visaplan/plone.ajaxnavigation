@@ -43,7 +43,7 @@ The general idea is:
 
   - ``content`` (and e.g. breadcrumbs, if configured)
 
-  It will also set the page url and title accordingly
+  It will also set the page URL and title accordingly
   (from the ``@url`` and ``@title`` keys of the JSON reply, respectively),
   allowing for the browser history.
 
@@ -137,16 +137,16 @@ These are the keys understood by the ``AjaxNav.init`` function.
 |                           |        |                               | and undelegate immediately             |
 |                           |        |                               | (experimental)                         |
 +---------------------------+--------+-------------------------------+----------------------------------------+
-| view_ids                  | list   | [``view``,                    |   For target url parsing:              |
+| view_ids                  | list   | [``view``,                    |   For target URL parsing:              |
 |                           |        | ``edit``,                     |   recognized as view names even        |
 |                           |        | ``base_edit``]                |   when not prefixed by ``@@``          |
 +---------------------------+--------+-------------------------------+----------------------------------------+
-| view_prefixes             | list   | [``manage_``]                 |   For target url parsing:              |
+| view_prefixes             | list   | [``manage_``]                 |   For target URL parsing:              |
 |                           |        |                               |   e.g. ``manage_`` does very likely    |
 |                           |        |                               |   start a view name                    |
 |                           |        |                               |   rather than an object.               |
 +---------------------------+--------+-------------------------------+----------------------------------------+
-| view_suffixes             | list   | [``_view``]                   |   For target url parsing:              |
+| view_suffixes             | list   | [``_view``]                   |   For target URL parsing:              |
 |                           |        |                               |   e.g. ``_view`` does very likely      |
 |                           |        |                               |   end a view name                      |
 |                           |        |                               |   rather than an object.               |
@@ -198,7 +198,7 @@ Data keys
 ---------
 
 These are the keys which are expected in the JSON reply from requests to
-``@@ajaxnav``.
+``@@ajax-nav``.
 
 **Please note:** the processing of the ``@ok`` key might still change!
 You are welcome to contribute to a solid and stable processing concept.
@@ -287,12 +287,12 @@ reply.
 View name detection
 -------------------
 
-AjaxNav tries to detect the view name components in the given target urls
+AjaxNav tries to detect the view name components in the given target URLs
 to avoid sending invalid requests; it will try to replace it by ``@@ajax-nav``.
 This is expected to return JSON data.
 
-For ``.../name/`` urls, ``name`` is assumed to specify the object, and
-``@@ajax-nav`` will simply be appended to form the url.
+For ``.../name/`` URLs, ``name`` is assumed to specify the object, and
+``@@ajax-nav`` will simply be appended to form the URL.
 
 If ``@@`` is found (but not followed by a later ``/``), it will be considered
 to be followed by the view name, which will be replaced by ``ajax-nav``.
@@ -303,7 +303,37 @@ if all else fails, the final slash-devided path chunk is first considered
 the object name, and if this fails, the (replaced) view name.
 
 The original `href` URL of the clicked `a` element is forwarded to the
-``@@ajax-nav`` view  in the `_given_url` request variable.
+``@@ajax-nav`` view  in the ``@original_url`` request variable.
+
+
+Additional request variables
+----------------------------
+
+AjaxNav does some computations, based on the clicked element and it's URL,
+which are often important for server-side processing.
+
+For this reason, it injects special ``@``-prefixed variables into the query data:
+
++---------------------+------------------------------------------------------+
+| Name                | Description                                          |
++=====================+======================================================+
+| ``@original_url``   | The visible URL of the loaded page,                  |
+|                     | which may contain a query string.                    |
+|                     |                                                      |
+|                     | Should be queried using the                          |
+|                     | ``AjaxLoadBrowserView.get_visible_url``  method.     |
++---------------------+------------------------------------------------------+
+| ``@viewname``       | The name of the view, if extracted from the URL.     |
+|                     |                                                      |
+|                     | Should be queried using the                          |
+|                     | ``AjaxLoadBrowserView.get_given_viewname``  method.  |
++---------------------+------------------------------------------------------+
+| ``@class``          | A string to contain the ``class`` attribute of the   |
+|                     | clicked element.                                     |
++---------------------+------------------------------------------------------+
+| ``@data-*``         | The dromedarCased HTML5 ``data-*`` attributes of the |
+|                     | clicked element.                                     |
++---------------------+------------------------------------------------------+
 
 
 Dependencies
