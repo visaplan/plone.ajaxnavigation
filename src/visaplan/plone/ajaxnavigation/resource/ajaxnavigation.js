@@ -617,7 +617,7 @@ var AjaxNav = (function () {
      * if necessary.
      *
      * HOTFIX: sometimes we get a list, which will cause an exception to be
-     *         thrown, and in the end the whole page to loaded!
+     *         thrown, and in the end the whole page to be reloaded!
      */
     var set_base_url = function (url) {
         var head=null,
@@ -681,6 +681,14 @@ var AjaxNav = (function () {
         }
         if (url) {
             set_base_url(url);
+            // jquery.highlightsearchterms.js,
+            // usually from Products.CMFPlone (Skin layer "plone_ecmascript"):
+            if (typeof $.fn !== 'undefined'
+                && typeof $.fn.highlightSearchTerms !== 'undefined')
+            {
+                var sel = AjaxNav.get_fill_selectors(data, 'content').join(',');
+                $(sel).highlightSearchTerms();
+            }
             window.history.pushState(stateObj, '', url);
         } else {
             window.history.pushState(stateObj, '');
@@ -1595,6 +1603,7 @@ var AjaxNav = (function () {
             data.blacklist_view_prefixes.splice(0, 6);
             // data.blacklist_view_ids.push('search_view');
             data.blacklist_view_ids.push('course_ppt_view');
+            data.blacklist_view_ids.push('ppt_view');
             // the ordering facility doesn't work properly when AJAX-loaded:
             data.blacklist_view_ids.push('folder_contents');
             // data.blacklist_class_ids.push('sort_on');

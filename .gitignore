@@ -111,6 +111,7 @@ include/
 lib64
 pip-selfcheck.json
 .profile
+.project
 
 # Spyder project settings
 .spyderproject

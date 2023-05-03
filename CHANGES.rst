@@ -2,6 +2,24 @@ Changelog
 =========
 
 
+1.2.4 (2022-03-04)
+------------------
+
+Improvements:
+
+- If a jQuery function ``highlightSearchTerms`` is found,
+  this is executed after setting the base url
+  (before pushing to the window.history)
+
+Temporary changes:
+
+- Added to ``blacklist_view_ids``:
+
+  - ``ppt_view`` (visaplan.plone.structures)
+
+[tobiasherp]
+
+
 1.2.3 (2021-12-20)
 ------------------
 
@@ -167,8 +185,8 @@ New features:
 [tobiasherp]
 
 
-1.1.0 (unreleased)
-------------------
+1.1.0 (untagged)
+----------------
 
 New Features:
 
