@@ -15,7 +15,7 @@ from plone.app.upgrade.utils import loadMigrationProfile
 from Products.CMFPlone.interfaces import INonInstallable
 
 # visaplan:
-from visaplan.plone.tools.setup import step
+from visaplan.plone.tools.setup import step, load_and_cook
 
 # Local imports:
 from .defaults import default
@@ -76,4 +76,10 @@ def reload_gs_profile(context, logger=logger):
         context,
         'profile-visaplan.plone.ajaxnavigation:default',
         )
+
+@step
+def load_and_cook_javascript(context, logger):
+    load_and_cook(context, logger,
+                  profile='profile-visaplan.plone.ajaxnavigation:default',
+                  tuples=[('jsregistry',  'portal_javascripts')])
 # ------------------------ ] ... Migrationsschritte, ./profiles.zcml ]

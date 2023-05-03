@@ -42,6 +42,14 @@
       profile="visaplan.plone.ajaxnavigation:default"
       handler=".setuphandlers.reload_gs_profile"
       />
+  <genericsetup:upgradeStep
+      source="*"
+      destination="4"
+      title="Load and cook Javascript resources"
+      description=""
+      profile="visaplan.plone.ajaxnavigation:default"
+      handler=".setuphandlers.load_and_cook_javascript"
+      />
   <!-- ] ... Migrationsschritte (Upgrade steps) ] -->
   
 </configure>

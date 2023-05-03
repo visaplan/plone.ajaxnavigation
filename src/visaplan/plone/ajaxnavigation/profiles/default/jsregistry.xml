@@ -3,8 +3,11 @@
  <javascript id="++resource++visaplan.js.urlsplit/urlSplit.min.js"
     enabled="True"
     />
+ <javascript id="++resource++visaplan.js.urlsplit/urlUnsplit.js"
+    enabled="True"
+    />
  <javascript id="++resource++visaplan.plone.ajaxnavigation/ajaxnavigation.js"
-    insert-after="++resource++visaplan.js.urlsplit/urlSplit.min.js"
+    insert-after="++resource++visaplan.js.urlsplit/urlUnsplit.js"
     bundle="jquery" cacheable="True"
     cookable="True" enabled="True"
     />

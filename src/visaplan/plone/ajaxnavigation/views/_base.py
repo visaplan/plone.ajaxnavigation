@@ -43,6 +43,9 @@ from ._load import AjaxLoadBrowserView
 # Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp
+# set_trace()
+# update_response: 340
+# views_to_try:     86
 
 
 class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
@@ -57,7 +60,7 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
         except TypeError as e:
             logger.error('AjaxnavBrowserView(): %(e)r', locals())
             logger.exception(e)
-            if DevelopmentMode and 0:
+            if DevelopmentMode and 1:
                 print('*** NOCHMAL, MIT DEBUGGER:')
                 set_trace()
                 AjaxLoadBrowserView.__init__(self, context, request)
@@ -75,39 +78,63 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
 
         The yielded values can be simply strings representing view names
         (like 'embed'), or 2-tuples (object_or_id, view_name), where object_or_id
-        may be None; see ..utils.view_choice_tuple().
+        may be None; see ..utils.view_choice_tuple(), ../utils.py.
 
         Note: additional keyword arguments are accepted but currently ignored
               (they might be used by other methods)
         """
-        request = self.request
         if viewname is None:
             viewname = self.get_given_viewname() or 0
+
+        for tup in self._views_to_try(self.context, viewname, **kwargs):
+            yield tup
+
+    def _views_to_try(self, context, viewname, **kwargs):
+        """
+        Helper for views_to_try, especially for recursion
+        """
+        _primary = kwargs.pop('_primary', 1)
+
+        if _primary:
+            if kwargs:
+                logger.info('Ignoring keyword arguments %s',
+                            ', '.join(kwargs.keys()))
+            # for folders, we check the default_page first
+            # and use its layout:
+            dp_view = queryMultiAdapter((context, self.request),
+                                        name='default_page')
+            if dp_view is not None:
+                page_id = dp_view.getDefaultPage()
+                if page_id:
+                    the_page = context.restrictedTraverse(page_id)
+                    if the_page:
+                        for tup in self._views_to_try(the_page, viewname,
+                                                      _primary=0, **kwargs):
+                            yield tup
+
         # if a viewname was extracted from clientside code, we try this first:
         if viewname:
-            yield embed_view_name(viewname)
-            yield viewname
-
-        if kwargs:
-            logger.info('Ignoring keyword arguments %s',
-                        ', '.join(kwargs.keys()))
+            yield context, embed_view_name(viewname)
+            yield context, viewname
 
         try:
-            layout = context.getLayout()
+            gl = context.getLayout
         except AttributeError as e:
             cls = self.__class__.__name__
             logger.error('%(cls)s.views_to_try: '
                          '%(context)r lacks a getLayout attribute', locals())
             logger.exception(e)
+            raise  # DO WE HAVE SUCH OBJECTS?
         else:
+            layout = gl()
             if layout:
                 view = embed_view_name(layout)
                 if view:
-                    yield view
-                yield layout
+                    yield context, view
+                yield context, layout
         # last resort:
-        yield 'embed'
-        yield 'view'
+        yield context, 'embed'
+        yield context, 'view'
         # -------------------------------- ] ... views_to_try() ]
 
     def _iterate_viewnames(self, context, **kwargs):
@@ -238,7 +265,7 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
                 }
         try:
             request.set(CALLING_CONTEXT_KEY, context)
-            content = the_view()
+            content = the_view(**dict(request.form))
             return {
                 '@noajax': False,
                 '@title': title,
@@ -247,7 +274,7 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
         except Exception as e:
             logger.error('Calling %(view_name)r on %(portal)r --> exception %(e)r', locals())
             self._interesting_request_vars(context, request)
-            if DevelopmentMode and 0:
+            if DevelopmentMode and 1:
                 print('*** NOCHMAL, MIT DEBUGGER:')
                 set_trace()
                 content = the_view(portal, request)
@@ -264,7 +291,8 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
         ... but try to handle them first!
         """
         form = request.form
-        pp(form=form)
+        if DevelopmentMode:
+            pp(form=form)
         changes = 0
         ok = True
         for key, val in form.items():
@@ -284,7 +312,7 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
                         changes += 1
                     else:
                         ok = False
-        if changes:
+        if changes and DevelopmentMode:
             pp('%(changes)d changes:' % locals(),
                form=form)
         return not ok
@@ -292,7 +320,7 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
     # ------------------------------ ] ... construct JSON object ... [
     def update_response(self, thedict):
         """
-        Apply the changes provided by .response_additions.
+        To `thedict`, apply the changes provided by .response_additions.
 
         Options:
 
@@ -338,6 +366,8 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
                                 ' (%(mod)r; context: %(context)r)'
                                 '! %(invalid)s'
                                 % locals())
+            if DevelopmentMode:
+                pp('DEBUG:', cls, collected_changes.keys(), changes.keys(), changes)
             collected_changes.update(changes)
             if update:
                 keys_updated.update(changes.keys())  # noqa
@@ -420,24 +450,18 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
         else:
             content = None
             try:
-                pp((('context', context),
-                    ('view_name:', view_name),
-                    ('the_view:', the_view),
-                    ('zcml_name:', self.__name__),
-                    ('res (so far):', res),
-                    ))
-                content = the_view()
+                content = the_view(**dict(request.form))
             except Unauthorized as e:
                 res.update(self.get_replacement_content(context, request))
                 self.update_response(res)
                 return res
             except UnicodeDecodeError as e:
                 logger.error(e)
-                if DevelopmentMode and 0:
+                if DevelopmentMode and 1:
                     logger.info('NOCHMAL MIT DEBUGGER!')
                     set_trace()
                     try:
-                        content = the_view()
+                        content = the_view(**dict(request.form))
                     except Exception as e:
                         logger.error(e)
                         logger.exception(e)
@@ -454,11 +478,11 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
                 logger.error(e)
                 logger.exception(e)
                 if DevelopmentMode:
-                    if 0:  # don't reactivate UNLESS FOCUSING on this problem!
+                    if 1:  # don't reactivate UNLESS FOCUSING on this problem!
                         pp(e=e)
                         logger.info('NOCHMAL MIT DEBUGGER!')
                         set_trace()
-                        content = the_view()
+                        content = the_view(**dict(request.form))
                         logger.info('... NOCHMAL MIT DEBUGGER!')
                     else:
                         logger.info('NOCHMAL MIT DEBUGGER: DISABLED!')

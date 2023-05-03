@@ -13,14 +13,19 @@
       for="*"
       class=".AjaxnavBrowserView"
       permission="zope.Public"
-      />
+      /><!-- (gf)
+          ./__init__.py
+          -->
 
   <browser:page
       name="ajax-nav"
       for="Products.CMFCore.interfaces.IFolderish"
       class=".folder.AjaxnavBrowserView"
       permission="zope.Public"
-      />
+      /><!-- (gf)
+          ./folder.py
+          -->
+
   <!-- ] ... @@ajax-nav: return JSON data for AJAX requests ] -->
 
   <!-- [ generic @@embed views ... [ -->
@@ -31,15 +36,6 @@
       template="embed.pt"
       permission="zope2.View"
       />
-
-  <!-- commented out; the embed_folderish.pt template was faulty anyway.
-  <browser:page
-      name="embed"
-      for="Products.CMFCore.interfaces.IFolderish"
-      class=".folder.EmbedBrowserView"
-      template="embed_folderish.pt"
-      permission="zope2.View"
-     -->
 
   <browser:page
       name="embed"

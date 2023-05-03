@@ -2,6 +2,25 @@ Changelog
 =========
 
 
+1.2.5 (2022-07-12)
+------------------
+
+Bugfixes:
+
+- When calling views, give the form data as keyword arguments.
+  Before, e.g. createObject?type_name=... failed because of missing arguments.
+
+Temporary changes:
+
+- Added to ``blacklist_view_ids``:
+
+  - ``html_view`` (visaplan.plone.pdfexport)
+  - ``pdf_view`` (visaplan.plone.pdfexport)
+  - ``portal_registry`` (plone.app.registry)
+
+[tobiasherp]
+
+
 1.2.4 (2022-03-04)
 ------------------
 

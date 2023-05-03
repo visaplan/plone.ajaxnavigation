@@ -14,30 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-urlSplit.prototype.toString = function urlSplitToString () {
-    var result='', tmp=this.protocol;
-    if (tmp)
-        result += tmp + ':';
-    tmp = this.authorization;
-    if (tmp)
-        result += tmp + '@';
-    tmp = this.domain;
-    if (tmp)
-        result += tmp;
-    tmp = this.port;
-    if (tmp)
-        result += ':'+tmp;
-    tmp = this.path;
-    if (tmp)
-        result += tmp;
-    tmp = this.query;
-    if (tmp)
-        result += '?'+tmp;
-    tmp = this.fragment;
-    if (tmp)
-        result += '#'+tmp;
-    return result;
-}
 // startsWith polyfill; taken from
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith#Polyfill
 if (!String.prototype.startsWith) {
@@ -84,6 +60,33 @@ var AjaxNav = (function () {
     }
     // hostname excludes the port:
     var myhostname = AjaxNav.myhostname = location.hostname;
+
+    var firstPage = function (url) {
+        var parsed = urlSplit(url),
+            key = 'b_star:int',
+            val, found = false,
+            delinquents = [],
+            ql;
+        ql = parsed.queryList;
+        for (let i = ql.length; i--; ) {  // iterate backwards!
+            val = ql[i];
+            if (val.startsWith(key+'=')) {
+                if (found) {
+                    delinquents.push(i);
+                } else {  // keep the latest hit only
+                    ql[i] = key + '=0';
+                    found = true;
+                }
+            }
+        }
+        for (let i=0; i < delinquents.length; i++) {
+            ql.splice(i, 1);
+        }
+        parsed.query = ql.join('&')
+        var res = urlUnsplit(parsed);
+        return res
+    };
+    AjaxNav.firstPage = firstPage;
 
     var id_match_logger = function (s, label) {
         if (typeof label !== 'undefined') {
@@ -620,6 +623,13 @@ var AjaxNav = (function () {
      *         thrown, and in the end the whole page to be reloaded!
      */
     var set_base_url = function (url) {
+        if (typeof url !== 'string') {
+            log('set_base_url: non-string given as url!');
+            log(url);
+            if (! the_url) {
+                return;
+            }
+        }
         var head=null,
             the_url = typeof url === 'string'      // -- [ HOTFIX ... [
                       ? url
@@ -896,6 +906,8 @@ var AjaxNav = (function () {
         if (original) {
             query[URL_VARNAME] = original;
         }
+        log('use_url('+url+'); data following:');  // DEBUG
+        log(query);                                // DEBUG
         $.ajax(url, {
             async: false,
             cache: false,  // development
@@ -1607,6 +1619,13 @@ var AjaxNav = (function () {
             // the ordering facility doesn't work properly when AJAX-loaded:
             data.blacklist_view_ids.push('folder_contents');
             // data.blacklist_class_ids.push('sort_on');
+            // ---------------------- [ Plone configuration ... [
+            data.blacklist_view_ids.push('portal_registry');
+            // ---------------------- ] ... Plone configuration ]
+            // ------------------------------ [ PDF-Exporte ... [
+            data.blacklist_view_ids.push('pdf_view');
+            data.blacklist_view_ids.push('html_view');
+            // ------------------------------ ] ... PDF-Exporte ]
             // --------------------------- [ Struktureditor ... [
             data.blacklist_view_ids.push('structure-edit');
             // --------------------------- ] ... Struktureditor ]

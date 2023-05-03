@@ -23,7 +23,7 @@ from visaplan.tools.debug import trace_this
 
 __all__ = [
         'AjaxnavBrowserView',
-        # 'EmbedBrowserView', @embed for IFolderish is currently commented-out
+        # 'EmbedBrowserView',  # we'll try to get along without ..._embed views
         ]
 
 
@@ -70,54 +70,6 @@ class AjaxnavBrowserView(_Base):
     # __call__ = trace_this(_Base.__call__)
 
 
-class EmbedBrowserView(SchemaAwareBrowserView):
-
-    def children(self, context=None, **kwargs):
-        """
-        Stand-alone view method to return a list of the folder's children
-
-        All optional arguments (save the context) must be given by name!
-
-        acquire_inner -- use aq_inner, default: True
-        use_context_state -- use the plone_context_state, currently:
-                             for the object titles;
-                             default: True
-        include_objects -- include the objects in an addtional 'o' value;
-                           default: 'href' and 'title' only
-
-        For unknown keyword arguments a TypeError is raised.
-        """
-
-        request = kwargs.pop('request', None)
-        acquire_inner     = kwargs.pop('acquire_inner',     True)
-        use_context_state = kwargs.pop('use_context_state', True)
-        include_objects   = kwargs.pop('include_objects',   False)
-        check_kwargs(kwargs)  # raises TypeError, if necessary
-        if context is None:
-            context = self.context
-        if acquire_inner:
-            context = aq_inner(context)
-        if use_context_state:
-            # we need the request in this case, right?
-            if request is None:
-                request = self.request
-        root = context.absolute_url() + '/'
-        children = []
-        # no contentFilter for now:
-        for o in context.listFolderContents():
-            o_id = o.id
-            href = root + o_id
-            if use_context_state:
-                state = getMultiAdapter((o, request),
-                                        name='plone_context_state')
-                title = state.object_title()
-            else:
-                title = o.title
-            dic = {
-                'href': href,
-                'title': title,
-                }
-            if include_objects:
-                dic['o'] = o
-            children.append(dic)
-        return children
+# class EmbedBrowserView(SchemaAwareBrowserView):
+# deleted, because not used anymore, and identical to the version from
+#  ../../../../../../visaplan.plone.base/src/visaplan/plone/base/views/folder.py
