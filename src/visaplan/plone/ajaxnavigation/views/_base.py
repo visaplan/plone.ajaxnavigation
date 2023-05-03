@@ -2,8 +2,6 @@
 # Python compatibility:
 from __future__ import absolute_import, print_function
 
-from importlib_metadata import PackageNotFoundError
-from importlib_metadata import version as pkg_version
 from six import string_types as six_string_types
 
 # Standard library:
