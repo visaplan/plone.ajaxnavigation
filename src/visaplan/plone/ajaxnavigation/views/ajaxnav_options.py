@@ -29,6 +29,8 @@ class AjaxnavOptions(BrowserView):
             res[key] = proxy[dotted]
 
         key = 'development_mode'
+        res[key] = False
+        return res
         val = NoneOrBool(proxy.get(key, 'auto'))
         if val is None:
             val = bool(DevelopmentMode)
