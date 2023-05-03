@@ -6,16 +6,16 @@ Short description
 # Python compatibility:
 from __future__ import absolute_import
 
-# Setup tools:
-import pkg_resources
+from importlib_metadata import PackageNotFoundError
+from importlib_metadata import version as pkg_version
 
 # Zope:
 from zope.i18nmessageid import MessageFactory
 
 _ = MessageFactory('visaplan.plone.ajaxnavigation')
 try:
-    pkg_resources.get_distribution('zope.deprecation')
-except pkg_resources.DistributionNotFound:
+    pkg_version('zope.deprecation')
+except PackageNotFoundError:
     pass
 else:
     # Zope:
@@ -27,7 +27,7 @@ else:
     # Local imports:
     from .exceptions import AjaxnavTypeError, TemplateNotFound, ToolNotFound
 
-    # zope.deprecation.moved is vor modules only, right? :-(
+    # zope.deprecation.moved is for modules only, right? :-(
     deprecated(AjaxnavTypeError, 'moved to .exceptions')
     deprecated(ToolNotFound,     'moved to .exceptions')
     deprecated(TemplateNotFound, 'moved to .exceptions')

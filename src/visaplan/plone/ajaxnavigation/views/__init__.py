@@ -2,14 +2,13 @@
 # Python compatibility:
 from __future__ import absolute_import, print_function
 
-# Setup tools:
-import pkg_resources
+from importlib_metadata import PackageNotFoundError
+from importlib_metadata import version as pkg_version
 
 # Standard library:
 from posixpath import sep
 
 # Zope:
-# from Acquisition import aq_inner
 from AccessControl.Permissions import view as view_permission
 from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
@@ -45,8 +44,8 @@ from pdb import set_trace
 from visaplan.tools.debug import pp
 
 try:
-    pkg_resources.get_distribution('zope.deprecation')
-except pkg_resources.DistributionNotFound:
+    pkg_version('zope.deprecation')
+except PackageNotFoundError:
     HAVE_DEPRECATION = False
 else:
     HAVE_DEPRECATION = True

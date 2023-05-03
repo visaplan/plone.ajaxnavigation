@@ -2,11 +2,7 @@
 # Python compatibility:
 from __future__ import absolute_import
 
-# Organisatorisches:
-__author__ = """Tobias Herp <tobias.herp@visaplan.com>"""
-__docformat__ = 'plaintext'
 # Zope:
-# Sonstiges (Plone):
 from Products.CMFCore.utils import getToolByName
 from zope.interface import implementer
 
@@ -15,7 +11,7 @@ from plone.app.upgrade.utils import loadMigrationProfile
 from Products.CMFPlone.interfaces import INonInstallable
 
 # visaplan:
-from visaplan.plone.tools.setup import step, load_and_cook
+from visaplan.plone.tools.setup import load_and_cook, step
 
 # Local imports:
 from .defaults import default
@@ -26,6 +22,9 @@ import logging
 from visaplan.tools.debug import pp
 
 # ------------------------------------------------------ [ Daten ... [
+__author__ = """Tobias Herp <tobias.herp@visaplan.com>"""
+__docformat__ = 'plaintext'
+
 # UNITRACC_PORTAL_TYPES_1000 = UNITRACC_PORTAL_TYPES[:17]
 
 PROJECTNAME = 'visaplan.plone.ajaxnavigation'

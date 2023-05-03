@@ -2,16 +2,14 @@
 # Python compatibility:
 from __future__ import absolute_import, print_function
 
+from importlib_metadata import PackageNotFoundError
+from importlib_metadata import version as pkg_version
 from six import string_types as six_string_types
-
-# Setup tools:
-import pkg_resources
 
 # Standard library:
 from posixpath import sep
 
 # Zope:
-# from Acquisition import aq_inner
 from Globals import DevelopmentMode
 from Products.CMFCore.utils import getToolByName
 
@@ -24,13 +22,14 @@ from visaplan.plone.ajaxnavigation.data import PERMISSION_ALIASES
 # Logging / Debugging:
 from logging import getLogger
 
-logger = getLogger('visaplan.plone.ajaxnavigation:views')
 # Local imports:
 from ._load import AjaxLoadBrowserView
 
 # Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp
+
+logger = getLogger('visaplan.plone.ajaxnavigation:views')
 
 
 class SchemaAwareBrowserView(AjaxLoadBrowserView):

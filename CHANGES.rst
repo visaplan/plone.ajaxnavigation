@@ -2,6 +2,28 @@ Changelog
 =========
 
 
+1.2.6 (unreleased)
+------------------
+
+Requirements:
+
+- importlib_metadata_
+
+[tobiasherp]
+
+
+Old changes
+-----------
+
+Temporary changes:
+
+- Added to ``blacklist_view_ids``:
+
+  - ``html_view`` (visaplan.plone.pdfexport)
+  - ``pdf_view`` (visaplan.plone.pdfexport)
+  - ``portal_registry`` (plone.app.registry_)
+
+
 1.2.5 (2022-07-12)
 ------------------
 
@@ -16,7 +38,7 @@ Temporary changes:
 
   - ``html_view`` (visaplan.plone.pdfexport)
   - ``pdf_view`` (visaplan.plone.pdfexport)
-  - ``portal_registry`` (plone.app.registry)
+  - ``portal_registry`` (plone.app.registry_)
 
 [tobiasherp]
 
@@ -325,6 +347,8 @@ New Features:
 - Initial release.
   [tobiasherp]
 
+.. _importlib_metadata: https://pypi.org/project/importlib-metadata/
+.. _plone.app.registry: https://pypi.org/project/plone.app.registry
 .. _visaplan.plone.elearning: https://pypi.org/project/visaplan.plone.elearning
 .. _visaplan.tools: https://pypi.org/project/visaplan.tools
 

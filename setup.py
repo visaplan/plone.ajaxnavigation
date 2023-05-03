@@ -54,6 +54,7 @@ def valid_suffix(suffix):
         if char not in '0123456789':
             raise ValueError('Chunk %(chunk)r of version suffix %(suffix)r'
                              ' doesn\'t end with a digit'
+                             ' (normalization would append a "0")'
                              % locals())
     return suffix  # ... valid_suffix
     # ... get the version ...
@@ -172,6 +173,7 @@ setup_kwargs = dict(
     zip_safe=False,
     install_requires=[
         'setuptools',
+        'importlib_metadata',
         'six',  # Python 3 compatibility
         # -*- Extra requirements: -*-
         'visaplan.tools >= 1.3.1',  # ChangesCollector
@@ -187,10 +189,10 @@ setup_kwargs = dict(
     extras_require={
         'test': [
             'plone.app.testing',
-            # plone.app.robotframework 1.2.0 requires plone.testing 4.0.11; 
+            # plone.app.robotframework 1.2.0 requires plone.testing 4.0.11;
             # plone.app.robotframework 1.3+ drops Plone 4.3 compatibility:
             'plone.testing',
-            # currently disabled because of import problems: 
+            # currently disabled because of import problems:
             # 'plone.app.robotframework[debug]',
             'plone.app.robotframework',
         ],

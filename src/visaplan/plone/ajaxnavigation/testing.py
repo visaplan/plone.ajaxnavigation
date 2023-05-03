@@ -8,6 +8,9 @@ Tile for collective.cover is only tested in Plone 4.3.
 # Python compatibility:
 from __future__ import absolute_import
 
+from importlib_metadata import PackageNotFoundError
+from importlib_metadata import version as pkg_version
+
 # Standard library:
 import warnings
 
@@ -24,12 +27,9 @@ with warnings.catch_warnings():
         )
     from plone.testing import z2
 
-# Setup tools:
-import pkg_resources
-
 try:
-    pkg_resources.get_distribution('plone.app.contenttypes')
-except pkg_resources.DistributionNotFound:
+    pkg_version('plone.app.contenttypes')
+except PackageNotFoundError:
     # Plone:
     from plone.app.testing import PLONE_FIXTURE
     HAS_DEXTERITY = False
@@ -40,8 +40,8 @@ else:
     HAS_DEXTERITY = True
 
 try:
-    pkg_resources.get_distribution('collective.cover')
-except pkg_resources.DistributionNotFound:
+    pkg_version('collective.cover')
+except PackageNotFoundError:
     HAS_COVER = False
 else:
     HAS_COVER = True

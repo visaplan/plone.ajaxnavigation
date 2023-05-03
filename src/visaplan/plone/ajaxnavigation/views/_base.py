@@ -2,16 +2,14 @@
 # Python compatibility:
 from __future__ import absolute_import, print_function
 
+from importlib_metadata import PackageNotFoundError
+from importlib_metadata import version as pkg_version
 from six import string_types as six_string_types
-
-# Setup tools:
-import pkg_resources
 
 # Standard library:
 from posixpath import sep
 
 # Zope:
-# from Acquisition import aq_inner
 from AccessControl import Unauthorized
 from AccessControl.Permissions import view as view_permission
 from Globals import DevelopmentMode
@@ -43,6 +41,7 @@ from ._load import AjaxLoadBrowserView
 # Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp
+
 # set_trace()
 # update_response: 340
 # views_to_try:     86
@@ -389,7 +388,6 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
         Return the data (still a Python dictionary)
         usually returned by the __call__ method
         """
-        # context = aq_inner(self.context)
         context = self.context
         request = self.request
         MYNAME = 'ajax-nav'
@@ -478,7 +476,7 @@ class AjaxnavBrowserView(AjaxLoadBrowserView): # [ AjaxnavBrowserView ... [
                 logger.error(e)
                 logger.exception(e)
                 if DevelopmentMode:
-                    if 1:  # don't reactivate UNLESS FOCUSING on this problem!
+                    if 0:  # don't reactivate UNLESS FOCUSING on this problem!
                         pp(e=e)
                         logger.info('NOCHMAL MIT DEBUGGER!')
                         set_trace()
