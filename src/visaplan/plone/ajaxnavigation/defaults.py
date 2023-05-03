@@ -31,10 +31,12 @@ default = {
     'blacklist_view_prefixes': [
         'configure_',
         'configure-',
-        'manage_',  # usually: ZMI pages
+        'manage_',  # usually ZMI pages ... but not always!
         'plone_',
         'portal_',
         'prefs_',
+        ] and [  # the above pages can just work quite well!
+        '@novalue',
         ],
     'blacklist_view_suffixes': [
         '_management',

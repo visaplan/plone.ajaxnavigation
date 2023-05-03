@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
-from zope.component import getMultiAdapter
+# Zope:
 from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
 from zExceptions import Redirect
+from zope.component import getMultiAdapter
+
+__all__ = [
+        'SiteInfoView',
+        ]
 
 
 class SiteInfoView(BrowserView):
-
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
 
     def __call__(self):
         # context = aq_inner(self.context)

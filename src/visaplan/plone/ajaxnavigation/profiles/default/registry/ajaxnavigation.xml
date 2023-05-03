@@ -45,12 +45,13 @@
 
     <value key="blacklist_view_prefixes"
            purge="false">
-        <element>configure_</element>
-        <element>configure-</element>
-        <element>manage_</element>
-        <element>plone_</element>
-        <element>portal_</element>
-        <element>prefs_</element>
+        <element remove="true">configure_</element>
+        <element remove="true">configure-</element>
+        <element remove="true">manage_</element>
+        <element remove="true">plone_</element>
+        <element remove="true">portal_</element>
+        <element remove="true">prefs_</element>
+        <element>@novalue</element>
     </value>
 
     <value key="blacklist_view_suffixes"

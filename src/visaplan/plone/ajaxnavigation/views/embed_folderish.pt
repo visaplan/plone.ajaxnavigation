@@ -16,7 +16,7 @@ title of calling object
 <dd tal:content="python:tup[1]">value</dd>
 </tal:loop>
 <h2 i18n:translate="">Child objects</h2>
-<ul><li tal:repat="child view/children"
+<ul><li tal:repeat="child view/children"
     ><a href="./child"
        tal:attributes="href python:child['href']"
        tal:content="python:child['title']">

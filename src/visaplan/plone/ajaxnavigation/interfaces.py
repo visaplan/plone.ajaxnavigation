@@ -1,14 +1,24 @@
 # -*- coding: utf-8 -*-
 """Module where all interfaces, events and exceptions live."""
+# Python compatibility:
 from __future__ import absolute_import
 
-from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-from zope.interface import Interface
-from plone.supermodel import model
+# Zope:
 from zope import schema
+from zope.interface import Interface
+from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 
+# Plone:
+from plone.supermodel import model
+
+# Local imports:
 from .defaults import default
 from visaplan.plone.ajaxnavigation import _
+
+__all__ = [
+        'IVisaplanPloneAjaxnavigationLayer',
+        'IAjaxNavigationSettings',
+        ]
 
 
 class IVisaplanPloneAjaxnavigationLayer(IDefaultBrowserLayer):
@@ -229,7 +239,7 @@ class IAjaxNavigationSettings(model.Schema):
             u'However, the use of target attributes is not recommended; '
             u'they don\'t allow users to choose otherwise. '
             u'Thus, we recommend you to set this value to False, '
-            u'but this must be your own explicit decistion.'
+            u'but this must be your own explicit decision.'
             ))
     # ----------------- ] ... other_exceptions: Other non-AJAX links ]
 
@@ -316,7 +326,7 @@ class IAjaxNavigationSettings(model.Schema):
         description=_(
             u'help_menu_item_selector',
             default=u'When loading new content with AJAX, '
-                u'the context indicated by a currently highlighted main menu ' 
+                u'the context indicated by a currently highlighted main menu '
                 u'item might be left; '
                 u'thus, the main menu must be updated to reflect the change, '
                 u'based on the current URL.'
@@ -341,7 +351,7 @@ class IAjaxNavigationSettings(model.Schema):
             label=_(u'Development support'),
             fields=[
                 'development_mode',
-		## removed; client-side 'mark_links' function triggered additional AJAX requests:
+                ## removed; client-side 'mark_links' function triggered additional AJAX requests:
                 # 'development_style_delegate',
                 # 'development_style_undelegate',
                 ])

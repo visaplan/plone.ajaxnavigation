@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
-from visaplan.tools.minifuncs import makeBool
 from six import string_types as six_string_types
+
+# visaplan:
+from visaplan.tools.minifuncs import makeBool
 
 
 def NoneOrBool(val):
@@ -33,7 +36,7 @@ def NoneOrBool(val):
         ...
     ValueError: invalid literal for int() with base 10: 'none'
     """
-    
+
     if val is None or val == '':
         return None
     elif isinstance(val, six_string_types):

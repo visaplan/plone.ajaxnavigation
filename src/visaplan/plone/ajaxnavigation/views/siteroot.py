@@ -1,14 +1,26 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
-from zope.component import getMultiAdapter
+# Zope:
 from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
+from zope.component import getMultiAdapter
+
+# visaplan:
 from visaplan.plone.tools.decorators import returns_json
+
+# Local imports:
 from visaplan.plone.ajaxnavigation.data import CALLING_CONTEXT_KEY
 
+# Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp
+
+__all__ = [
+        'SiteInfoView',
+        'PleaseLoginBrowserView',
+        ]
 
 
 class SiteInfoView(BrowserView):
@@ -42,5 +54,3 @@ class PleaseLoginBrowserView(BrowserView):
             ))
         # set_trace()
         return res
-
-

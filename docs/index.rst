@@ -27,7 +27,7 @@ The general idea is:
 - Do some client-side calcuations to determine whether AJAX loading should be
   tried and which URL(s) to use.
 
-  Don't use AJAX
+  *Don't* use AJAX
   (and instead immediately return *true* to perform the standard click processing)
   in the following cases:
 
@@ -192,6 +192,9 @@ More configuration options (yet to be documented) include:
 - blacklist_class_{ids,prefixes,suffixes}
 - regard_target_attribute
 - target_rel_values
+- ``replace_view_ids``
+- ``replaced_view_ids``
+- ``dropped_view_ids``
 
 
 Data keys
@@ -210,7 +213,7 @@ You are welcome to contribute to a solid and stable processing concept.
 |                    |             | This key is "special" only in one regard:                   |
 |                    |             | It is configured by default.                                |
 |                    |             |                                                             |
-|                    |             | If no "normal" key (without a leading ``@`` is given,       |
+|                    |             | If no "normal" key (without a leading ``@``) is given,      |
 |                    |             | ``@noajax`` (below) defaults to *true*.                     |
 +--------------------+-------------+-------------------------------------------------------------+
 | @title             | string      | Used to set the title after filling in the ``content``.     |
@@ -219,7 +222,7 @@ You are welcome to contribute to a solid and stable processing concept.
 |                    |             | of the AJAX-loaded page as it would be needed to be given   |
 |                    |             | when approaching the page from outside.                     |
 +--------------------+-------------+-------------------------------------------------------------+
-| @noajax            | boolean     | Specify *True* to load the requeste page conventionally.    |
+| @noajax            | boolean     | Specify *True* to load the requested page conventionally.   |
 |                    |             |                                                             |
 |                    |             | There will be no history processing, but you might want to  |
 |                    |             | insert some placeholder like "loading; please wait" using   |
@@ -304,6 +307,39 @@ the object name, and if this fails, the (replaced) view name.
 
 The original `href` URL of the clicked `a` element is forwarded to the
 ``@@ajax-nav`` view  in the ``@original_url`` request variable.
+It should be used by server-side browser views by the ``get_visible_url``
+method to create the ``@url`` JSON data key.
+
+
+Special treatment of view names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++-----------------+-----------------------+--------------------------------+
+| Name            | Setting               | Description                    |
++=================+=======================+================================+
+| ``ajax-nav``    | *none*                | If we find a visibles          |
+|                 |                       | ``@@ajax-nav`` URL, we have    |
+|                 |                       | our JSON url already           |
+|                 |                       | and will use it (instead of    |
+|                 |                       | mistaking the JSON data as the |
+|                 |                       | page content)                  |
++-----------------+-----------------------+--------------------------------+
+| ``view``        | ``dropped_view_ids``  | Sometimes we have ``.../view`` |
+|                 |                       | URLs which usually mean,       |
+|                 |                       | "just use the default view".   |
+|                 |                       | Thus, ``/view`` is usually     |
+|                 |                       | dropped and simply replaced by |
+|                 |                       | ``/@@ajax-nav``.               |
++-----------------+-----------------------+--------------------------------+
+| ``resolveUid``, | ``replaced_view_ids`` | By default, and if enabled,    |
+| ``resolvei18n`` |                       | these methods are replaced by  |
+|                 |                       | ``@@resolveuid``; this is      |
+|                 |                       | configured per view id.        |
++-----------------+-----------------------+--------------------------------+
+|                 | ``replace_view_ids``  | Enable the view id replacement |
+|                 |                       | configured by the              |
+|                 |                       | ``replaced_view_ids`` setting. |
++-----------------+-----------------------+--------------------------------+
 
 
 Additional request variables
@@ -330,10 +366,137 @@ For this reason, it injects special ``@``-prefixed variables into the query data
 +---------------------+------------------------------------------------------+
 | ``@class``          | A string to contain the ``class`` attribute of the   |
 |                     | clicked element.                                     |
+|                     |                                                      |
+|                     | *Note*: this may become subject to a configuration   |
+|                     |         setting and switched off by default.         |
 +---------------------+------------------------------------------------------+
 | ``@data-*``         | The dromedarCased HTML5 ``data-*`` attributes of the |
 |                     | clicked element.                                     |
+|                     |                                                      |
+|                     | *Note*: this may become subject to a configuration   |
+|                     |         setting and switched off by default.         |
 +---------------------+------------------------------------------------------+
+
+
+Classes
+-------
+
++-----------------------------+-----------------+-------------------------------------------------------------+
+| Name                        | Module          | Purpose, description                                        |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| *Abstract base classes*                                                                                     |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AjaxLoadBrowserView``     | .views          | reuse full-page templates                                   |
+|                             |                 | injects ``ajax_load=1`` into the request;                   |
+|                             |                 | introduces the methods:                                     |
+|                             |                 |                                                             |
+|                             |                 | - get_visible_url                                           |
+|                             |                 | - corrected_visible_url  (helper for the former)            |
+|                             |                 | - given_viewname (accepts an optional default value         |
+|                             |                 |   and stores the value to the ``._other`` dict)             |
+|                             |                 | - get_given_viewname (uses the value written by the former) |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| *JSON views*                                                                                                |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AjaxnavBrowserView``      | .views          | for @@ajax-nav views; introduces the methods:               |
+|                             |                 |                                                             |
+|                             |                 | - views_to_try                                              |
+|                             |                 | - choose_view                                               |
+|                             |                 | - get_replacement_content                                   |
+|                             |                 | - shortcircuit_noajax                                       |
+|                             |                 | - response_additions                                        |
+|                             |                 | - update_response (collects the response_additions methods  |
+|                             |                 |   in method resolution order                                |
+|                             |                 |   and executes them in reverse order)                       |
+|                             |                 | - please_login_viewname (returns ``please_login``)          |
+|                             |                 | - please_login_title (returns a translated string)          |
+|                             |                 | - insufficient_rights_viewname                              |
+|                             |                 |   (returns ``insufficient_rights``)                         |
+|                             |                 | - insufficient_rights_title (returns a translated string)   |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AjaxnavBrowserView``      | .views.folder   | @@ajax-nav for folders; the .views_to_try method takes      |
+|                             |                 | default pages into account                                  |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``NoAjaxBrowserView``       | .views          | ... not (yet) ready for AJAX                                |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AjaxnavOptions``          | .views.options  | @@ajaxnav-options-default (for site root)                   |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``SiteInfoView``            | .views.siteroot | @@ajax-siteinfo (for site root)                             |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``SiteInfoView``            | .views.other    | @@ajax-siteinfo (redirects to the site root version)        |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| *HTML views*                                                                                                |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``SchemaAwareBrowserView``  | .views          | use schema data; introduces the methods:                    |
+|                             |                 |                                                             |
+|                             |                 | - basedata (return the UUID, if present, and the            |
+|                             |                 |   portal_type)                                              |
+|                             |                 | - schemadata                                                |
+|                             |                 |   (return schema data, with possible adjustments)           |
+|                             |                 | - data (return basedata() and schemadata())                 |
+|                             |                 | - schemadata_kwargs (keyword argument resolution for the    |
+|                             |                 |   former)                                                   |
+|                             |                 | - perm (return a dict of "interesting" permissions, with    |
+|                             |                 |   aliases)                                                  |
+|                             |                 | - perm_checker (return a simple or verbose permission       |
+|                             |                 |   checking function)                                        |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``PleaseLoginBrowserView``  | .views          | Used by AjaxnavBrowserView.get_replacement_content if       |
+|                             |                 | access denied and not logged in                             |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``PleaseLoginBrowserView``  | .views.siteroot | *not yet used?*                                             |
+|                             |                 | asserts the view name to be ``please_login``, and returns a |
+|                             |                 | dict containing ``title`` and ``url``                       |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AccessDeniedBrowserView`` | .views          | Used if access denied for currently logged-in user          |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``VoidBrowserView``         | .views          | ... empty result (`None`)                                   |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| *Exception classes*                                                                                         |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AjaxnavError``            | .exceptions     | Root exception class                                        |
+|                             |                 | for the visaplan.plone.ajaxnavigation package               |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``AjaxnavTypeError``        | .exceptions     | Some visaplan.plone.ajaxnavigation                          |
+|                             |                 | component has been used wrongly                             |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``ToolNotFound``            | .exceptions     |                                                             |
++-----------------------------+-----------------+-------------------------------------------------------------+
+| ``TemplateNotFound``        | .exceptions     |                                                             |
++-----------------------------+-----------------+-------------------------------------------------------------+
+
+Tree of classes::
+
+    Error(Exception)
+    |- AjaxnavTypeError(TypeError)
+    |- ToolNotFound
+    `- TemplateNotFound
+
+    Products.Five.browser.BrowserView
+    |- AjaxnavOptions
+    |- AjaxLoadBrowserView
+    |  |- AjaxnavBrowserView
+    |  |- AccessDeniedBrowserView
+    |  |- PleaseLoginBrowserView
+    |  `- SchemaAwareBrowserView
+    |- SiteInfoView
+    `- VoidBrowserView
+
+    zope.publisher.interfaces.browser.IDefaultBrowserLayer
+    `- IVisaplanPloneAjaxnavigationLayer
+
+    plone.supermodel.model.Schema
+    `- IAjaxNavigationSettings
+
+    plone.app.registry.browser.controlpanel.RegistryEditForm
+    `- AjaxNavigationSettingsEditForm
+
+    plone.app.registry.browser.controlpanel.ControlPanelFormWrapper
+    `- AjaxNavigationSettingsControlPanel
+
+
+This tree is simplified in leaving out classes which exist in more than one module;
+those sibling classes are attached to different interfaces. See the above table, and the ``configure.zcml`` file of the ``.views`` subpackage.
 
 
 Dependencies

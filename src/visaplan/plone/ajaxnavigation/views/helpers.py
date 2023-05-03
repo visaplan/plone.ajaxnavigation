@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
 from six import string_types as six_string_types
 
+# Zope:
 from Products.CMFCore.utils import getToolByName
 from zope.component import queryMultiAdapter
 from zope.component.interfaces import ComponentLookupError
 
+# Logging / Debugging:
 from logging import getLogger
+
 logger = getLogger('visaplan.plone.ajaxnavigation:_get_tool_1')
 debug = logger.info
 
-from visaplan.plone.ajaxnavigation import ToolNotFound
+# Local imports:
+from visaplan.plone.ajaxnavigation.exceptions import ToolNotFound
 
 
-def _get_tool_1(name, context, request=None):
+def _get_tool_1(name, context, request):
     r"""
     This a workaround to help get things running; it should not be used
     permanently.
@@ -51,8 +56,6 @@ def _get_tool_1(name, context, request=None):
             return val
         debug('getToolByName returned %(val)r.', locals())
 
-    if request is None:
-        request = context.REQUEST
     val = queryMultiAdapter((context, request), name=name)
     if val is not None:
         debug('queryMultiAdapter succeeded.')

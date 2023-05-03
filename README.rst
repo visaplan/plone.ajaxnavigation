@@ -121,14 +121,26 @@ Or, more likely:
 
 Add it to the dependencies of your package, e.g. in your ``setup.py`` file.
 
-You'll need to provide ``@@embed`` views for your content types;
-ideally, you can use your already-existing ``BrowserView`` classes.
-Usually it will be sufficient to make a copy of your ``view`` template
-and inject an ``ajax_load=1`` request variable.
-
 
 Questions
 ---------
+
+"What about my view templates?"
+
+If your view templates don't inject Javascript code in the HTML head element
+(e.g. filling the ``head_slot`` or ``javascript_head_slot``) but rather add it
+to the body, chances are good that they will just work fine.
+
+If they don't, you have the following choices:
+
+- Refactor your view templates and move the script code from the head to the
+  body (which should be a good idea anyway);
+
+- Provide special ``@@embed`` views which would be tried first by the
+  ``@@ajax-nav`` view;
+
+- Suppress AJAX navigation for the respective views and load it the standard
+  way (full page).
 
 "Why don't you simply inject that ``ajax_load`` variable
 automatically per BrowserView code?"

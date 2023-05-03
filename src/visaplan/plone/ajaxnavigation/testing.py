@@ -5,9 +5,12 @@ For Plone 5 we need to install plone.app.contenttypes.
 
 Tile for collective.cover is only tested in Plone 4.3.
 """
+# Python compatibility:
 from __future__ import absolute_import
 
+# Standard library:
 import warnings
+
 with warnings.catch_warnings():
     warnings.simplefilter('ignore', ImportWarning)
 
@@ -18,16 +21,19 @@ with warnings.catch_warnings():
     from plone.app.testing import PloneSandboxLayer
     from plone.testing import z2
 
+# Setup tools:
 import pkg_resources
-
 
 try:
     pkg_resources.get_distribution('plone.app.contenttypes')
 except pkg_resources.DistributionNotFound:
+    # Plone:
     from plone.app.testing import PLONE_FIXTURE
     HAS_DEXTERITY = False
 else:
-    from plone.app.contenttypes.testing import PLONE_APP_CONTENTTYPES_FIXTURE as PLONE_FIXTURE
+    # Plone:
+    from plone.app.contenttypes.testing import \
+        PLONE_APP_CONTENTTYPES_FIXTURE as PLONE_FIXTURE
     HAS_DEXTERITY = True
 
 try:
@@ -47,13 +53,17 @@ class Fixture(PloneSandboxLayer):
         # The z3c.autoinclude feature is disabled in the Plone fixture base
         # layer.
         if HAS_COVER:
+            # 3rd party:
             import collective.cover
             self.loadZCML(package=collective.cover)
 
+        # Plone:
         import plone.app.dexterity
         self.loadZCML(package=plone.app.dexterity)
+        # visaplan:
         import visaplan.js.urlsplit
         self.loadZCML(package=visaplan.js.urlsplit)
+        # Local imports:
         import visaplan.plone.ajaxnavigation
         self.loadZCML(package=visaplan.plone.ajaxnavigation)
 

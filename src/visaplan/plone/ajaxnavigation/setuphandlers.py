@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
 # Organisatorisches:
 __author__ = """Tobias Herp <tobias.herp@visaplan.com>"""
 __docformat__ = 'plaintext'
-from Products.CMFPlone.interfaces import INonInstallable
-from zope.interface import implementer
-
+# Zope:
 # Sonstiges (Plone):
 from Products.CMFCore.utils import getToolByName
+from zope.interface import implementer
+
+# Plone:
 from plone.app.upgrade.utils import loadMigrationProfile
+from Products.CMFPlone.interfaces import INonInstallable
 
-# Unitracc-Tools:
-from visaplan.plone.tools.setup import (
-        step,
-        )
+# visaplan:
+from visaplan.plone.tools.setup import step
 
-from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
+# Local imports:
 from .defaults import default
-from plone.registry import Record
+from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
 
-# Logging:
+# Logging / Debugging:
 import logging
 from visaplan.tools.debug import pp
-
 
 # ------------------------------------------------------ [ Daten ... [
 # UNITRACC_PORTAL_TYPES_1000 = UNITRACC_PORTAL_TYPES[:17]
@@ -66,6 +66,7 @@ def register_settings_interface(context, logger=logger):
     """
     registry = getToolByName(context, 'portal_registry')
     registry.registerInterface(IAjaxNavigationSettings)
+    logger.info('Registered interface %r', IAjaxNavigationSettings)
 
 
 # ------------------------ [ Migrationsschritte, ./profiles.zcml ... [

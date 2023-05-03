@@ -1,25 +1,36 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
+# Zope:
+from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
 from zope.component import getMultiAdapter
-from Acquisition import aq_inner
 
+# visaplan:
 from visaplan.plone.tools.decorators import returns_json
+from visaplan.tools.minifuncs import check_kwargs
 
-from visaplan.plone.ajaxnavigation.views import AjaxnavBaseBrowserView
-from visaplan.plone.ajaxnavigation.views import SchemaAwareBrowserView
+# Local imports:
 from visaplan.plone.ajaxnavigation.utils import embed_view_name
+from ._schema import SchemaAwareBrowserView
+from ._base import AjaxnavBrowserView as _Base
 
 DEFAULT_FOLDER_EMBED = embed_view_name('folder_listing')  # folder_listing_embed
+# Logging / Debugging:
 from visaplan.tools.debug import trace_this
 
+__all__ = [
+        'AjaxnavBrowserView',
+        # 'EmbedBrowserView', @embed for IFolderish is currently commented-out
+        ]
 
-class AjaxnavBrowserView(AjaxnavBaseBrowserView):
 
-    base__views_to_try = AjaxnavBaseBrowserView.views_to_try
+class AjaxnavBrowserView(_Base):
 
-    def views_to_try(self, context, viewname=None):
+    base__views_to_try = _Base.views_to_try
+
+    def views_to_try(self, context, viewname=None, **kwargs):
         """
         For folders: call getLayout, and replace the final _view by _embed
 
@@ -27,6 +38,9 @@ class AjaxnavBrowserView(AjaxnavBaseBrowserView):
         if missing, the 'please_login' or 'insufficient_rights' view names
         are used (as returned by the please_login_viewname and
         insufficient_rights_viewname methods, respectively).
+
+        Note: additional keyword arguments are accepted but currently ignored
+              (they might be used by other methods)
         """
         # from pdb import set_trace; set_trace()
         if viewname is None:
@@ -40,19 +54,19 @@ class AjaxnavBrowserView(AjaxnavBaseBrowserView):
         if page_id:
             the_page = context.restrictedTraverse(page_id)
             if the_page:
-                for vn in self.base__views_to_try(the_page, viewname):
+                for vn in self.base__views_to_try(the_page, viewname, **kwargs):
                     # since we have resolved the page_id,
-                    # we should yield it: 
+                    # we should yield it:
                     yield (the_page, vn)
 
         # if no default page configured or not found,
-        # continue standard processing: 
-        for tup in self.base__views_to_try(context, viewname):
+        # continue standard processing:
+        for tup in self.base__views_to_try(context, viewname, **kwargs):
             yield tup
 
         yield DEFAULT_FOLDER_EMBED
 
-    # __call__ = trace_this(AjaxnavBaseBrowserView.__call__)
+    # __call__ = trace_this(_Base.__call__)
 
 
 class EmbedBrowserView(SchemaAwareBrowserView):
@@ -77,10 +91,7 @@ class EmbedBrowserView(SchemaAwareBrowserView):
         acquire_inner     = kwargs.pop('acquire_inner',     True)
         use_context_state = kwargs.pop('use_context_state', True)
         include_objects   = kwargs.pop('include_objects',   False)
-        if kwargs:
-            raise TypeError('Surplus keyword arguments: %s'
-                    % (list(kwargs.keys()),
-                       ))
+        check_kwargs(kwargs)  # raises TypeError, if necessary
         if context is None:
             context = self.context
         if acquire_inner:

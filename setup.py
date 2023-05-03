@@ -140,9 +140,11 @@ setup_kwargs = dict(
         "Environment :: Web Environment",
         "Framework :: Plone",
         "Framework :: Plone :: 4.3",
+        'Framework :: Zope2',
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
+        "Programming Language :: JavaScript",
         "Intended Audience :: Developers",
         "Natural Language :: German",
         "Operating System :: OS Independent",
@@ -165,6 +167,7 @@ setup_kwargs = dict(
         'setuptools',
         'six',  # Python 3 compatibility
         # -*- Extra requirements: -*-
+        'visaplan.tools >= 1.3.1.dev8',  # ChangesCollector
         'simplejson',
         'visaplan.js.urlsplit',
         'plone.api',

@@ -1,17 +1,26 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
+# Zope:
+from Globals import DevelopmentMode
+from Products.CMFCore.utils import getToolByName
 from Products.Five.browser import BrowserView
 
-from Products.CMFCore.utils import getToolByName
+# Plone:
 from plone.registry.interfaces import IRegistry
-from Globals import DevelopmentMode
 
-from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
-from visaplan.plone.ajaxnavigation.data import clientside_map
-from visaplan.plone.ajaxnavigation.minifuncs import NoneOrBool
+# visaplan:
 from visaplan.plone.tools.decorators import returns_json
 
+# Local imports:
+from visaplan.plone.ajaxnavigation.data import clientside_map
+from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
+from visaplan.plone.ajaxnavigation.minifuncs import NoneOrBool
+
+__all__ = [
+        'AjaxnavOptions',
+        ]
 
 class AjaxnavOptions(BrowserView):
 
@@ -29,6 +38,8 @@ class AjaxnavOptions(BrowserView):
             res[key] = proxy[dotted]
 
         key = 'development_mode'
+        res[key] = False
+        return res
         val = NoneOrBool(proxy.get(key, 'auto'))
         if val is None:
             val = bool(DevelopmentMode)

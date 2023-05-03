@@ -1,14 +1,35 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import, print_function
-from six import string_types as six_string_types
 
+from six import string_types as six_string_types
+from six.moves.urllib.parse import urlsplit, urlunsplit
+
+# Standard library:
 from string import whitespace
+
 WHITESPACE = frozenset(whitespace)
 
+# Standard library:
 from os import makedirs
+from posixpath import join as path_join
+from posixpath import normpath, sep
 from time import strftime
-from os.path import join as path_join
-from urlparse import urlsplit, urlunsplit
+
+# visaplan:
+from visaplan.tools.minifuncs import check_kwargs
+from visaplan.tools.sequences import inject_indexes
+
+try:
+    # visaplan:
+    from visaplan.plone.tools.functions import is_uid_shaped
+except ImportError:
+    if __name__ == '__main__':
+        def is_uid_shaped(s):
+            return len(s) == 32 and set('0123456789abcdef').issuperset(s)
+        print('Using simple is_uid_shaped replacement')
+    else:
+        raise
 
 __all__ = [
         'embed_view_name',
@@ -17,6 +38,7 @@ __all__ = [
         'pop_ajaxnav_vars',
         'strip_method_name',
         'strip_method_name_dammit',
+        'parse_current_url',
         ]
 
 
@@ -51,7 +73,7 @@ def embed_view_name(viewname):
     If only dashes are used, we use a dash:
     >>> embed_view_name('my-images')
     'my-images-embed'
-    
+
     If none are found, or both, the underscore is used:
     >>> embed_view_name('my-cool_images')
     'my-cool_images_embed'
@@ -88,7 +110,7 @@ def view_choice_tuple(val):
     considered its associated page, and we'll use the "layout" of this
     page (unless some other viewname was specified, of course).
     The choice (and transformation) of that view name is subject to the
-    AjaxnavBaseBrowserView.views_to_try method.
+    AjaxnavBrowserView.views_to_try method.
 
     For non-folders (which can't have a default_page mapped),
     we'll usually only get the name of a view;
@@ -214,7 +236,7 @@ def pop_ajaxnav_vars(dic, **kwargs):
     ([('for', '#gaga')], [('original_url', 'https://somewhere.org/')])
     >>> sorted(tst3.items())
     [('b_start', 'int:25')]
-    
+
     The 'ajax_load' variable is used by standard Plone (or used to be, at least),
     and thus is preserved in the original request dictionary;
     in fact, it simply doesn't start with '@data-':
@@ -241,10 +263,7 @@ def pop_ajaxnav_vars(dic, **kwargs):
     data = {}
     other = {}
     nocache = kwargs.pop('nocache', True)
-    if kwargs:
-        bogus = list(kwargs.keys())
-        raise TypeError('Undefined kwargs found! (%(bogus)s)'
-                        % locals())
+    check_kwargs(kwargs)  # raises TypeError if necessary
     for key in dic.keys():
         if key.startswith(DATA_PREFIX):
             try:
@@ -257,14 +276,14 @@ def pop_ajaxnav_vars(dic, **kwargs):
             # ignore (i.e. neither pop nor store) invalid keys
         elif key == '_':
             # When sending "uncached" $.ajax requests, jQuery adds a "_"
-            # variable which contains a numeric timestamp (seconds since epoch) 
+            # variable which contains a numeric timestamp (seconds since epoch)
             val = dic[key]
             if nocache:
                 try:
                     int(val)
                 except ValueError:
                     # for now, we don't want errors to go unnoticed;
-                    # we might want to do some logging instead later 
+                    # we might want to do some logging instead later
                     raise
                 else:
                     del dic[key]
@@ -327,8 +346,273 @@ def strip_method_name_dammit(url):
     return urlunsplit(url_list)
 
 
+def parse_current_url(url):
+    """
+    Parse a URL which was given as the visible URL (usually by the request
+    variable "@visible_url") and might contain unresolved UIDs and/or be
+    faulty; return a 2-tuple:
+
+        (<list>, <dict>)
+
+    <dict> tells about errors and/or necessary transformations;
+    <list> is created from the named tuple returned by urlparse.urlsplit,
+    often with some changes applied to the .path component.
+
+    Note that the given URL might be non-functional.
+    Since it's meant for use in the browser's address line,
+    and in such cases would be used when re-loading the page,
+    we do our best to convert it in something reasonable.
+
+    >>> pcu = parse_current_url
+
+    First, we don't want to see UIDs in the address line.
+
+    >>> url1 = './resolveUid/0123abcd0123abcd0123abcd0123abcd'
+    >>> res1 = pcu(url1)
+
+    The result looks quite empty:
+    >>> res1[0]
+    ['', '', '', '', '']
+
+    However, the 2nd part of the returned tuple contains information about the
+    extracted UID:
+
+    >>> sorted(res1[1].items())
+    [('uid', '0123abcd0123abcd0123abcd0123abcd')]
+
+    (It will be the UID of the context anyway.)
+    The caller can now inject the path to the context:
+
+    >>> res1[0][2] = '/path/to/my/context'
+    >>> urlunsplit(res1[0])
+    '/path/to/my/context'
+
+    See below for a more interesting example (including fragment and query
+    string), or views.AjaxLoadBrowserView.corrected_visible_url.
+
+    A trailing '/' is preserved; it implies the non-specification of a
+    particular view:
+    >>> url2 = './resolveUid/0123abcd0123abcd0123abcd0123abcd/'
+    >>> res2 = pcu(url2)
+    >>> res2[0]
+    ['', '', '/', '', '']
+
+    Normal URLs are not changed:
+    >>> url8 = '/some/ordinary/path'
+    >>> res8 = pcu(url8)
+    >>> res8[0]
+    ['', '', '/some/ordinary/path', '', '']
+
+    ... but they are normalized:
+    >>> url9 = '/some/./ordinary/path/'
+    >>> res9 = pcu(url9)
+    >>> res9[0]
+    ['', '', '/some/ordinary/path/', '', '']
+
+    Now for the foul values.
+
+    A UID resolution method without a UID following is removed:
+    >>> url10 = '/some/foul/resolveUid/path/'
+    >>> res10 = pcu(url10)
+    >>> res10[0]
+    ['', '', '/some/foul/path/', '', '']
+
+    The error is reported:
+    >>> res10[1]
+    {'methods_deleted': ['resolveUid']}
+
+    Sometimes such methods cumulate:
+    >>> url11 = '/some/foul/resolveUid/resolveUid/path/'
+    >>> res11 = pcu(url11)
+    >>> res11[0]
+    ['', '', '/some/foul/path/', '', '']
+
+    Such cases are reported as 'methods_deleted':
+    >>> res11[1]
+    {'methods_deleted': ['resolveUid', 'resolveUid']}
+
+    UIDs are recognized only when following a suitable method:
+    >>> url12 = '0123abcd0123abcd0123abcd0123abcd'
+    >>> res12 = pcu(url12)
+    >>> res12[0]
+    ['', '', '0123abcd0123abcd0123abcd0123abcd', '', '']
+    >>> sorted(res12[1].items())
+    [('uids_ignored', ['0123abcd0123abcd0123abcd0123abcd'])]
+
+    >>> url13 = '/resolveuid/' + url12 + '/4567cdef4567cdef4567cdef4567cdef'
+    >>> res13 = pcu(url13)
+    >>> res13[0]
+    ['', '', '4567cdef4567cdef4567cdef4567cdef', '', '']
+    >>> sorted(res13[1].items())
+    [('uid', '0123abcd0123abcd0123abcd0123abcd'), ('uids_ignored', ['4567cdef4567cdef4567cdef4567cdef'])]
+
+    Fragments are retained, of course:
+    >>> url14 = '/resolveuid/' + url12 + '#4567cdef4567cdef4567cdef4567cdef'
+    >>> res14 = pcu(url14)
+
+    The complete path was removed (for replacement by the context path);
+    the fragment is put in the usual place:
+    >>> res14[0]
+    ['', '', '', '', '4567cdef4567cdef4567cdef4567cdef']
+    >>> sorted(res14[1].items())
+    [('uid', '0123abcd0123abcd0123abcd0123abcd')]
+
+    Inserting the path of the context (which is expected to feature the UID
+    '0123abcd0123abcd0123abcd0123abcd'), you'd get:
+    >>> res14[0][2] = '/path/to/context'
+    >>> urlunsplit(res14[0])
+    '/path/to/context#4567cdef4567cdef4567cdef4567cdef'
+
+    As fragments are retained, so are query strings:
+    >>> url15 = '/resolveuid/' + url12 + '?uid=4567cdef4567cdef4567cdef4567cdef'
+    >>> res15 = pcu(url15)
+    >>> res15[0]
+    ['', '', '', 'uid=4567cdef4567cdef4567cdef4567cdef', '']
+    >>> sorted(res15[1].items())
+    [('uid', '0123abcd0123abcd0123abcd0123abcd')]
+    >>> res15[0][2] = '/path/to/context'
+    >>> urlunsplit(res15[0])
+    '/path/to/context?uid=4567cdef4567cdef4567cdef4567cdef'
+
+    Finally, a trailing @@ajax-nav is removed as well:
+    >>> url20 = '/some/path/@@ajax-nav'
+    >>> res20 = pcu(url20)
+    >>> res20[0]
+    ['', '', '/some/path/', '', '']
+
+    Currently we don't report this simple case as an error (just the deletion):
+    >>> sorted(res20[1].items())
+    [('methods_deleted', ['@@ajax-nav'])]
+
+    If this is not the final chunk, it is reported:
+    >>> url21 = '/some/path/@@ajax-nav/'
+    >>> res21 = pcu(url21)
+    >>> res21[0]
+    ['', '', '/some/path/', '', '']
+    >>> sorted(res21[1].items())
+    [('errors', ["misplaced '@@ajax-nav'"]), ('methods_deleted', ['@@ajax-nav'])]
+
+    Even the non-functional case is fixed:
+    >>> url22 = '/some/path@@ajax-nav'
+    >>> res22 = pcu(url22)
+    >>> res22[0]
+    ['', '', '/some/path', '', '']
+    >>> res22[1]['errors']
+    ["severely misplaced '@@ajax-nav'!"]
+    """  # ------------------------------- [ parse_current_url() ... [
+    parsed = urlsplit(url)
+    url_list = list(parsed)
+    assert url_list[2] == parsed.path
+    raw_path = url_list[2]
+    trailing_slash = raw_path.endswith(sep)
+    new_path = normpath(raw_path)
+    if trailing_slash:
+        new_path += sep
+    path_changed = new_path != raw_path
+
+    method_i = None
+    path_list = new_path.split('/')
+    resinfo = {}
+    errors = []
+    methods = []
+    uids = []
+    replacements = []
+    # from pdb import set_trace; set_trace()
+    for chunk, prev_i, i, next_i in inject_indexes(path_list):
+        if chunk in (
+            'resolveuid',
+          '@@resolveuid',
+            'resolveUid',
+            'resolvei18n',
+          '@@resolvei18n',
+            ):
+            methods.append((i, chunk, True))   # ... resolver?
+            method_i = i
+        elif is_uid_shaped(chunk):
+            if method_i is None:
+                pos_ok = False
+            else:
+                pos_ok = (method_i == prev_i)
+            uids.append((pos_ok, i, chunk))
+        elif chunk in (
+            'ajax-nav',
+          '@@ajax-nav',
+            ):
+            # from pdb import set_trace; set_trace()
+            methods.append((i, chunk, False))  # other method
+            if next_i is not None:
+                errors.append('misplaced %(chunk)r' % locals())
+            else:
+                trailing_slash = True
+        elif chunk.endswith('@@ajax-nav'):
+            errors.append('severely misplaced %r!' % ('@@ajax-nav',))
+            po = chunk.rfind('@@ajax-nav')
+            replacements.append((i, chunk[:po]))
+
+    for i, chunk in replacements:
+        path_list[i] = chunk
+        path_changed = True
+
+    good_uid_i = None
+    if uids:
+        good_uids = [tup[2] for tup in uids if tup[0]]
+        if good_uids:
+            good_uid_i = max([tup[1] for tup in uids if tup[0]])
+            resinfo['uid'] = good_uids[-1]
+            del path_list[:good_uid_i+1]
+            path_changed = True
+
+        bad_uids_deleted = [tup[2] for tup in uids
+                            if not tup[0] and tup[1] < good_uid_i]
+        if bad_uids_deleted:
+            resinfo['uids_deleted'] = bad_uids_deleted
+
+        bad_uids_ignored = [tup[2] for tup in uids
+                            if not tup[0] and tup[1] > good_uid_i]
+        if bad_uids_ignored:
+            resinfo['uids_ignored'] = bad_uids_ignored
+
+    if methods:
+        methods_deleted = [tup[1] for tup in methods
+                           if tup[0] < good_uid_i]
+        if methods_deleted[1:]:
+            # the last one was the one which triggered good_uid_i:
+            resinfo['methods_swallowed'] = methods_deleted[:-1]
+        methods_remaining = [tup[1] for tup in methods
+                             if tup[0] > good_uid_i]
+        if methods_remaining:
+            # methods without a following UID:
+            resinfo['methods_deleted'] = methods_remaining
+            delete_ids = reversed([tup[0] for tup in methods
+                                   if tup[0] > good_uid_i])
+            if good_uid_i is None:
+                for i in delete_ids:
+                    del path_list[i]
+            else:
+                for i in delete_ids:
+                    del path_list[i-good_uid_i]
+            path_changed = True
+
+    if errors:
+        resinfo['errors'] = errors
+
+    if path_changed:
+        # since we'll insert the context path,
+        # we need to retain the trailing slash:
+        leading_slash = path_list and not path_list[0]
+        new_path = sep.join(path_list)
+        if leading_slash and not new_path.startswith(sep):
+            new_path = sep + new_path
+        if trailing_slash and not new_path.endswith(sep):
+            new_path += sep
+        url_list[2] = new_path
+    return url_list, resinfo  # ---------- ] ... parse_current_url() ]
+
+
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()
 else:
+    # Local imports:
     from .minifuncs import NoneOrBool

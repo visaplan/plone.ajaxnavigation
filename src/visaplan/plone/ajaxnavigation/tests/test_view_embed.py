@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
-from visaplan.plone.ajaxnavigation.testing import FUNCTIONAL_TESTING
-from visaplan.plone.ajaxnavigation.testing import INTEGRATION_TESTING
-from plone import api
-from plone.app.testing import setRoles
-from plone.app.testing import TEST_USER_ID
+# Standard library:
+import unittest
+
+# Zope:
 from zope.component import getMultiAdapter
 from zope.component.interfaces import ComponentLookupError
 
-import unittest
+# Plone:
+from plone import api
+from plone.app.testing import TEST_USER_ID, setRoles
+
+# Local imports:
+from visaplan.plone.ajaxnavigation.testing import (
+    FUNCTIONAL_TESTING,
+    INTEGRATION_TESTING,
+    )
 
 
 class ViewsIntegrationTest(unittest.TestCase):

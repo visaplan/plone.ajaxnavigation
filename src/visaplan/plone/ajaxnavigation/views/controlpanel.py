@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
-from plone.app.registry.browser.controlpanel import RegistryEditForm
-from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
-
-from visaplan.plone.ajaxnavigation.interfaces import (
-	IAjaxNavigationClientSettings, IAjaxNavigationInternalSettings,
-	)
-from plone.z3cform import layout
+# Zope:
 from z3c.form import form
+
+# Plone:
+from plone.app.registry.browser.controlpanel import (
+    ControlPanelFormWrapper,
+    RegistryEditForm,
+    )
+from plone.z3cform import layout
+
+# Local imports:
+from visaplan.plone.ajaxnavigation.interfaces import (
+    IAjaxNavigationClientSettings,
+    IAjaxNavigationInternalSettings,
+    )
 
 
 class AjaxNavigationClientControlPanelForm(RegistryEditForm):

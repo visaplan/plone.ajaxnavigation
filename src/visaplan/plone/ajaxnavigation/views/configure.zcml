@@ -9,45 +9,46 @@
 
   <!-- [ @@ajax-nav: return JSON data for AJAX requests ... [ -->
   <browser:page
-     name="ajax-nav"
-     for="*"
-     class=".AjaxnavBaseBrowserView"
+      name="ajax-nav"
+      for="*"
+      class=".AjaxnavBrowserView"
       permission="zope.Public"
-     />
+      />
 
   <browser:page
-     name="ajax-nav"
-     for="Products.CMFCore.interfaces.IFolderish"
-     class=".folder.AjaxnavBrowserView"
+      name="ajax-nav"
+      for="Products.CMFCore.interfaces.IFolderish"
+      class=".folder.AjaxnavBrowserView"
       permission="zope.Public"
-     />
+      />
   <!-- ] ... @@ajax-nav: return JSON data for AJAX requests ] -->
 
   <!-- [ generic @@embed views ... [ -->
   <browser:page
-     name="embed"
-     for="Products.CMFCore.interfaces.IContentish"
-     class=".SchemaAwareBrowserView"
-     template="embed.pt"
-     permission="zope2.View"
-     />
+      name="embed"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".SchemaAwareBrowserView"
+      template="embed.pt"
+      permission="zope2.View"
+      />
+
+  <!-- commented out; the embed_folderish.pt template was faulty anyway.
+  <browser:page
+      name="embed"
+      for="Products.CMFCore.interfaces.IFolderish"
+      class=".folder.EmbedBrowserView"
+      template="embed_folderish.pt"
+      permission="zope2.View"
+     -->
 
   <browser:page
-     name="embed"
-     for="Products.CMFCore.interfaces.IFolderish"
-     class=".folder.EmbedBrowserView"
-     template="embed_folderish.pt"
-     permission="zope2.View"
-     />
-
-  <browser:page
-     name="embed"
-     for="Products.ATContentTypes.interfaces.interfaces.ITextContent"
-     zcml:condition="installed Products.Archetypes"
-     class=".SchemaAwareBrowserView"
-     template="embed.pt"
-     permission="zope2.View"
-     />
+      name="embed"
+      for="Products.ATContentTypes.interfaces.interfaces.ITextContent"
+      zcml:condition="installed Products.Archetypes"
+      class=".SchemaAwareBrowserView"
+      template="embed.pt"
+      permission="zope2.View"
+      />
   <!-- ] ... generic @@embed views ] -->
 
   <browser:page
@@ -59,11 +60,11 @@
 
   <!-- [ supporting JSON views ... [ -->
   <browser:page
-     name="ajaxnav-options-default"
-     for="Products.CMFCore.interfaces.ISiteRoot"
-     class=".ajaxnav_options.AjaxnavOptions"
-     permission="zope2.View"
-     />
+      name="ajaxnav-options-default"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".options.AjaxnavOptions"
+      permission="zope2.View"
+      />
 
   <browser:page
       name="ajax-siteinfo"
@@ -77,7 +78,9 @@
       for="*"
       permission="zope.Public"
       class="visaplan.plone.ajaxnavigation.views.other.SiteInfoView"
-      />
+      /><!-- simply redirects to the IPloneSiteRoot version above;
+             see ./other.py
+          -->
   <!-- ] ... supporting JSON views ] -->
 
   <browser:page

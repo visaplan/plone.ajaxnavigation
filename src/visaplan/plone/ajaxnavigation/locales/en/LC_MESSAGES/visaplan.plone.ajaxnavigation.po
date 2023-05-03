@@ -1,6 +1,6 @@
 # --- PLEASE EDIT THE LINES BELOW CORRECTLY ---
 # English "translations" for visaplan.plone.ajaxnavigation.
-# visaplan GmbH, Bochum, Germany, 2020
+# visaplan GmbH, Bochum, Germany, 2021
 msgid ""
 msgstr ""
 "Project-Id-Version: visaplan.plone.ajaxnavigation 1.0\n"
@@ -318,7 +318,7 @@ msgid "help_nested_blacklist"
 msgstr ""
 "If this is set to True, and if there is a non-empty Blacklist, the Blacklist un-delegation will be applied during the whitelist processing."
 
-#. Default: "Following the Principle of Least Surprise, we regard existing target attributes of \"a\" elements, causing pages to continue to open in new windows (or, more likely with modern browsers: tabs). However, the use of target attributes is not recommended; they don't allow users to choose otherwise. Thus, we recommend you to set this value to False, but this must be your own explicit decistion."
+#. Default: "Following the Principle of Least Surprise, we regard existing target attributes of \"a\" elements, causing pages to continue to open in new windows (or, more likely with modern browsers: tabs). However, the use of target attributes is not recommended; they don't allow users to choose otherwise. Thus, we recommend you to set this value to False, but this must be your own explicit decision."
 #: ../interfaces.py:231
 msgid "help_regard_target_attribute"
 msgstr ""

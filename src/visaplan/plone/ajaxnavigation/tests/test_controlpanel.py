@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
+# Standard library:
+import unittest
+
+# Zope:
+from zope.component import getUtility
+
+# Plone:
 from plone import api
 from plone.app.testing import logout
 from plone.registry.interfaces import IRegistry
+
+# Local imports:
 from visaplan.plone.ajaxnavigation.config import PROJECTNAME
 from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
 from visaplan.plone.ajaxnavigation.testing import INTEGRATION_TESTING
-from zope.component import getUtility
-
-import unittest
 
 
 class ControlPanelTestCase(unittest.TestCase):
@@ -27,6 +34,7 @@ class ControlPanelTestCase(unittest.TestCase):
         self.assertTrue(view())
 
     def test_controlpanel_view_is_protected(self):
+        # Zope:
         from AccessControl import Unauthorized
         logout()
         with self.assertRaises(Unauthorized):

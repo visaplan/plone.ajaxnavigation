@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
+# Python compatibility:
 from __future__ import absolute_import
 
-from Products.CMFCore.permissions import (
-        ManagePortal,
-        ModifyPortalContent,
-        )
-from Products.Sessions.SessionPermissions import (
-        ACCESS_CONTENTS_PERM as Access_contents_information,
-        )
-from Products.PlonePAS.permissions import (ManageGroups,
-        )
-from AccessControl.Permissions import (
-        manage_users,             # Manage users
-        view as view_permission,  # View
-        )
+# Zope:
+from AccessControl.Permissions import manage_users  # Manage users
+from AccessControl.Permissions import view as view_permission  # View
+from Products.CMFCore.permissions import ManagePortal, ModifyPortalContent
+from Products.PlonePAS.permissions import ManageGroups
+from Products.Sessions.SessionPermissions import \
+    ACCESS_CONTENTS_PERM as Access_contents_information
 
+# visaplan:
 from visaplan.tools.classes import AliasDict
 
+# Local imports:
 from visaplan.plone.ajaxnavigation.interfaces import IAjaxNavigationSettings
 
 _prefix = IAjaxNavigationSettings.__identifier__ + '.'
